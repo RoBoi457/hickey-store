@@ -91,11 +91,22 @@ export async function onRequestPost({ request, env }) {
 
   const razorpayOrder = await razorpayResponse.json().catch(() => null);
   if (!razorpayResponse.ok) {
-    const description = razorpayOrder?.error?.description;
+    const gatewayError = razorpayOrder?.error;
+    const gatewayCode = typeof gatewayError?.code === "string" ? gatewayError.code.slice(0, 80) : "";
+    const description = typeof gatewayError?.description === "string"
+      ? gatewayError.description.replace(/[\\u0000-\\u001f\\u007f]/g, " ").trim().slice(0, 180)
+      : "";
     if (razorpayResponse.status === 401 || razorpayResponse.status === 403) {
-      return json({ error: "Razorpay rejected the API keys. Check that the Test Mode key ID and secret are a matching pair in Cloudflare." }, 401);
+      const reason = [gatewayCode, description].filter(Boolean).join(": ");
+      return json({
+        error: reason
+          ? `Razorpay rejected the request (${razorpayResponse.status}: ${reason}).`
+          : `Razorpay rejected the request (${razorpayResponse.status}).`,
+        gateway_status: razorpayResponse.status,
+        gateway_code: gatewayCode || null
+      }, 502);
     }
-    return json({ error: description || "Razorpay could not create the payment order." }, 502);
+    return json({ error: description || "Razorpay could not create the payment order.", gateway_code: gatewayCode || null }, 502);
   }
   if (!razorpayOrder?.id || razorpayOrder.amount !== amount || razorpayOrder.currency !== "INR") {
     return json({ error: "Razorpay returned an invalid order. Please try again." }, 502);
