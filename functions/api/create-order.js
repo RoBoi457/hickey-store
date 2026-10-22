@@ -94,7 +94,7 @@ export async function onRequestPost({ request, env }) {
     const gatewayError = razorpayOrder?.error;
     const gatewayCode = typeof gatewayError?.code === "string" ? gatewayError.code.slice(0, 80) : "";
     const description = typeof gatewayError?.description === "string"
-      ? gatewayError.description.replace(/[\\u0000-\\u001f\\u007f]/g, " ").trim().slice(0, 180)
+      ? gatewayError.description.replaceAll("\r", " ").replaceAll("\n", " ").trim().slice(0, 180)
       : "";
     if (razorpayResponse.status === 401 || razorpayResponse.status === 403) {
       const reason = [gatewayCode, description].filter(Boolean).join(": ");
