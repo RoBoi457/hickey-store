@@ -1,59 +1,57 @@
-# Hickey storefront replica
+# Hickey storefront
 
-A responsive, static-first recreation of the Hickey Base44 preview from the supplied 36-second screen recording. It includes the landing page, a 13-item keychain collection with generated product mockups, an interactive FAQ section, a staged hero entrance with animated fireflies, a stronger color wash, reversible cloud-dispel transitions and tile snap effects, a marquee that moves with scroll position only while in view, a persistent basket, quantity controls, and a custom order-summary checkout with Razorpay-powered fixed-amount UPI QR payment. The contact section has suggestion, feedback/question, and exclusive small-run design request forms. Desktop content stays at 90% scale while the hero returns to its original size; mobile remains at its normal scale. Catalog prices are currently editable placeholders: ₹299 per single charm and ₹499 for the matching pair.
+A responsive storefront with a 13-design keychain collection, interactive FAQ, persistent basket, product previews, contact forms, and a Cloudflare Pages checkout using fixed-amount Razorpay UPI QR codes. Current catalog prices are placeholders: ₹299 per single charm and ₹499 for the matching pair.
 
-## Run it locally
+## Preview
 
-Open `index.html` in a browser to preview the layout and basket. The hosted order flows need the serverless routes and D1 database because a browser-only page must never hold the Razorpay secret key or claim an order was saved when it was not.
+Open `index.html` locally to explore the storefront. Checkout requires the deployed Pages Functions, Razorpay account configuration, and D1 database; it does not work from a `file://` preview.
 
 ## Cloudflare Pages setup
 
-Cloudflare Pages is the easiest free fit for this version: it can serve the static files, run the included Pages Functions, and bind a D1 database. The default `pages.dev` address is free. Custom domain registration is a separate purchase.
+The repository is connected to Cloudflare Pages on `main`; with automatic deployments enabled, a push to `main` publishes the website and its Pages Functions. The current static site uses no build step: leave the build command blank and set the output directory to `.`.
 
-1. Create a Git repository with these files and connect it to a new Cloudflare Pages project. Set the project root to `outputs/hickey-store` if you keep this workspace layout; if you copy the folder contents to a separate repository, use that repository root. Leave the build command blank and set the output directory to `.`.
-2. Create a D1 database in the Cloudflare dashboard. Bind it to the Pages project using the binding name `DB`.
-3. Apply `migrations/0001_create_orders.sql` and then `migrations/0002_add_customer_name.sql` to that D1 database from the database console or with Wrangler.
-4. Add the Razorpay key variables below to the Pages project environment. Use test keys in Preview first.
+### Connect order storage
 
-## Razorpay UPI setup
+1. In Cloudflare, open **Workers & Pages → D1 SQL Database** and create a database.
+2. Open the Pages project → **Settings → Functions → D1 database bindings**. Add a binding named exactly `DB` and select the database. Add a binding for Production, and for Preview too if you want checkout working in branch previews. Save and redeploy.
+3. In the D1 database **Console**, apply `migrations/0001_create_orders.sql`, then `migrations/0002_add_customer_name.sql`. Run each file's SQL once against the same database. If migration 1 is already applied, apply only migration 2.
 
-The repository includes Cloudflare Pages Functions at `functions/api/create-order.js`, `functions/api/verify-qr.js`, and `functions/api/cancel-qr.js`.
+### Connect Razorpay safely
 
-1. Deploy this folder as a Cloudflare Pages project. Connect a Git repository (or upload the files); use a blank build command and `.` as the output directory.
-2. In Cloudflare, create a D1 database. Open the Pages project settings, add a D1 binding named `DB`, and apply `migrations/0001_create_orders.sql` followed by `migrations/0002_add_customer_name.sql` to the database. If you already applied the first migration, apply only the second one now.
-3. Create a Razorpay account and generate **Test Mode** API keys. In Pages Settings → Variables and Secrets, add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` to the Preview environment. Store the secret as an encrypted secret; never put it in `index.html`, `script.js`, or a public repository.
-4. Ask Razorpay Support to enable its on-demand **UPI QR Codes API** feature for your merchant account. Standard checkout activation alone may not enable QR-code creation.
-5. Redeploy the Pages project so the Functions receive the D1 binding and test keys. Open its `pages.dev` URL (the payment API does not work from a `file://` preview), add products, and test checkout with Razorpay's test setup.
-6. After Razorpay finishes merchant verification and enables UPI QR Codes, add the **Live Mode** key ID and encrypted secret to the Production environment, then redeploy and make a small live payment to verify the complete flow.
+1. Create or activate your Razorpay merchant account and generate **Test Mode** API keys.
+2. In Pages project → **Settings → Variables and Secrets**, add `RAZORPAY_KEY_ID` and encrypted secret `RAZORPAY_KEY_SECRET` to Preview (and Production when ready). Never put the secret in site files, GitHub, screenshots, or chat.
+3. Ask Razorpay Support or your account contact to enable its on-demand **UPI QR Codes API**. Standard checkout activation may not include this API.
+4. Save the variables and redeploy. Open your Pages `pages.dev` address, add a product, and complete a test checkout. Confirm that the site shows success, an order appears in the order desk, and the payment appears in Razorpay's Test Mode dashboard.
 
-At checkout, the server recalculates the basket total from its own catalogue, creates a single-use Razorpay UPI QR locked to that exact amount, saves the order as pending, and returns the QR image URL. The checkout checks Razorpay's QR payment records on the server and marks an order paid only after it finds a captured UPI payment for the exact order amount. The QR expires after 20 minutes. The Razorpay secret stays in Cloudflare's server environment and is never sent to the browser. QR Codes API availability is account-gated; request activation from Razorpay before using this payment option. For a live store, add a Razorpay webhook with signature validation and connect fulfilment notifications before shipping goods. D1 stores each order's customer name, phone, delivery address, product list, amount, payment status, and Razorpay payment ID. Restrict access to the Cloudflare account and delete records according to your retention policy.
+### Open the private order desk
 
-## Where order and payment information appears
+1. Make a long random admin token on your Mac (Terminal): `openssl rand -hex 32`.
+2. In Cloudflare Pages → **Settings → Variables and Secrets**, add `ADMIN_TOKEN` as an encrypted secret for Production. Add it to Preview only if you need the order desk there. Do not put this token in the repository.
+3. Redeploy, then open `https://YOUR-PAGES-DOMAIN/admin.html`. Enter the token. It stays in the current browser tab session; use **Lock desk** on shared devices.
+4. Review the 14-day revenue chart, paid/pending totals, order details and payment references. Search or filter by status/date, then choose **Download CSV** to open the records in Numbers, Excel, or Google Sheets.
 
-- **Customer/order details:** Cloudflare Dashboard → **Workers & Pages → D1 SQL Database** → select the database → **Console**. Run `SELECT order_ref, customer_name, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id, created_at FROM orders ORDER BY created_at DESC;`. The D1 console also has a Tables view for browsing rows. [Cloudflare's D1 guide](https://developers.cloudflare.com/d1/get-started/) documents the Console and Tables views.
-- **Payment details and settlements:** Razorpay Dashboard → **Transactions → Payments** → open a Payment ID. The payment view includes payment and settlement details. Match its Payment ID with `razorpay_payment_id` in the Hickey D1 order row. [Razorpay's dashboard guide](https://razorpay.com/docs/payments/payments/dashboard/) shows this path.
-- **Contact form messages:** the idea, feedback, and custom design forms open the visitor's email app with a message addressed to `hello@hickey.store`. Those notes are delivered to that inbox only after the visitor presses Send. Replace that address in `script.js` and the contact link in the page with an inbox you control before launch; these forms do not write to D1.
+The dashboard at `/admin.html` calls a server-side Pages Function protected by `ADMIN_TOKEN`. It reads only from D1, uses parameterized database queries, and returns private no-cache responses. The CSV is intended for your bookkeeping; store it securely because it contains customer names, phone numbers, and delivery addresses. Keep Cloudflare and Razorpay account access limited and protected with 2FA.
 
-## Free hosting choices
+## How checkout works
 
-### Cloudflare Pages — best fit for this build
+The server validates the customer's name, phone and address; recalculates prices from its own product catalog; creates a single-use UPI QR fixed to the order total; and saves the order as pending in D1. The checkout asks Razorpay's API for that QR's payment records and changes the order to paid only after it finds a captured UPI payment for the exact amount. The QR expires after 20 minutes. The Razorpay secret is used only by the server-side Pages Functions.
 
-Connect a Git repository or upload the site files as a Pages project. Static files are served on the free plan, Pages Functions can host the small order/payment API, and D1 can store orders. The Cloudflare Workers Free plan currently includes 100,000 requests per day; D1 also has a free allowance. See [Cloudflare Pages limits](https://developers.cloudflare.com/pages/platform/limits/), [Workers limits](https://developers.cloudflare.com/workers/platform/limits/), and [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/). A custom domain name is optional and usually costs money; the provided `pages.dev` address is free.
+The current payment confirmation flow checks while the checkout page is open. For a live launch, configure a Razorpay payment webhook with signature validation and test it, so payment records can be synchronized even when a customer closes checkout. Do not ship an order based only on a screenshot or customer claim; verify its captured status in Razorpay. You can see the authoritative payment and settlement details in Razorpay Dashboard → **Transactions → Payments**. Match the Payment ID there with the order desk.
 
-### Netlify — simple static deployment
+## Where data lives
 
-Netlify’s Free plan currently costs $0 and includes 300 monthly credits, deploy previews, and functions. The site can be hosted there, but the included Razorpay endpoints are Cloudflare Pages Functions and would need conversion to Netlify Functions. Netlify pauses projects when the free monthly credit limit is reached. See [Netlify pricing](https://www.netlify.com/pricing/).
+- **Orders and shipping details:** Hickey's D1 database, visible in `/admin.html` and the Cloudflare D1 console. The dashboard can export filtered orders to CSV.
+- **Payment, refund and settlement records:** Razorpay Dashboard → **Transactions → Payments**. Match by Razorpay Payment ID.
+- **Ideas, feedback, and custom design requests:** the contact forms open the visitor's email app and only send after the visitor presses Send; they do not save to D1. Replace `hello@hickey.store` in `script.js` and the contact link with an inbox you control before launch.
 
-### Vercel Hobby — fine for a personal demo
+## Move from test to live
 
-Vercel’s free Hobby plan is limited to personal, non-commercial use. Because this storefront is designed to sell products, use Cloudflare Pages or another host whose terms fit a commercial storefront instead. See [Vercel Hobby plan](https://vercel.com/docs/plans/hobby).
+After the test flow works and Razorpay activates the account and QR API, add your **Live Mode** `RAZORPAY_KEY_ID` and encrypted `RAZORPAY_KEY_SECRET` to the Production environment, then redeploy and make a small real payment. Keep Test and Live keys in their matching Razorpay modes. Use a Production D1 binding for real orders. Do not enable real sales until the live payment, order record, and fulfillment process are confirmed.
 
-GitHub Pages is useful for a public static learning demo, but GitHub explicitly disallows using its free Pages hosting to run an e-commerce site. Do not use it for the live Hickey store. See [GitHub Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits).
+## References
 
-## Payment reference
-
-The UPI QR flow follows Razorpay's official [Create a QR Code API](https://razorpay.com/docs/api/qr-codes/create/) and [Fetch Payments for a QR Code API](https://razorpay.com/docs/api/qr-codes/gst/fetch-payments/). Razorpay says its UPI QR code API is an on-demand feature and must be activated for the merchant account.
-
-## Image and source notes
-
-The supplied recording did not include a Base44 export or product image files. The provided Hickey logo image is saved at `assets/hickey-logo.png` and used in the hero and footer. The layout, visible product copy, colors, and interaction patterns are recreated from the video; several product and team photos remain close visual substitutes from Unsplash. Replace those photo URLs with the original Base44 assets for a pixel-accurate match. Team member details not legible in the recording remain placeholders.
+- [Cloudflare Pages Functions bindings](https://developers.cloudflare.com/pages/functions/bindings/)
+- [Cloudflare D1 getting started](https://developers.cloudflare.com/d1/get-started/)
+- Razorpay [Create a QR Code API](https://razorpay.com/docs/api/qr-codes/create/) and [Fetch Payments for a QR Code API](https://razorpay.com/docs/api/qr-codes/gst/fetch-payments/)
+- [Razorpay payment dashboard](https://razorpay.com/docs/payments/payments/dashboard/)
+- [Razorpay security checklist](https://razorpay.com/security/checklist/)
