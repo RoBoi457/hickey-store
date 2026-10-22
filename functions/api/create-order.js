@@ -22,7 +22,9 @@ function json(data, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
+  const razorpayKeyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
+  const razorpayKeySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
+  if (!razorpayKeyId || !razorpayKeySecret) {
     return json({ error: "Razorpay is not configured yet. Add the Test Mode key ID and encrypted key secret in Cloudflare." }, 503);
   }
   if (!env.DB) {
@@ -68,7 +70,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   const receipt = "HK-" + crypto.randomUUID().replaceAll("-", "").slice(0, 10).toUpperCase();
-  const authorization = "Basic " + btoa(env.RAZORPAY_KEY_ID + ":" + env.RAZORPAY_KEY_SECRET);
+  const authorization = "Basic " + btoa(razorpayKeyId + ":" + razorpayKeySecret);
   let razorpayResponse;
   try {
     razorpayResponse = await fetch("https://api.razorpay.com/v1/orders", {
@@ -100,8 +102,8 @@ export async function onRequestPost({ request, env }) {
       const reason = [gatewayCode, description].filter(Boolean).join(": ");
       return json({
         error: reason
-          ? `Razorpay rejected the request (${razorpayResponse.status}: ${reason}).`
-          : `Razorpay rejected the request (${razorpayResponse.status}).`,
+          ? "Razorpay rejected the request (" + razorpayResponse.status + ": " + reason + ")."
+          : "Razorpay rejected the request (" + razorpayResponse.status + ").",
         gateway_status: razorpayResponse.status,
         gateway_code: gatewayCode || null
       }, 502);
@@ -125,6 +127,6 @@ export async function onRequestPost({ request, env }) {
     amount: razorpayOrder.amount,
     currency: razorpayOrder.currency,
     receipt,
-    key_id: env.RAZORPAY_KEY_ID
+    key_id: razorpayKeyId
   });
 }
