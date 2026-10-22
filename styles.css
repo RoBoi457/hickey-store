@@ -759,3 +759,31 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 @media (prefers-reduced-motion: reduce) {
   .faq-answer-card.is-changing h3, .faq-answer-card.is-changing p { animation: none; }
 }
+
+
+/* Matched pictograms for the FAQ's glass bubbles. */
+.faq-number {
+  display: grid;
+  place-items: center;
+}
+.faq-icon {
+  display: block;
+  width: 19px;
+  height: 19px;
+  overflow: visible;
+  color: #526f91;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1px rgba(255,255,255,.72));
+  transition: color .24s ease, transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.faq-item:nth-child(3n+2) .faq-icon { color: #bc6175; }
+.faq-item:nth-child(3n) .faq-icon { color: #438ca7; }
+.faq-icon text { fill: currentColor; }
+.faq-item:hover .faq-icon, .faq-item[aria-pressed="true"] .faq-icon { color: var(--red); transform: scale(1.12) rotate(-4deg); }
+@media (max-width: 760px) {
+  .faq-icon { width: 16px; height: 16px; }
+}
