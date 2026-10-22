@@ -515,11 +515,11 @@ const faqAnswerCard = document.getElementById("faq-answer-card");
 let faqScrollTimer;
 function animateFaqOdometer() {
   faqCounter?.classList.remove("is-changing");
+  requestAnimationFrame(() => faqCounter?.classList.add("is-changing"));
+}
+function animateFaqAnswer() {
   faqAnswerCard?.classList.remove("is-changing");
-  requestAnimationFrame(() => {
-    faqCounter?.classList.add("is-changing");
-    faqAnswerCard?.classList.add("is-changing");
-  });
+  requestAnimationFrame(() => faqAnswerCard?.classList.add("is-changing"));
 }
 function selectFaqItem(item) {
   if (!item) return;
@@ -529,6 +529,7 @@ function selectFaqItem(item) {
   document.getElementById("faq-selected-question").textContent = item.querySelector(".faq-question").textContent;
   document.getElementById("faq-selected-answer").textContent = item.dataset.answer;
   animateFaqOdometer();
+  animateFaqAnswer();
 }
 faqItems.forEach((item) => item.addEventListener("click", () => selectFaqItem(item)));
 document.getElementById("faq-list").addEventListener("scroll", () => {
