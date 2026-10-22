@@ -102,8 +102,8 @@ export async function onRequestPost({ request, env }) {
       const reason = [gatewayCode, description].filter(Boolean).join(": ");
       return json({
         error: reason
-          ? "Razorpay rejected the request (" + razorpayResponse.status + ": " + reason + ")."
-          : "Razorpay rejected the request (" + razorpayResponse.status + ").",
+          ? "Razorpay rejected the request (" + razorpayResponse.status + ": " + reason + "). Configured public Key ID: " + razorpayKeyId + ". Compare it with the Key ID shown in Razorpay Test Mode. If they match, the Cloudflare Preview secret is not the matching secret for that key."
+          : "Razorpay rejected the request (" + razorpayResponse.status + "). Configured public Key ID: " + razorpayKeyId + ". Compare it with the Key ID shown in Razorpay Test Mode. If they match, the Cloudflare Preview secret is not the matching secret for that key.",
         gateway_status: razorpayResponse.status,
         gateway_code: gatewayCode || null
       }, 502);
