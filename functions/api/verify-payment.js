@@ -17,7 +17,9 @@ function sameHex(a, b) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
+  const razorpayKeyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
+  const razorpayKeySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
+  if (!razorpayKeyId || !razorpayKeySecret) {
     return json({ verified: false, error: "Razorpay keys are not configured." }, 503);
   }
   if (!env.DB) {
@@ -55,7 +57,7 @@ export async function onRequestPost({ request, env }) {
 
     const cryptoKey = await crypto.subtle.importKey(
       "raw",
-      new TextEncoder().encode(env.RAZORPAY_KEY_SECRET),
+      new TextEncoder().encode(razorpayKeySecret),
       { name: "HMAC", hash: "SHA-256" },
       false,
       ["sign"]
@@ -66,7 +68,7 @@ export async function onRequestPost({ request, env }) {
       return json({ verified: false, error: "Razorpay could not verify this payment." }, 400);
     }
 
-    const authorization = "Basic " + btoa(env.RAZORPAY_KEY_ID + ":" + env.RAZORPAY_KEY_SECRET);
+    const authorization = "Basic " + btoa(razorpayKeyId + ":" + razorpayKeySecret);
     const [orderResponse, paymentResponse] = await Promise.all([
       fetch("https://api.razorpay.com/v1/orders/" + encodeURIComponent(orderId), { headers: { Authorization: authorization } }),
       fetch("https://api.razorpay.com/v1/payments/" + encodeURIComponent(paymentId), { headers: { Authorization: authorization } })
