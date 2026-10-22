@@ -161,7 +161,7 @@ function updateCheckoutSummary() {
   const count = basketCount();
   document.getElementById("checkout-total").textContent = rupees.format(total);
   document.getElementById("checkout-item-summary").textContent = count + " item(s)";
-  document.getElementById("submit-order").textContent = "Create secure UPI QR";
+  document.getElementById("submit-order").textContent = "Continue to secure payment";
   document.getElementById("basket-total").textContent = rupees.format(total);
   document.getElementById("checkout-sidebar-total").textContent = rupees.format(total);
   renderCheckoutCart();
