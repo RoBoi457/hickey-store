@@ -14,7 +14,7 @@ The repository is connected to Cloudflare Pages on `main`; with automatic deploy
 
 1. In Cloudflare, open **Workers & Pages → D1 SQL Database** and create a database.
 2. Open the Pages project → **Settings → Functions → D1 database bindings**. Add a binding named exactly `DB` and select the database. Add a binding for Production, and for Preview too if you want checkout working in branch previews. Save and redeploy.
-3. In the D1 database **Console**, apply `migrations/0001_create_orders.sql`, then `migrations/0002_add_customer_name.sql`. Run each file's SQL once against the same database. If migrations 1 and 2 are already applied, apply migration 3 before enabling Standard Checkout.
+3. In the D1 database **Console**, apply all three migration files in numerical order, once each, against the same database. If migrations 1 and 2 are already applied, apply only migration 3 before enabling Standard Checkout.
 
 ### Connect Razorpay safely
 
