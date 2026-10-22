@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3f6ff">
+    <meta name="description" content="A college inside joke, now wearable. Meet Hickey: little pieces of campus humour, made to keep.">
+    <title>Hickey — Wear your humour. Belong out loud.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="page-glow" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <nav class="float-nav" id="float-nav" aria-label="Main navigation">
+      <a class="nav-item" href="#home" aria-label="Home" title="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10 8.5-7 8.5 7v10.5a1 1 0 0 1-1 1h-5v-7h-5v7h-5a1 1 0 0 1-1-1z"/></svg>
+      </a>
+      <a class="nav-item" href="#treasury" aria-label="Shop the treasury" title="Shop">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8h15l1.2 12a1 1 0 0 1-1 1.1H4.3a1 1 0 0 1-1-1.1zM8 8V6a4 4 0 0 1 8 0v2"/><path d="M9 12v.2M15 12v.2"/></svg>
+      </a>
+      <a class="nav-item" href="#faq" aria-label="Frequently asked questions" title="FAQs">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.35 2.35 0 1 1 3.55 2.03c-.8.46-1.25.96-1.25 1.97M12 16.5v.1"/></svg>
+      </a>
+      <a class="nav-item" href="#contact" aria-label="Chat with us" title="Chat with us">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.4a8 8 0 0 1-8.4 8 8.8 8.8 0 0 1-3.5-.8L4 20l1.5-3.8a7.5 7.5 0 0 1-1.8-4.8 8 8 0 0 1 8.4-8 8 8 0 0 1 8.4 8Z"/></svg>
+      </a>
+      <button class="nav-item bag-nav" id="open-bag" aria-label="Open your basket" title="Your basket">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8h15l1.2 12a1 1 0 0 1-1 1.1H4.3a1 1 0 0 1-1-1.1zM8 8V6a4 4 0 0 1 8 0v2"/><path d="M9 12v.2M15 12v.2"/></svg>
+        <span class="bag-count" id="bag-count" aria-live="polite" hidden>0</span>
+      </button>
+    </nav>
+
+    <main>
+      <section class="hero section-wrap" id="home">
+        <div class="hero-spark spark-one" aria-hidden="true">✦</div>
+        <div class="hero-spark spark-two" aria-hidden="true">✧</div>
+        <div class="hero-spark spark-three" aria-hidden="true">✦</div>
+        <div class="firefly-layer" id="firefly-layer" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <div class="brand-lockup"><img class="hickey-logo" src="assets/hickey-logo.png" width="1360" height="606" alt="Hickey"></div>
+          <h1>Wear your humour.<br><em>Belong</em> out loud.</h1>
+          <p class="hero-description">Hickey is a brand born of passionate college students — crafted for the jokes, little moments, and people that make campus feel like yours.</p>
+          <a class="scroll-cue" href="#treasury"><span>SCROLL</span><span class="scroll-arrow" aria-hidden="true">↓</span></a>
+        </div>
+      </section>
+
+      <div class="cloud-transition" data-cloud-scroll aria-hidden="true">
+        <div class="cloud-form cloud-form-left"></div><div class="cloud-form cloud-form-right"></div>
+        <span class="cloud-particle cloud-particle-one"></span><span class="cloud-particle cloud-particle-two"></span>
+      </div>
+
+      <section class="treasury section-wrap" id="treasury">
+        <div class="section-heading reveal">
+          <span class="eyebrow">THE TREASURY</span>
+          <h2><span>Little things.</span><br><em><span>Big inside jokes.</span></em></h2>
+          <p class="treasury-description">Tiny campus legends, now with a keyring. Pick your favourite, add a little personality to your bag, and let the inside joke travel.</p>
+        </div>
+        <div class="product-grid" id="product-grid">
+          <article class="product-card snap-tile" data-product-id="kathor-clock">
+            <div class="product-photo"><img src="assets/keychain-products/01-rohtak-standard-time.png" alt="Rohtak Standard Time round acrylic keychain with silver chain and ring" loading="lazy"><button class="add-button" data-add="kathor-clock" aria-label="Add Rohtak Standard Time to your basket">+</button></div>
+            <div class="product-info"><h3>Rohtak Standard Time</h3><p>For the legend whose 10:20 somehow lasts until 5:20. Attendance is a suggestion; nap time is sacred.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="pda">
+            <div class="product-photo"><img src="assets/keychain-products/02-pda-campus.png" alt="P.D.A. campus badge acrylic keychain attached to a backpack" loading="lazy"><button class="add-button" data-add="pda" aria-label="Add P.D.A. to your basket">+</button></div>
+            <div class="product-info"><h3>P.D.A. (Please Don’t Ask)</h3><p>Patient. Disciplined. Ambitious. A tiny reminder of your best self, even during week twelve.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="submit-mode">
+            <div class="product-photo"><img src="assets/keychain-products/03-atp-submit.png" alt="ATP Just Put Submit acrylic keychain beside a laptop" loading="lazy"><button class="add-button" data-add="submit-mode" aria-label="Add Just Put It In to your basket">+</button></div>
+            <div class="product-info"><h3>Just Put It In</h3><p>A talisman for 11:59 p.m. submissions, brave button clicks, and portals that load on the first try.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="clock-it">
+            <div class="product-photo"><img src="assets/keychain-products/04-clock-it.png" alt="Clock It illustrated acrylic keychain attached to a purple tote" loading="lazy"><button class="add-button" data-add="clock-it" aria-label="Add Clock It to your basket">+</button></div>
+            <div class="product-info"><h3>Clock It!</h3><p>A little sparkle, a little hand gesture, and absolutely no missed details. The group chat knows.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="coke-paglu">
+            <div class="product-photo"><img src="assets/keychain-products/05-diet-coke-paglu.png" alt="Diet Coke Paglu illustrated acrylic keychain on a red studio display" loading="lazy"><button class="add-button" data-add="coke-paglu" aria-label="Add Diet Coke Paglu to your basket">+</button></div>
+            <div class="product-info"><h3>Diet Coke Paglu Club</h3><p>For the caffeine-fuelled bestie with main-character energy and a very specific drink order.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="cooks">
+            <div class="product-photo"><img src="assets/keychain-products/06-cooks.png" alt="Cooks round acrylic keychain on a warm wooden tabletop" loading="lazy"><button class="add-button" data-add="cooks" aria-label="Add Cooks Club to your basket">+</button></div>
+            <div class="product-info"><h3>Cooks Club</h3><p>For the roommate who says “I can cook” and then opens three delivery apps for inspiration.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="proxy-pass">
+            <div class="product-photo"><img src="assets/keychain-products/07-proxy-mat-laga.png" alt="Proxy Mat Laga acrylic keychain attached to a navy backpack" loading="lazy"><button class="add-button" data-add="proxy-pass" aria-label="Add Proxy Mat Laga to your basket">+</button></div>
+            <div class="product-info"><h3>Proxy Mat Laga!</h3><p>A pocket-sized salute to attendance strategy, loyal friends, and the art of being “on the way.”</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="baddie">
+            <div class="product-photo"><img src="assets/keychain-products/08-baddie.png" alt="Baddie illustrated acrylic keychain on a pink studio surface" loading="lazy"><button class="add-button" data-add="baddie" aria-label="Add Baddie Business to your basket">+</button></div>
+            <div class="product-info"><h3>Baddie Business</h3><p>For your bag, your keys, and the friend who has never once entered a room quietly.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="kathor-land">
+            <div class="product-photo"><img src="assets/keychain-products/09-kathor-land.png" alt="Kathor Land campus acrylic keychain attached to a blue backpack" loading="lazy"><button class="add-button" data-add="kathor-land" aria-label="Add Kathor Land to your basket">+</button></div>
+            <div class="product-info"><h3>Kathor Land</h3><p>Your very own campus getaway, featuring suspiciously familiar buildings and premium daydream fuel.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="nonchalant">
+            <div class="product-photo"><img src="assets/keychain-products/11-nonchalant.png" alt="Nonchalant illustrated acrylic keychain attached to a dark bag" loading="lazy"><button class="add-button" data-add="nonchalant" aria-label="Add Nonchalant Energy to your basket">+</button></div>
+            <div class="product-info"><h3>Nonchalant Energy</h3><p>For the unbothered icon with 18 tabs open and a very calm “it’s fine” ready to go.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="two-friends">
+            <div class="product-photo"><span class="badge">Matching pair</span><img src="assets/keychain-products/12-two-friends.png" alt="Two matching underwater portrait acrylic charms on one silver key ring" loading="lazy"><button class="add-button" data-add="two-friends" aria-label="Add Underwater Besties matching pair to your basket">+</button></div>
+            <div class="product-info"><h3>Underwater Besties</h3><p>Two tiny ocean daydreams on one ring. Keep one, gift one, or let your backpack have both besties.</p><div class="product-price"><strong>₹499</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="campus-cat-nap">
+            <div class="product-photo"><img src="assets/keychain-products/13-cat-whore-campus-nap.png" alt="Cat-Whore Campus Nap acrylic keychain attached to a pink backpack" loading="lazy"><button class="add-button" data-add="campus-cat-nap" aria-label="Add Cat-Whore Campus Nap to your basket">+</button></div>
+            <div class="product-info"><h3>Cat-Whore Campus Nap</h3><p>A campus tour sponsored by CAT, QA, DILR, and one professional nap enthusiast.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+          <article class="product-card snap-tile" data-product-id="clinger-cat-club">
+            <div class="product-photo"><img src="assets/keychain-products/14-clinger-cat-club.png" alt="Clinger Cat Club acrylic keychain on a warm cream studio surface" loading="lazy"><button class="add-button" data-add="clinger-cat-club" aria-label="Add Clinger Cat Club to your basket">+</button></div>
+            <div class="product-info"><h3>Clinger Cat Club</h3><p>For the friend who says “one more cuddle” and turns it into an all-day appointment.</p><div class="product-price"><strong>₹299</strong><span>· each</span></div></div>
+          </article>
+        </div>
+      </section>
+
+      <div class="cloud-transition" data-cloud-scroll aria-hidden="true">
+        <div class="cloud-form cloud-form-left"></div><div class="cloud-form cloud-form-right"></div>
+        <span class="cloud-particle cloud-particle-one"></span><span class="cloud-particle cloud-particle-two"></span>
+      </div>
+
+      <section class="faq-section section-wrap" id="faq">
+        <div class="faq-panel reveal">
+          <div class="faq-heading">
+            <div class="faq-heading-copy">
+              <span class="eyebrow">THE HICKEY HELP DESK · NO BORING ANSWERS</span>
+              <h2>Questions you<br><em>definitely have.</em></h2>
+              <p>A few things you might be wondering. Or not. We're answering anyway.</p>
+            </div>
+            <div class="faq-counter" aria-live="polite"><span class="faq-counter-label">QUESTION</span><strong><span id="faq-open-count">01</span><i>/</i>15</strong><span class="faq-counter-caption">on the dashboard</span></div>
+          </div>
+          <div class="faq-window">
+          <div class="faq-toolbar"><span><i aria-hidden="true">✳</i> SCROLL THE GLASS · CLICK TO READ</span><span>3 QUESTIONS IN VIEW</span></div>
+          <div class="faq-list" id="faq-list" role="group" aria-label="Hickey frequently asked questions">
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="01" data-answer="A brand for things that don&#x27;t need to be serious. We make keychains, and other stuff that we will roll out soon, that give your keys a little more personality. Your keys deserve a lore too." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>01</span></span><span class="faq-question">Okay, but what even is Hickey?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="02" data-answer="A bunch of people with questionable ideas and access to a keychain supplier. The rest is history." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>02</span></span><span class="faq-question">Who&#x27;s behind this operation?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="03" data-answer="You don’t have to worry about that because it’ll be insanely hard for us to be slower than the other option you have at IIM Rohtak. Whether you’re order comes today or tomorrow, it will be infused with every bit of creativity and thought we have." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>03</span></span><span class="faq-question">Where&#x27;s my order? Is it on a spiritual journey?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="04" data-answer="Delivery will take up to 2 weeks." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>04</span></span><span class="faq-question">When will my emotional-support keychain arrive?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="05" data-answer="Our products are made for everyday use, but durability depends on the design and how much chaos you put them through. Check the product details for material information." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>05</span></span><span class="faq-question">Will it survive my daily nonsense?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="06" data-answer="Absolutely. Bags, backpacks, zippers, pencil cases — anywhere that needs a little more personality." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>06</span></span><span class="faq-question">Can I put it somewhere other than my keys?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="07" data-answer="That&#x27;s not the plot twist we wanted. Contact us at [support email] with your order details and photos, and we&#x27;ll help according to our damage and replacement policy." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>07</span></span><span class="faq-question">What if my keychain arrives damaged? Who do I fight?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="08" data-answer="Character development is encouraged. Returns and exchanges depend on our return policy, so check the terms before placing your order." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>08</span></span><span class="faq-question">Can I return it if I&#x27;ve changed as a person? / Do you accept returns, or are we emotionally attached now?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="09" data-answer="Please do. Some of our best ideas may come from people who spend too much time thinking about tiny accessories. Refer to the ‘contact us’ section of our website to turn your ideas in, coz ATP just putitin." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>09</span></span><span class="faq-question">Can I suggest a design?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="10" data-answer="Define &#x27;okay.&#x27; But yes, we&#x27;re having fun making things we hope you&#x27;ll love." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>10</span></span><span class="faq-question">Are the people behind Hickey okay?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="11" data-answer="Because the government refused to subsidise college students expressing themselves out loud. Time to start a revolution, eh?" aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>11</span></span><span class="faq-question">Why does this cost money?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="12" data-answer="The best prices have been put up. Remember, broke is temporary. Drip is forever. Though we will advise you to keep an eye out for offers." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>12</span></span><span class="faq-question">Any discounts, or must I use my student budget?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="13" data-answer="Not every canon event is irreversible. If your order hasn&#x27;t been processed yet, reach out ASAP. Once it ships, the plot gets complicated." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>13</span></span><span class="faq-question">Can I cancel my order, or is it a canon event?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="14" data-answer="The lore is still loading. More designs dropping soon. Stay chronically online." aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>14</span></span><span class="faq-question">Is this the entire catalogue, or are you hiding the good stuff?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+            <button class="faq-item snap-tile" type="button" aria-controls="faq-answer-card" data-faq-index="15" data-answer="For now, we&#x27;re putting the key in keychain. What comes next? That&#x27;s classified information. (Even we haven&#x27;t decided yet.)" aria-pressed="false"><span class="faq-number" aria-hidden="true"><span>15</span></span><span class="faq-question">Wait, so is Hickey just a keychain company?</span><span class="faq-toggle" aria-hidden="true">↗</span></button>
+          </div>
+          <div class="faq-answer-card" id="faq-answer-card" aria-live="polite" aria-atomic="true"><div class="faq-answer-top"><span class="faq-answer-label" id="faq-answer-label">NOW READING · QUESTION 01</span><span class="faq-answer-flair" aria-hidden="true">✦</span></div><h3 id="faq-selected-question">Okay, but what even is Hickey?</h3><p id="faq-selected-answer">A brand for things that don't need to be serious. We make keychains, and other stuff that we will roll out soon, that give your keys a little more personality. Your keys deserve a lore too.</p></div>
+          <div class="faq-footnote"><span class="faq-footnote-star" aria-hidden="true">✦</span><span>Still confused? Our inbox is on the next page of this adventure.</span><a href="#contact">Talk to us <b aria-hidden="true">↗</b></a></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marquee-track"><div class="marquee-flow"><span>BELONG OUT LOUD</span><i>✦</i><span>BELONG OUT LOUD</span><i>✦</i><span>BELONG OUT LOUD</span><i>✦</i><span>BELONG OUT LOUD</span><i>✦</i></div></div></div>
+
+      <section class="join section-wrap" id="contact">
+        <div class="join-card reveal">
+          <div class="join-spark" aria-hidden="true">✦</div>
+          <span class="eyebrow">YOUR TURN TO CREATE</span>
+          <h2>Got a thought? <em>Send it over.</em></h2>
+          <p>Pitch a new inside joke, tell us what’s on your mind, or dream up a tiny legend made just for you.</p>
+          <div class="join-actions">
+            <button class="button button-red" type="button" data-contact-type="suggestion">Suggest an idea <span aria-hidden="true">✦</span></button>
+            <button class="button button-outline" type="button" data-contact-type="feedback">Feedback or a question <span aria-hidden="true">↗</span></button>
+          </div>
+          <div class="join-custom-action">
+            <span class="custom-divider" aria-hidden="true">OR GO FULL ONE-OF-ONE</span>
+            <button class="button button-custom" type="button" data-contact-type="custom">Request a custom design <span aria-hidden="true">✳</span></button>
+            <small>For a highly personalized design made in a small production run.</small>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer section-wrap">
+      <a class="footer-logo" href="#home" aria-label="Hickey home"><img src="assets/hickey-logo.png" width="1360" height="606" alt=""></a>
+      <span>MADE FOR THE PEOPLE WHO GET IT.</span>
+      <span>© <span id="year"></span> HICKEY · MADE WITH A LITTLE EXTRA HEART.</span>
+    </footer>
+
+    <div class="contact-layer" id="contact-layer" aria-hidden="true">
+      <section class="contact-card" role="dialog" aria-modal="true" aria-labelledby="contact-title">
+        <button class="icon-button contact-close" id="close-contact" type="button" aria-label="Close form">×</button>
+        <span class="eyebrow" id="contact-eyebrow">A LITTLE IDEA, BIG LORE</span>
+        <h2 id="contact-title">Pitch us a <em>new inside joke.</em></h2>
+        <p class="contact-intro" id="contact-intro">What should we make next? Give us the punchline, the reference, or just the chaotic first thought.</p>
+        <form id="contact-form">
+          <label class="contact-field-label" for="contact-message">Your message</label>
+          <textarea id="contact-message" name="message" rows="4" maxlength="1600" required placeholder="Type your idea here…"></textarea>
+          <div class="contact-extra" id="contact-extra" hidden>
+            <label class="contact-field-label" for="contact-name">Name <span>(optional)</span></label>
+            <input id="contact-name" name="name" autocomplete="name" maxlength="100" placeholder="What should we call you?">
+            <label class="contact-field-label" for="contact-email">Email <span>(optional, if you'd like a reply)</span></label>
+            <input id="contact-email" name="email" autocomplete="email" type="email" maxlength="160" placeholder="you@example.com">
+            <label class="contact-field-label" for="contact-quantity" id="contact-quantity-label" hidden>Small production run <span>(rough estimate)</span></label>
+            <input id="contact-quantity" name="quantity" type="number" min="2" max="100" placeholder="How many pieces?" hidden>
+          </div>
+          <button class="button button-dark contact-submit" id="contact-submit" type="submit">Open email to send <span aria-hidden="true">↗</span></button>
+          <p class="contact-note" id="contact-note" role="status">Your email app will open with this message ready to send.</p>
+        </form>
+      </section>
+    </div>
+    <div class="scrim" id="scrim"></div>
+    <div class="product-preview-layer" id="product-preview-layer" aria-hidden="true">
+      <section class="product-preview" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+        <button class="icon-button preview-close" id="close-product-preview" aria-label="Close product preview">×</button>
+        <div class="preview-photo"><img id="preview-image" src="" alt=""></div>
+        <div class="preview-copy">
+          <span class="eyebrow">A LITTLE CAMPUS LEGEND</span>
+          <h2 id="preview-title"></h2>
+          <p id="preview-description"></p>
+          <div class="preview-purchase"><strong id="preview-price"></strong><span>· UPI via Razorpay</span></div>
+          <button class="button button-dark preview-add" id="preview-add" type="button">Add to basket <span aria-hidden="true">＋</span></button>
+          <div class="preview-quantity" id="preview-quantity" aria-label="Product quantity" hidden><button type="button" id="preview-minus" aria-label="Remove one">−</button><span id="preview-quantity-count" aria-live="polite">1</span><button type="button" id="preview-plus" aria-label="Add one">+</button></div>
+          <p class="preview-note">A small keepsake for your keys, bag, or favourite person.</p>
+        </div>
+      </section>
+    </div>
+    <aside class="basket-drawer" id="basket-drawer" aria-labelledby="basket-title" aria-hidden="true">
+      <div class="drawer-head"><h2 id="basket-title"><svg class="drawer-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8h15l1.2 12a1 1 0 0 1-1 1.1H4.3a1 1 0 0 1-1-1.1zM8 8V6a4 4 0 0 1 8 0v2"/></svg>Your Basket</h2><button class="icon-button close-bag" id="close-bag" aria-label="Close basket">×</button></div>
+      <div class="basket-items" id="basket-items"></div>
+      <div class="basket-empty" id="basket-empty"><div class="empty-star">✦</div><h3>Your basket is waiting.</h3><p>Pop a little joy in there.</p><button class="button button-dark" id="empty-shop">Explore the Treasury</button></div>
+      <div class="drawer-bottom" id="drawer-bottom">
+        <div class="basket-total"><span>Total</span><strong id="basket-total">₹0</strong></div>
+        <button class="button button-dark place-order" id="start-checkout">Continue to checkout</button>
+        <p class="drawer-note">Secure UPI payment by Razorpay at checkout.</p>
+      </div>
+    </aside>
+
+    <div class="checkout-layer" id="checkout-layer" aria-hidden="true">
+      <section class="checkout-card" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+        <button class="icon-button checkout-close" id="close-checkout" aria-label="Close checkout">×</button>
+        <div class="checkout-layout" id="checkout-layout">
+          <aside class="checkout-summary-panel" aria-label="Your order summary">
+            <a class="checkout-brand" href="#home"><img src="assets/hickey-logo.png" alt="Hickey"></a>
+            <span class="eyebrow">YOUR LITTLE LEGENDS</span>
+            <h3>Basket<br><em>of joy.</em></h3>
+            <div class="checkout-summary-items" id="checkout-summary-items"></div>
+            <div class="checkout-summary-total"><span>Total</span><strong id="checkout-sidebar-total">₹0</strong></div>
+            <p class="checkout-summary-foot"><span aria-hidden="true">✦</span> Carefully packed, ready to make someone smile.</p>
+          </aside>
+          <div class="checkout-content" id="checkout-content">
+          <div class="checkout-step-label"><span>01</span><span>DELIVERY &amp; PAYMENT</span></div>
+          <span class="eyebrow">ALMOST THERE</span>
+          <h2 id="checkout-title">Your Hickey is <em>almost home.</em></h2>
+          <p class="checkout-intro" id="checkout-intro">Where should we send your inside joke?</p>
+          <form id="checkout-form">
+            <label class="field"><span class="sr-only">Full name</span><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg><input name="customerName" autocomplete="name" placeholder="Full name" required minlength="2" maxlength="100"></label>
+            <label class="field"><span class="sr-only">Delivery address</span><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg><input name="address" autocomplete="street-address" placeholder="Delivery address" required minlength="8"></label>
+            <label class="field"><span class="sr-only">Phone number</span><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h3l1.5 4-2 1.7a15 15 0 0 0 5.8 5.8L17 12.5l4 1.5v3a3 3 0 0 1-3.2 3A16.8 16.8 0 0 1 4 6.2 3 3 0 0 1 7 3Z"/></svg><input name="phone" autocomplete="tel" placeholder="Phone number" inputmode="tel" required minlength="10" maxlength="15"></label>
+            <div class="order-summary"><span id="checkout-item-summary">0 item(s)</span><strong id="checkout-total">₹0</strong></div>
+            <fieldset class="payment-methods">
+              <legend>Payment</legend>
+              <div class="payment-choice selected"><span class="payment-mark" aria-hidden="true"></span><span><strong>UPI QR with Razorpay</strong><small>Scan and pay the exact total</small></span><span class="razorpay-wordmark">razorpay</span></div>
+            </fieldset>
+            <button class="button button-dark submit-order" id="submit-order" type="submit">Create secure UPI QR</button>
+            <p class="payment-message" id="payment-message" role="status"></p>
+            <p class="secure-note"><span aria-hidden="true">✦</span> Your details stay with Hickey and are used to deliver your order.</p>
+          </form>
+          <section class="qr-payment-step" id="qr-payment-step" aria-labelledby="qr-title" hidden>
+            <div class="qr-step-label"><span>02</span><span>SECURE UPI PAYMENT</span></div>
+            <h3 id="qr-title">Scan. Pay. <em>All yours.</em></h3>
+            <p class="qr-instructions">Open any UPI app on your phone and scan this one-time Razorpay QR. The amount is locked to your basket total.</p>
+            <div class="qr-card">
+              <div class="qr-brand-row"><span class="qr-dot"></span><span>HICKEY CHECKOUT</span><span class="razorpay-wordmark">razorpay</span></div>
+              <img class="payment-qr-image" id="payment-qr-image" alt="One-time UPI payment QR code">
+              <strong class="qr-amount" id="qr-amount">₹0</strong>
+              <span class="qr-expiry" id="qr-expiry">QR expires in 20:00</span>
+            </div>
+            <p class="qr-payment-status" id="qr-payment-status" role="status" aria-live="polite">Waiting for your payment…</p>
+            <button class="button button-dark qr-check-button" id="check-qr-payment" type="button">I’ve paid · Check status</button>
+            <button class="qr-back-button" id="back-from-qr" type="button">Cancel and return to details</button>
+          </section>
+          </div>
+        </div>
+        <div class="order-success" id="order-success" hidden>
+          <div class="success-check">✓</div>
+          <span class="eyebrow">YOU’RE ONE OF US NOW</span>
+          <h2 id="success-title">Your inside joke is <em>on its way.</em></h2>
+          <p id="success-message">We’ll be in touch when your Hickey is getting ready to ship.</p>
+          <button class="button button-dark" id="continue-shopping">Keep exploring</button>
+        </div>
+      </section>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  </body>
+</html>
