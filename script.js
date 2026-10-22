@@ -32,10 +32,6 @@ let toastTimer;
 let lastScrollY = window.scrollY;
 let previewProductId = null;
 let previewReturnFocus = null;
-let currentQrCode = null;
-let qrPollTimer = null;
-let qrExpiryTimer = null;
-let qrCheckInProgress = false;
 let contactType = "suggestion";
 let contactReturnFocus = null;
 
@@ -212,14 +208,11 @@ function openCheckout() {
   updateCheckoutSummary();
   document.getElementById("checkout-layout").hidden = false;
   document.getElementById("checkout-content").hidden = false;
-  document.getElementById("checkout-form").hidden = false;
-  document.getElementById("qr-payment-step").hidden = true;
+  checkoutForm.hidden = false;
   document.getElementById("order-success").hidden = true;
   document.getElementById("payment-message").textContent = "";
   document.getElementById("checkout-title").innerHTML = 'Your Hickey is <em>almost home.</em>';
   document.getElementById("checkout-intro").textContent = "Where should we send your inside joke?";
-  currentQrCode = null;
-  clearQrTimers();
   checkoutLayer.classList.add("is-open");
   checkoutLayer.setAttribute("aria-hidden", "false");
   scrim.classList.add("is-visible");
@@ -227,20 +220,7 @@ function openCheckout() {
   setTimeout(() => document.querySelector('input[name="customerName"]').focus(), 120);
 }
 
-async function closeCheckout() {
-  if (currentQrCode) {
-    const closingQr = currentQrCode;
-    currentQrCode = null;
-    const result = await cancelQrCode(closingQr.id);
-    if (result.paid) {
-      showSuccess(result.orderRef, "upi");
-      showToast("Payment received. Your order is confirmed.");
-    } else if (!result.cancelled && result.error) {
-      showToast("The payment QR may stay active until it expires.");
-    }
-  }
-  clearQrTimers();
-  document.getElementById("payment-qr-image").removeAttribute("src");
+function closeCheckout() {
   checkoutLayer.classList.remove("is-open");
   checkoutLayer.setAttribute("aria-hidden", "true");
   scrim.classList.remove("is-visible");
@@ -248,8 +228,6 @@ async function closeCheckout() {
 }
 
 function showSuccess(orderNumber) {
-  clearQrTimers();
-  currentQrCode = null;
   document.getElementById("checkout-layout").hidden = true;
   document.getElementById("order-success").hidden = false;
   document.getElementById("success-message").textContent = "Payment confirmed for order " + orderNumber + ". We’ll be in touch when your Hickey is getting ready to ship.";
@@ -319,126 +297,15 @@ function closeProductPreview() {
 function setBusy(isBusy) {
   const button = document.getElementById("submit-order");
   button.disabled = isBusy;
-  if (isBusy) button.textContent = "One moment…";
+  if (isBusy) button.textContent = "Connecting to Razorpay…";
   else updateCheckoutSummary();
-}
-
-function clearQrTimers() {
-  clearInterval(qrPollTimer);
-  clearInterval(qrExpiryTimer);
-  qrPollTimer = null;
-  qrExpiryTimer = null;
-  qrCheckInProgress = false;
-}
-
-function openQrPaymentStep(orderData) {
-  if (!orderData.qrCode?.id || !orderData.qrCode?.imageUrl) throw new Error("Razorpay did not return a payment QR. Please try again.");
-  clearQrTimers();
-  currentQrCode = orderData.qrCode;
-  document.getElementById("checkout-content").hidden = false;
-  document.getElementById("checkout-form").hidden = true;
-  document.getElementById("qr-payment-step").hidden = false;
-  document.getElementById("checkout-title").innerHTML = 'Scan and pay <em>securely.</em>';
-  document.getElementById("checkout-intro").textContent = "Your order is reserved while this one-time QR is active.";
-  document.getElementById("payment-qr-image").src = orderData.qrCode.imageUrl;
-  document.getElementById("qr-amount").textContent = rupees.format(orderData.amount / 100);
-  document.getElementById("qr-payment-status").textContent = "Waiting for your payment…";
-  document.getElementById("check-qr-payment").disabled = false;
-  updateCheckoutSummary();
-  updateQrCountdown();
-  qrExpiryTimer = setInterval(updateQrCountdown, 1000);
-  qrPollTimer = setInterval(checkQrPayment, 3500);
-  document.getElementById("check-qr-payment").focus();
-}
-
-function updateQrCountdown() {
-  if (!currentQrCode) return;
-  const now = Math.floor(Date.now() / 1000);
-  const closeBy = Number(currentQrCode.closeBy);
-  const seconds = Math.max(0, closeBy - now);
-  const minutesText = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const secondsText = String(seconds % 60).padStart(2, "0");
-  document.getElementById("qr-expiry").textContent = seconds > 0 ? "QR expires in " + minutesText + ":" + secondsText : "QR expired · No payment detected";
-  if (seconds === 0) {
-    document.getElementById("qr-payment-status").textContent = "This QR has expired. Return to checkout to create a fresh one.";
-    if (now > closeBy + 120) {
-      clearInterval(qrPollTimer);
-      qrPollTimer = null;
-    }
-  }
-}
-
-async function checkQrPayment() {
-  if (!currentQrCode || qrCheckInProgress) return;
-  qrCheckInProgress = true;
-  try {
-    const response = await fetch("/api/verify-qr", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ qrCodeId: currentQrCode.id })
-    });
-    const data = await response.json();
-    if (data.verified) {
-      const orderRef = data.orderRef;
-      showSuccess(orderRef, "upi");
-      return;
-    }
-    if (data.pending) {
-      document.getElementById("qr-payment-status").textContent = "Waiting for your payment… This page will update automatically.";
-      return;
-    }
-    if (response.status === 409 || (response.ok && data.error)) {
-      document.getElementById("qr-payment-status").textContent = data.error || "This order is no longer awaiting payment.";
-      return;
-    }
-    document.getElementById("qr-payment-status").textContent = "Still checking with Razorpay…";
-  } catch {
-    document.getElementById("qr-payment-status").textContent = "Connection hiccup. We’ll keep checking.";
-  } finally {
-    qrCheckInProgress = false;
-  }
-}
-
-async function cancelQrCode(qrCodeId) {
-  try {
-    const response = await fetch("/api/cancel-qr", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ qrCodeId })
-    });
-    return await response.json();
-  } catch {
-    return { cancelled: false, error: "We couldn't close the payment QR. It will expire automatically." };
-  }
-}
-
-async function returnToCheckoutDetails() {
-  if (currentQrCode) {
-    const result = await cancelQrCode(currentQrCode.id);
-    if (result.paid) {
-      showSuccess(result.orderRef, "upi");
-      return;
-    }
-    if (!result.cancelled) {
-      document.getElementById("qr-payment-status").textContent = result.error || "We couldn't close this QR. Please try again.";
-      return;
-    }
-  }
-  currentQrCode = null;
-  clearQrTimers();
-  document.getElementById("payment-qr-image").removeAttribute("src");
-  document.getElementById("qr-payment-step").hidden = true;
-  document.getElementById("checkout-form").hidden = false;
-  document.getElementById("checkout-title").innerHTML = 'Your Hickey is <em>almost home.</em>';
-  document.getElementById("checkout-intro").textContent = "Where should we send your inside joke?";
-  document.getElementById("payment-message").textContent = "";
-  document.querySelector('input[name="customerName"]').focus();
 }
 
 async function startRazorpayCheckout(formData) {
   const message = document.getElementById("payment-message");
   message.textContent = "";
   setBusy(true);
+
   try {
     const orderResponse = await fetch("/api/create-order", {
       method: "POST",
@@ -450,12 +317,64 @@ async function startRazorpayCheckout(formData) {
         phone: formData.phone
       })
     });
-    const orderData = await orderResponse.json();
-    if (!orderResponse.ok) throw new Error(orderData.error || "Razorpay is not configured yet. Add your test keys and enable UPI QR Codes to activate payment.");
-    openQrPaymentStep(orderData);
+    const orderData = await orderResponse.json().catch(() => null);
+    if (!orderResponse.ok) {
+      throw new Error(orderData?.error || "We couldn't create your payment order. Please try again.");
+    }
+    if (!window.Razorpay) {
+      throw new Error("Razorpay Checkout did not load. Check your connection and try again.");
+    }
+
+    let paymentSubmitted = false;
+    const contactDigits = String(formData.phone || "").replace(/\D/g, "");
+    const contact = String(formData.phone || "").trim().startsWith("+") ? "+" + contactDigits : "+91" + contactDigits;
+    const checkout = new window.Razorpay({
+      key: orderData.key_id,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: "Hickey",
+      description: "Hickey order " + orderData.receipt,
+      order_id: orderData.order_id,
+      prefill: { name: formData.customerName, contact },
+      notes: { order_ref: orderData.receipt },
+      theme: { color: "#ef234c" },
+      modal: {
+        ondismiss: () => {
+          if (!paymentSubmitted) {
+            message.textContent = "Checkout closed. Your order is still pending, and no payment confirmation was received.";
+            setBusy(false);
+          }
+        }
+      },
+      handler: async (paymentDetails) => {
+        paymentSubmitted = true;
+        try {
+          const verificationResponse = await fetch("/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(paymentDetails)
+          });
+          const verification = await verificationResponse.json().catch(() => null);
+          if (!verificationResponse.ok || verification?.verified !== true) {
+            throw new Error(verification?.error || "Razorpay has not confirmed this payment yet.");
+          }
+          showSuccess(verification.orderRef);
+          showToast("Payment confirmed. Your order is on its way.");
+        } catch (error) {
+          message.textContent = "Payment was submitted, but we couldn't confirm it yet. Please don't pay again. Contact Hickey with order " + orderData.receipt + ". " + error.message;
+          setBusy(false);
+        }
+      }
+    });
+
+    checkout.on("payment.failed", (event) => {
+      const description = event?.error?.description;
+      message.textContent = description || "Razorpay couldn't complete that payment. You can retry in the checkout window.";
+      showToast("Payment didn't go through. You can try again.");
+    });
+    checkout.open();
   } catch (error) {
-    message.textContent = error.message;
-  } finally {
+    message.textContent = error instanceof Error ? error.message : "We couldn't start secure checkout. Please try again.";
     setBusy(false);
   }
 }
@@ -571,8 +490,6 @@ document.getElementById("empty-shop").addEventListener("click", () => {
 });
 document.getElementById("start-checkout").addEventListener("click", openCheckout);
 document.getElementById("close-checkout").addEventListener("click", closeCheckout);
-document.getElementById("check-qr-payment").addEventListener("click", checkQrPayment);
-document.getElementById("back-from-qr").addEventListener("click", returnToCheckoutDetails);
 document.getElementById("continue-shopping").addEventListener("click", () => {
   closeCheckout();
   document.getElementById("treasury").scrollIntoView({ behavior: "smooth" });
