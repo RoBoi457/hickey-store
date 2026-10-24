@@ -43,7 +43,7 @@ a { color: inherit; }
 .hero-eyebrow { margin-bottom: 23px; padding: 10px 23px; border: 1px solid rgba(255,255,255,.96); border-radius: 99px; background: rgba(255,255,255,.62); box-shadow: 0 7px 30px rgba(29,44,77,.04); color: #656b77; font-size: 13px; letter-spacing: .28em; }
 .red-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 4px rgba(237,36,66,.08); }
 .brand-lockup { width: min(760px, 82vw); margin: -1px auto -10px; }
-.hickey-logo { display: block; width: 100%; height: auto; overflow: visible; }
+.hickey-logo { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 10px 24px rgba(18,26,43,.07)) contrast(1.03) saturate(1.03); }
 html.motion-ready .hero.is-active .brand-lockup { animation: hero-logo-enter .95s .12s cubic-bezier(.19,1,.22,1) both; }
 html.motion-ready .hero.is-active .hickey-logo { animation: logo-float 5s 1.1s ease-in-out infinite; }
 html.motion-ready .hero.is-active h1 { animation: hero-rise .82s .28s cubic-bezier(.2,.8,.2,1) both; }
@@ -288,7 +288,7 @@ html.motion-ready #treasury .section-heading.is-visible .treasury-description { 
 .checkout-layout { display: grid; min-height: 610px; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr); }
 .checkout-layout[hidden], .qr-payment-step[hidden] { display: none !important; }
 .checkout-summary-panel { display: flex; flex-direction: column; padding: 35px 30px; border-radius: 30px 0 0 30px; color: #fff; background: radial-gradient(circle at 0 100%,rgba(69,186,240,.2),transparent 35%), radial-gradient(circle at 100% 0,rgba(237,36,66,.22),transparent 34%), #111a2b; }
-.checkout-brand { position: relative; z-index: 1; display: block; width: 132px; margin-bottom: 24px; }
+.checkout-brand { position: relative; z-index: 1; display: block; width: 132px; margin: 0 auto 24px; }
 .checkout-brand::before { position: absolute; inset: -14px -18px -12px -22px; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at 38% 46%, rgba(255,255,255,.52), rgba(186,230,255,.28) 46%, rgba(69,186,240,.1) 68%, transparent 82%); filter: blur(11px); content: ""; pointer-events: none; }
 .checkout-brand img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 8px rgba(255,255,255,.68)) drop-shadow(0 0 18px rgba(170,225,255,.42)); }
 .checkout-summary-panel .eyebrow { margin-bottom: 10px; color: #86d9f8; }
@@ -396,7 +396,9 @@ html.motion-ready .product-grid .snap-tile.is-snapped { opacity: 1; filter: none
   .nav-item { width: 46px; height: 46px; }
   .nav-item svg { width: 21px; height: 21px; }
   .hero-eyebrow { gap: 8px; padding: 9px 15px; font-size: 10px; letter-spacing: .2em; }
-  .brand-lockup { width: min(440px, 90vw); margin: 0 auto -6px; }
+  .hero-copy { width: 100%; max-width: 100%; margin-inline: auto; display: flex; flex-direction: column; align-items: center; }
+  .brand-lockup { width: 100%; max-width: min(100%, 420px); margin: 0 auto -6px; padding-inline: 6px; box-sizing: border-box; }
+  .hickey-logo { display: block; width: 100%; max-width: 100%; height: auto; margin-inline: auto; }
   html.motion-ready .hero.is-active .brand-lockup { filter: none; }
   .cloud-transition { width: 100%; max-width: 100vw; overflow: hidden; }
   .cloud-form { top: -80px; width: 92vw; height: 76px; filter: blur(10px); }
@@ -496,22 +498,24 @@ html.motion-ready .product-grid .snap-tile.is-snapped { opacity: 1; filter: none
   .preview-purchase { margin: 14px 0; }
   .preview-purchase strong { font-size: 1.6rem; }
   .preview-add, .preview-quantity { min-height: 52px; }
-  .checkout-card { max-height: 94dvh; padding: 0; border-radius: 24px; -webkit-overflow-scrolling: touch; }
+  .checkout-card { width: 100%; max-width: 100%; max-height: 94dvh; overflow-x: hidden; overflow-y: auto; padding: 0; border-radius: 24px; -webkit-overflow-scrolling: touch; }
   .checkout-close { top: 12px; right: 12px; width: 36px; height: 36px; background: rgba(255,255,255,.16); color: #fff; font-size: 24px; }
-  .checkout-layout { min-height: 0; grid-template-columns: 1fr; }
-  .checkout-summary-panel { padding: 16px 18px 13px; border-radius: 24px 24px 0 0; }
-  .checkout-brand { width: 86px; margin-bottom: 8px; }
+  .checkout-layout { width: 100%; min-width: 0; min-height: 0; grid-template-columns: minmax(0, 1fr); overflow-x: hidden; }
+  .checkout-summary-panel { width: 100%; min-width: 0; overflow-x: hidden; padding: 18px 18px 14px; border-radius: 24px 24px 0 0; }
+  .checkout-brand { width: 104px; margin: 0 auto 10px; }
   .checkout-summary-panel .eyebrow { margin-bottom: 4px; font-size: 8.5px; }
   .checkout-summary-panel h3 { margin: 0 0 10px; font-size: 1.5rem; }
-  .checkout-summary-items { display: flex; max-height: 72px; gap: 11px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
-  .checkout-summary-item { min-width: 180px; grid-template-columns: 42px minmax(0,1fr) auto; }
-  .checkout-summary-item img { width: 42px; height: 42px; }
-  .checkout-summary-item strong { font-size: 10px; }
-  .checkout-summary-item b { font-size: 10px; }
-  .checkout-summary-total { padding-top: 10px; }
+  .checkout-summary-items { display: grid; width: 100%; max-height: 156px; gap: 8px; overflow-y: auto; overflow-x: hidden; padding-right: 2px; -webkit-overflow-scrolling: touch; }
+  .checkout-summary-item { display: grid; width: 100%; min-width: 0; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 12px; background: rgba(255,255,255,.06); }
+  .checkout-summary-item img { width: 42px; height: 42px; border-radius: 10px; }
+  .checkout-summary-item div { min-width: 0; text-align: left; }
+  .checkout-summary-item strong { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .checkout-summary-item span { margin-top: 2px; font-size: 10.5px; }
+  .checkout-summary-item b { font-size: 11.5px; font-weight: 700; text-align: right; padding-left: 6px; }
+  .checkout-summary-total { margin-top: 10px; padding-top: 10px; }
   .checkout-summary-total strong { font-size: 1.4rem; }
   .checkout-summary-foot { display: none; }
-  .checkout-content { padding: 20px 18px 22px; }
+  .checkout-content { width: 100%; min-width: 0; overflow-x: hidden; padding: 20px 18px 22px; }
   .checkout-step-label { margin-bottom: 10px; }
   .checkout-intro { margin: 6px 0 14px; font-size: 14px; }
   .field { margin-bottom: 9px; }
