@@ -313,6 +313,7 @@ async function startRazorpayCheckout(formData) {
       body: JSON.stringify({
         items: Object.entries(basket).map(([id, quantity]) => ({ id, quantity })),
         customerName: formData.customerName,
+        email: formData.email,
         address: formData.address,
         phone: formData.phone
       })
@@ -335,7 +336,7 @@ async function startRazorpayCheckout(formData) {
       name: "Hickey",
       description: "Hickey order " + orderData.receipt,
       order_id: orderData.order_id,
-      prefill: { name: formData.customerName, contact },
+      prefill: { name: formData.customerName, email: formData.email, contact },
       notes: { order_ref: orderData.receipt },
       theme: { color: "#ef234c" },
       modal: {

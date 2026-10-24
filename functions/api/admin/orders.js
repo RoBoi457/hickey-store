@@ -44,8 +44,8 @@ function whereClause(filters) {
   if (filters.to) { clauses.push("date(created_at) <= date(?)"); bindings.push(filters.to); }
   if (filters.search) {
     const term = "%" + filters.search + "%";
-    clauses.push("(order_ref LIKE ? OR customer_name LIKE ? OR phone LIKE ? OR delivery_address LIKE ?)");
-    bindings.push(term, term, term, term);
+    clauses.push("(order_ref LIKE ? OR customer_name LIKE ? OR customer_email LIKE ? OR phone LIKE ? OR delivery_address LIKE ?)");
+    bindings.push(term, term, term, term, term);
   }
   return { sql: clauses.length ? " WHERE " + clauses.join(" AND ") : "", bindings };
 }
@@ -79,14 +79,18 @@ export async function onRequestGet({ request, env }) {
   const { sql: where, bindings } = whereClause(filters);
   const format = url.searchParams.get("format");
   try {
+    try {
+      await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
+    } catch (_) {}
+
     if (format === "csv") {
       const result = await env.DB.prepare(
-        "SELECT order_ref, created_at, customer_name, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id FROM orders" +
+        "SELECT order_ref, created_at, customer_name, customer_email, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id FROM orders" +
         where + " ORDER BY created_at DESC LIMIT 5000"
       ).bind(...bindings).all();
-      const headers = ["Order reference", "Created at", "Customer", "Phone", "Delivery address", "Items", "Amount INR", "Status", "Razorpay payment ID"];
+      const headers = ["Order reference", "Created at", "Customer", "Email ID", "Phone", "Delivery address", "Items", "Amount INR", "Status", "Razorpay payment ID"];
       const rows = (result.results || []).map((order) => [
-        order.order_ref, order.created_at, order.customer_name, order.phone, order.delivery_address,
+        order.order_ref, order.created_at, order.customer_name, order.customer_email, order.phone, order.delivery_address,
         itemSummary(order.items_json), order.amount_rupees, order.status, order.razorpay_payment_id
       ]);
       const csv = [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
@@ -106,7 +110,7 @@ export async function onRequestGet({ request, env }) {
     const [countResult, listResult, summary, daily] = await Promise.all([
       env.DB.prepare("SELECT COUNT(*) AS total FROM orders" + where).bind(...bindings).first(),
       env.DB.prepare(
-        "SELECT order_ref, created_at, customer_name, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id FROM orders" +
+        "SELECT order_ref, created_at, customer_name, customer_email, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id FROM orders" +
         where + " ORDER BY created_at DESC LIMIT ? OFFSET ?"
       ).bind(...bindings, pageSize, offset).all(),
       env.DB.prepare(

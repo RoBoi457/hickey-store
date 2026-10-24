@@ -42,11 +42,13 @@ export async function onRequestPost({ request, env }) {
   }
 
   const customerName = typeof body.customerName === "string" ? body.customerName.trim() : "";
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const validEmail = email.length >= 5 && email.length <= 160 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const address = typeof body.address === "string" ? body.address.trim() : "";
   const phone = typeof body.phone === "string" ? body.phone.replace(/[^+\d]/g, "") : "";
-  if (customerName.length < 2 || customerName.length > 100 || address.length < 8 || address.length > 350 ||
+  if (customerName.length < 2 || customerName.length > 100 || !validEmail || address.length < 8 || address.length > 350 ||
       phone.replace(/\D/g, "").length < 10 || phone.length > 16) {
-    return json({ error: "Please enter your name, a valid delivery address, and phone number." }, 400);
+    return json({ error: "Please enter your name, email ID, a valid delivery address, and phone number." }, 400);
   }
   if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 20) {
     return json({ error: "Your basket is empty or has too many line items." }, 400);
@@ -84,7 +86,7 @@ export async function onRequestPost({ request, env }) {
         currency: "INR",
         receipt,
         partial_payment: false,
-        notes: { order_ref: receipt }
+        notes: { order_ref: receipt, customer_email: email }
       })
     });
   } catch {
@@ -115,11 +117,18 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    await env.DB.prepare("INSERT INTO orders (order_ref, items_json, amount_rupees, customer_name, delivery_address, phone, payment_method, status, razorpay_order_id) VALUES (?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)")
-      .bind(receipt, JSON.stringify(savedItems), totalRupees, customerName, address, phone, razorpayOrder.id)
+    await env.DB.prepare("INSERT INTO orders (order_ref, items_json, amount_rupees, customer_name, customer_email, delivery_address, phone, payment_method, status, razorpay_order_id) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)")
+      .bind(receipt, JSON.stringify(savedItems), totalRupees, customerName, email, address, phone, razorpayOrder.id)
       .run();
   } catch {
-    return json({ error: "The order could not be saved. Please try again." }, 500);
+    try {
+      await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
+      await env.DB.prepare("INSERT INTO orders (order_ref, items_json, amount_rupees, customer_name, customer_email, delivery_address, phone, payment_method, status, razorpay_order_id) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)")
+        .bind(receipt, JSON.stringify(savedItems), totalRupees, customerName, email, address, phone, razorpayOrder.id)
+        .run();
+    } catch {
+      return json({ error: "The order could not be saved. Please try again." }, 500);
+    }
   }
 
   return json({

@@ -46,7 +46,7 @@
       </section>
       <section class="orders glass">
         <div class="toolbar">
-          <input id="search" class="input search" type="search" placeholder="Search name, phone, address or order ref">
+          <input id="search" class="input search" type="search" placeholder="Search name, email, phone, address or order ref">
           <select id="status-filter" class="input" aria-label="Filter by payment status"><option value="">Every status</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="cancelled">Cancelled</option><option value="expired">Expired</option></select>
           <input id="from" class="input" type="date" aria-label="From date">
           <input id="to" class="input" type="date" aria-label="To date">
@@ -86,7 +86,7 @@
       for(const order of orders){
         const tr=document.createElement("tr");
         const ref=cell("td",order.order_ref,"ref");ref.append(cell("small",new Date(order.created_at+"Z").toLocaleString("en-IN")));
-        const who=cell("td",order.customer_name);who.append(cell("small",order.phone));who.append(cell("small",order.delivery_address));
+        const who=cell("td",order.customer_name);if(order.customer_email)who.append(cell("small",order.customer_email));who.append(cell("small",order.phone));who.append(cell("small",order.delivery_address));
         const items=cell("td",order.items);items.style.maxWidth="260px";
         const amount=cell("td",money(order.amount_rupees));amount.style.fontWeight="800";
         const state=cell("td","","");state.append(cell("span",order.status,"status "+order.status));
