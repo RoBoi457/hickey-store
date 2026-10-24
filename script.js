@@ -635,6 +635,7 @@ if (hero && "IntersectionObserver" in window) {
 } else if (hero) hero.classList.add("is-active");
 
 if ("IntersectionObserver" in window) {
+  const isMobileViewport = () => window.matchMedia("(max-width: 760px)").matches;
   const marquee = document.querySelector(".marquee");
   if (marquee) {
     const marqueeObserver = new IntersectionObserver(([entry]) => {
@@ -646,8 +647,15 @@ if ("IntersectionObserver" in window) {
   }
 
   const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+    if (isMobileViewport()) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      }
+      return;
+    }
     entry.target.classList.toggle("is-visible", entry.isIntersecting);
-  }), { threshold: 0.12, rootMargin: "0px 0px -5% 0px" });
+  }), { threshold: isMobileViewport() ? 0.05 : 0.12, rootMargin: isMobileViewport() ? "40px 0px 20px 0px" : "0px 0px -5% 0px" });
   document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
 
   const tileObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
@@ -661,9 +669,16 @@ if ("IntersectionObserver" in window) {
         : (tileIndex % Math.max(1, columns)) * 35;
       entry.target.style.setProperty("--snap-delay", `${delay}ms`);
       if (entry.target.matches(".faq-item")) entry.target.style.setProperty("--faq-delay", `${delay}ms`);
+      if (isMobileViewport()) {
+        entry.target.classList.add("is-snapped");
+        tileObserver.unobserve(entry.target);
+        return;
+      }
     }
-    entry.target.classList.toggle("is-snapped", entry.isIntersecting);
-  }), { threshold: 0.16, rootMargin: "0px 0px -4% 0px" });
+    if (!isMobileViewport()) {
+      entry.target.classList.toggle("is-snapped", entry.isIntersecting);
+    }
+  }), { threshold: isMobileViewport() ? 0.04 : 0.16, rootMargin: isMobileViewport() ? "60px 0px 40px 0px" : "0px 0px -4% 0px" });
   document.querySelectorAll(".snap-tile").forEach((element) => tileObserver.observe(element));
 } else {
   document.querySelector(".marquee")?.classList.add("is-in-view");
