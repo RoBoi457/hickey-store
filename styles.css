@@ -288,8 +288,9 @@ html.motion-ready #treasury .section-heading.is-visible .treasury-description { 
 .checkout-layout { display: grid; min-height: 610px; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr); }
 .checkout-layout[hidden], .qr-payment-step[hidden] { display: none !important; }
 .checkout-summary-panel { display: flex; flex-direction: column; padding: 35px 30px; border-radius: 30px 0 0 30px; color: #fff; background: radial-gradient(circle at 0 100%,rgba(69,186,240,.2),transparent 35%), radial-gradient(circle at 100% 0,rgba(237,36,66,.22),transparent 34%), #111a2b; }
-.checkout-brand { display: block; width: 132px; margin-bottom: 30px; }
-.checkout-brand img { display: block; width: 100%; height: auto; }
+.checkout-brand { position: relative; z-index: 1; display: block; width: 132px; margin-bottom: 24px; }
+.checkout-brand::before { position: absolute; inset: -14px -18px -12px -22px; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at 38% 46%, rgba(255,255,255,.52), rgba(186,230,255,.28) 46%, rgba(69,186,240,.1) 68%, transparent 82%); filter: blur(11px); content: ""; pointer-events: none; }
+.checkout-brand img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 8px rgba(255,255,255,.68)) drop-shadow(0 0 18px rgba(170,225,255,.42)); }
 .checkout-summary-panel .eyebrow { margin-bottom: 10px; color: #86d9f8; }
 .checkout-summary-panel h3 { margin: 0 0 25px; font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 3rem); line-height: .98; letter-spacing: -.04em; }
 .checkout-summary-panel h3 em { color: #ff596e; font-weight: 400; }
