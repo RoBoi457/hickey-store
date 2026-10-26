@@ -866,3 +866,27 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 @media (prefers-reduced-motion: reduce) {
   .account-layer, .account-card { transition: none; }
 }
+
+
+/* Draft policy links for OAuth review. */
+.site-footer > .footer-legal {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  letter-spacing: normal;
+}
+.footer-legal a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.footer-legal a:hover,
+.footer-legal a:focus-visible { color: var(--ink); }
+
+@media (max-width: 760px) {
+  .site-footer > .footer-legal { gap: 12px; }
+}
