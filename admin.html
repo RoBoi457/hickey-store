@@ -44,6 +44,14 @@
         <div id="chart" class="chart" aria-label="Daily paid revenue chart"></div>
         <div id="chart-labels" class="chart-labels"></div>
       </section>
+
+      <section class="customers glass" style="margin-bottom:16px">
+        <div class="toolbar" style="justify-content:space-between">
+          <strong>Customer accounts</strong><span id="customer-count" style="color:var(--muted);font-size:12px"></span>
+        </div>
+        <p id="customer-error" class="error" style="padding:0 18px"></p>
+        <div class="table-wrap"><table style="min-width:560px"><thead><tr><th>Email</th><th>Account created</th><th>Orders</th></tr></thead><tbody id="customer-rows"></tbody></table><div id="customers-empty" class="empty hidden">No customer accounts yet.</div></div>
+      </section>
       <section class="orders glass">
         <div class="toolbar">
           <input id="search" class="input search" type="search" placeholder="Search name, email, phone, address or order ref">
@@ -96,13 +104,35 @@
       $("page-label").textContent=total+" matching orders · page "+page;
       $("prev").disabled=page<=1;$("next").disabled=orders.length<100;
     }
+    function drawCustomers(customers) {
+      const rows = $("customer-rows"); rows.replaceChildren();
+      $("customers-empty").classList.toggle("hidden", customers.length > 0);
+      $("customer-count").textContent = customers.length.toLocaleString("en-IN") + " accounts";
+      for (const customer of customers) {
+        const tr = document.createElement("tr");
+        const email = cell("td", customer.email, "ref");
+        const created = cell("td", new Date(customer.created_at + "Z").toLocaleString("en-IN"));
+        const orders = cell("td", Number(customer.order_count || 0).toLocaleString("en-IN"));
+        for (const value of [email, created, orders]) tr.append(value);
+        rows.append(tr);
+      }
+    }
+    async function loadCustomers() {
+      $("customer-error").textContent = "";
+      try {
+        const {data} = await request("/api/admin/customers");
+        drawCustomers(Array.isArray(data.customers) ? data.customers : []);
+      } catch (error) {
+        $("customer-error").textContent = error.message;
+      }
+    }
     async function load() {
       $("app").classList.add("loading");$("app-error").textContent="";
       try{
         const {data}=await request("/api/admin/orders?"+queryString(activeFilters,{page}));
         $("revenue").textContent=money(data.summary.revenueRupees);$("paid").textContent=data.summary.paid;
         $("pending").textContent=data.summary.pending;$("total").textContent=data.summary.total;
-        drawChart(data.daily);drawOrders(data.orders,data.totalFiltered);
+        drawChart(data.daily);drawOrders(data.orders,data.totalFiltered);await loadCustomers();
       }catch(error){$("app-error").textContent=error.message;if(error.message==="Admin access required.")lock();}
       finally{$("app").classList.remove("loading");}
     }

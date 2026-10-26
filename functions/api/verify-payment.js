@@ -1,3 +1,5 @@
+import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -17,15 +19,18 @@ function sameHex(a, b) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!sameOriginRequest(request)) return json({ verified: false, error: "Request origin could not be verified." }, 403);
+  if (!env.DB) return json({ verified: false, error: "Order storage is not connected." }, 503);
+  let user;
+  try { user = await getAuthenticatedUser(request, env); }
+  catch { return json({ verified: false, error: "Account storage is not ready. Apply migration 0004_customer_accounts.sql." }, 503); }
+  if (!user) return json({ verified: false, error: "Sign in to confirm this payment." }, 401);
+
   const razorpayKeyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
   const razorpayKeySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
   if (!razorpayKeyId || !razorpayKeySecret) {
     return json({ verified: false, error: "Razorpay keys are not configured." }, 503);
   }
-  if (!env.DB) {
-    return json({ verified: false, error: "Order storage is not connected." }, 503);
-  }
-
   let body;
   try {
     body = await request.json();
@@ -41,10 +46,11 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    const storedOrder = await env.DB.prepare("SELECT order_ref, amount_rupees, status, razorpay_order_id, razorpay_payment_id FROM orders WHERE razorpay_order_id = ?")
+    const storedOrder = await env.DB.prepare("SELECT order_ref, amount_rupees, status, razorpay_order_id, razorpay_payment_id, user_id FROM orders WHERE razorpay_order_id = ?")
       .bind(orderId)
       .first();
     if (!storedOrder) return json({ verified: false, error: "This payment does not match a Hickey order." }, 400);
+    if (storedOrder.user_id !== user.id) return json({ verified: false, error: "This order belongs to a different account." }, 403);
     if (storedOrder.status === "paid") {
       if (storedOrder.razorpay_payment_id === paymentId) {
         return json({ verified: true, orderRef: storedOrder.order_ref, orderId, paymentId });

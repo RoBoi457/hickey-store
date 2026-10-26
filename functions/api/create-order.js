@@ -1,3 +1,5 @@
+import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
+
 const catalog = {
   "kathor-clock": { name: "Rohtak Standard Time", price: 299 },
   pda: { name: "P.D.A. (Please Don’t Ask)", price: 299 },
@@ -22,15 +24,20 @@ function json(data, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!sameOriginRequest(request)) return json({ error: "Request origin could not be verified." }, 403);
+  if (!env.DB) {
+    return json({ error: "Order storage is not connected yet. Bind the Cloudflare D1 database before enabling checkout." }, 503);
+  }
+  let user;
+  try { user = await getAuthenticatedUser(request, env); }
+  catch { return json({ error: "Account storage is not ready. Apply migration 0004_customer_accounts.sql." }, 503); }
+  if (!user) return json({ error: "Sign in before placing an order." }, 401);
+
   const razorpayKeyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
   const razorpayKeySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
   if (!razorpayKeyId || !razorpayKeySecret) {
     return json({ error: "Razorpay is not configured yet. Add the Test Mode key ID and encrypted key secret in Cloudflare." }, 503);
   }
-  if (!env.DB) {
-    return json({ error: "Order storage is not connected yet. Bind the Cloudflare D1 database before enabling checkout." }, 503);
-  }
-
   let body;
   try {
     body = await request.json();
@@ -42,13 +49,11 @@ export async function onRequestPost({ request, env }) {
   }
 
   const customerName = typeof body.customerName === "string" ? body.customerName.trim() : "";
-  const email = typeof body.email === "string" ? body.email.trim() : "";
-  const validEmail = email.length >= 5 && email.length <= 160 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const address = typeof body.address === "string" ? body.address.trim() : "";
   const phone = typeof body.phone === "string" ? body.phone.replace(/[^+\d]/g, "") : "";
-  if (customerName.length < 2 || customerName.length > 100 || !validEmail || address.length < 8 || address.length > 350 ||
+  if (customerName.length < 2 || customerName.length > 100 || address.length < 8 || address.length > 350 ||
       phone.replace(/\D/g, "").length < 10 || phone.length > 16) {
-    return json({ error: "Please enter your name, email ID, a valid delivery address, and phone number." }, 400);
+    return json({ error: "Please enter your name, a valid delivery address, and phone number." }, 400);
   }
   if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 20) {
     return json({ error: "Your basket is empty or has too many line items." }, 400);
@@ -86,7 +91,7 @@ export async function onRequestPost({ request, env }) {
         currency: "INR",
         receipt,
         partial_payment: false,
-        notes: { order_ref: receipt, customer_email: email }
+        notes: { order_ref: receipt, customer_email: user.email }
       })
     });
   } catch {
@@ -117,18 +122,15 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    await env.DB.prepare("INSERT INTO orders (order_ref, items_json, amount_rupees, customer_name, customer_email, delivery_address, phone, payment_method, status, razorpay_order_id) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)")
-      .bind(receipt, JSON.stringify(savedItems), totalRupees, customerName, email, address, phone, razorpayOrder.id)
-      .run();
+    await env.DB.prepare(
+      "INSERT INTO orders (order_ref, items_json, amount_rupees, customer_name, customer_email, user_id, delivery_address, phone, payment_method, status, razorpay_order_id) " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)"
+    ).bind(
+      receipt, JSON.stringify(savedItems), totalRupees, customerName, user.email, user.id,
+      address, phone, razorpayOrder.id
+    ).run();
   } catch {
-    try {
-      await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
-      await env.DB.prepare("INSERT INTO orders (order_ref, items_json, amount_rupees, customer_name, customer_email, delivery_address, phone, payment_method, status, razorpay_order_id) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)")
-        .bind(receipt, JSON.stringify(savedItems), totalRupees, customerName, email, address, phone, razorpayOrder.id)
-        .run();
-    } catch {
-      return json({ error: "The order could not be saved. Please try again." }, 500);
-    }
+    return json({ error: "The order could not be saved. Ensure migration 0004_customer_accounts.sql has been applied." }, 500);
   }
 
   return json({

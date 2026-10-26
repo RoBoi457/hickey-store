@@ -14,7 +14,16 @@ The repository is connected to Cloudflare Pages on `main`; with automatic deploy
 
 1. In Cloudflare, open **Workers & Pages → D1 SQL Database** and create a database.
 2. Open the Pages project → **Settings → Functions → D1 database bindings**. Add a binding named exactly `DB` and select the database. Add a binding for Production, and for Preview too if you want checkout working in branch previews. Save and redeploy.
-3. In the D1 database **Console**, apply all three migration files in numerical order, once each, against the same database. If migrations 1 and 2 are already applied, apply only migration 3 before enabling Standard Checkout.
+3. In the D1 database **Console**, apply these five files once each, in order, against the same database: `0001_create_orders.sql`, `0002_add_customer_name.sql`, `0003_add_customer_email.sql`, `0003_standard_checkout_payment_methods.sql`, then `0004_customer_accounts.sql`. If the first four are already applied, apply only `0004_customer_accounts.sql`.
+
+### Enable customer accounts and Google sign-in
+
+1. Confirm `migrations/0004_customer_accounts.sql` has been applied to the same D1 database bound as `DB`. It adds customer accounts, hashed sessions, saved baskets, and the account link on new orders.
+2. In Google Cloud Console, create a **Web application** OAuth client for Google Identity Services. Add your production storefront domain and any Cloudflare Pages preview domain under **Authorized JavaScript origins**.
+3. In Cloudflare Pages → **Settings → Variables and Secrets**, add `GOOGLE_CLIENT_ID` with that client ID to Preview and Production as needed, then redeploy. The client ID is public; do not add a client secret to the site.
+4. Email/password accounts work without Google setup. Passwords must be 12–128 characters. This project does not yet send email verification or password-reset messages, so customers must remember their password or use Google sign-in.
+
+Customers sign in before adding items to their basket. Basket contents and new order history are stored in D1 and tied to the account. The admin desk shows registered email addresses in **Customer accounts** and on each order. Shipping name, address, and phone continue to be collected at checkout and stored with each order. Existing orders are not automatically attached to new accounts; only orders made after sign-in appear in a customer's history.
 
 ### Connect Razorpay safely
 
@@ -40,7 +49,7 @@ The checkout confirmation flow verifies payments while the checkout page is open
 
 ## Where data lives
 
-- **Orders and shipping details:** Hickey's D1 database, visible in `/admin.html` and the Cloudflare D1 console. The dashboard can export filtered orders to CSV.
+- **Customer emails, orders and shipping details:** Hickey's D1 database, visible in `/admin.html` and the Cloudflare D1 console. The dashboard can export filtered orders to CSV.
 - **Payment, refund and settlement records:** Razorpay Dashboard → **Transactions → Payments**. Match by Razorpay Payment ID.
 - **Ideas, feedback, and custom design requests:** the contact forms open the visitor's email app and only send after the visitor presses Send; they do not save to D1. Replace `hello@hickey.store` in `script.js` and the contact link with an inbox you control before launch.
 

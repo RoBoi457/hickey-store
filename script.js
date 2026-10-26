@@ -97,6 +97,7 @@ function readBasket() {
 
 function saveBasket() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(basket)); } catch (_) {}
+  window.HickeyAuth?.persistCart(basket);
   renderBasket();
   if (productPreviewLayer.classList.contains("is-open")) renderPreviewQuantity();
 }
@@ -204,6 +205,11 @@ function closeDrawer() {
 
 function openCheckout() {
   if (basketCount() === 0) return;
+  if (!window.HickeyAuth?.user) {
+    closeDrawer();
+    window.HickeyAuth?.request({ type: "checkout" });
+    return;
+  }
   closeDrawer();
   updateCheckoutSummary();
   document.getElementById("checkout-layout").hidden = false;
@@ -237,6 +243,10 @@ function showSuccess(orderNumber) {
 
 function addToBasket(id) {
   if (!PRODUCTS[id]) return;
+  if (!window.HickeyAuth?.user) {
+    window.HickeyAuth?.request({ type: "add", id });
+    return;
+  }
   basket[id] = Math.min(99, (basket[id] || 0) + 1);
   saveBasket();
   const button = document.querySelector('[data-add="' + id + '"]');
@@ -313,7 +323,6 @@ async function startRazorpayCheckout(formData) {
       body: JSON.stringify({
         items: Object.entries(basket).map(([id, quantity]) => ({ id, quantity })),
         customerName: formData.customerName,
-        email: formData.email,
         address: formData.address,
         phone: formData.phone
       })
@@ -336,7 +345,7 @@ async function startRazorpayCheckout(formData) {
       name: "Hickey",
       description: "Hickey order " + orderData.receipt,
       order_id: orderData.order_id,
-      prefill: { name: formData.customerName, email: formData.email, contact },
+      prefill: { name: formData.customerName, email: window.HickeyAuth?.user?.email || "", contact },
       notes: { order_ref: orderData.receipt },
       theme: { color: "#ef234c" },
       modal: {
@@ -510,7 +519,7 @@ contactForm.addEventListener("submit", (event) => {
   const details = [
     "Message:", fields.message,
     fields.name ? "\nName: " + fields.name : "",
-    fields.email ? "\nReply to: " + fields.email : "",
+    window.HickeyAuth?.user?.email ? "\nReply to: " + window.HickeyAuth.user.email : "",
     contactType === "custom" && fields.quantity ? "\nEstimated small-run quantity: " + fields.quantity : ""
   ].filter(Boolean).join("\n");
   const copy = contactCopy[contactType];
@@ -689,3 +698,17 @@ if ("IntersectionObserver" in window) {
 
 document.getElementById("year").textContent = new Date().getFullYear();
 renderBasket();
+
+window.addEventListener("hickey:auth-ready", (event) => {
+  const action = event.detail?.action;
+  if (action?.type === "add") addToBasket(action.id);
+  if (action?.type === "checkout") openCheckout();
+});
+
+window.HickeyAuth?.init({
+  getBasket: () => basket,
+  setBasket: (next) => {
+    basket = next;
+    saveBasket();
+  }
+});
