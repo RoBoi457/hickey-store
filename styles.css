@@ -868,7 +868,7 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 }
 
 
-/* Draft policy links for OAuth review. */
+/* Privacy and terms links in the site footer. */
 .site-footer > .footer-legal {
   grid-column: 1 / -1;
   justify-self: center;
