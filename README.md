@@ -25,12 +25,12 @@ The repository is connected to Cloudflare Pages on `main`; with automatic deploy
 
 Customers sign in before adding items to their basket. Basket contents and new order history are stored in D1 and tied to the account. The admin desk shows registered email addresses in **Customer accounts** and on each order. Shipping name, address, and phone continue to be collected at checkout and stored with each order. Existing orders are not automatically attached to new accounts; only orders made after sign-in appear in a customer's history.
 
-### Connect Razorpay safely
+### Configure Razorpay safely
 
-1. Create or activate your Razorpay merchant account and generate **Test Mode** API keys.
-2. In Pages project → **Settings → Variables and Secrets**, add `RAZORPAY_KEY_ID` and encrypted secret `RAZORPAY_KEY_SECRET` to Preview (and Production when ready). Never put the secret in site files, GitHub, screenshots, or chat.
-3. Confirm Standard Payment Gateway is enabled on your Razorpay account. This integration creates Orders through Razorpay's Orders API; it does not require the separate UPI QR Codes API.
-4. Save the variables and redeploy. Open your Pages `pages.dev` address, add a product, and complete a Test Mode checkout. Confirm that the site shows success, the order appears in the order desk, and the captured test payment appears in Razorpay's Test Mode dashboard.
+1. Generate a matching API Key ID and Key Secret pair in the Razorpay account that will receive payments. Keep Test Mode keys for Preview and Live Mode keys for Production; never mix the two.
+2. In Cloudflare Pages → **Settings → Variables and Secrets**, set `RAZORPAY_KEY_ID` and encrypted `RAZORPAY_KEY_SECRET` for the matching environment. The Key ID is used by checkout; the Key Secret stays server-side. Do not put either value in source files or commit it to Git.
+3. Cloudflare Pages Functions call Razorpay's HTTPS API directly and use Web Crypto for signature checks, so this project does not need a Razorpay SDK package or a local `.env` file. The repository already ignores `.env` and `.dev.vars`; use Cloudflare's encrypted settings for deployed secrets.
+4. Save and redeploy. Use Preview with Test Mode keys for test payments. Before accepting real orders, confirm Production uses the Live Mode key pair and production D1 binding, then place and verify a small live payment.
 
 ### Open the private order desk
 
