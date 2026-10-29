@@ -36,7 +36,7 @@ export async function onRequestPost({ request, env }) {
   const razorpayKeyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
   const razorpayKeySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
   if (!razorpayKeyId || !razorpayKeySecret) {
-    return json({ error: "Razorpay is not configured yet. Add the Test Mode key ID and encrypted key secret in Cloudflare." }, 503);
+    return json({ error: "Razorpay is not configured. Add a Key ID and encrypted Key Secret for this Cloudflare environment." }, 503);
   }
   let body;
   try {
@@ -106,11 +106,8 @@ export async function onRequestPost({ request, env }) {
       ? gatewayError.description.replaceAll("\r", " ").replaceAll("\n", " ").trim().slice(0, 180)
       : "";
     if (razorpayResponse.status === 401 || razorpayResponse.status === 403) {
-      const reason = [gatewayCode, description].filter(Boolean).join(": ");
       return json({
-        error: reason
-          ? "Razorpay rejected the request (" + razorpayResponse.status + ": " + reason + "). Configured public Key ID: " + razorpayKeyId + ". Compare it with the Key ID shown in Razorpay Test Mode. If they match, the Cloudflare Preview secret is not the matching secret for that key."
-          : "Razorpay rejected the request (" + razorpayResponse.status + "). Configured public Key ID: " + razorpayKeyId + ". Compare it with the Key ID shown in Razorpay Test Mode. If they match, the Cloudflare Preview secret is not the matching secret for that key.",
+        error: "Razorpay rejected the API credentials. Ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET match and come from the same Razorpay account and mode.",
         gateway_status: razorpayResponse.status,
         gateway_code: gatewayCode || null
       }, 502);
