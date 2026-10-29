@@ -110,12 +110,12 @@ export async function onRequestPost({ request, env }) {
         error: "Razorpay rejected the API credentials. Ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET match and come from the same Razorpay account and mode.",
         gateway_status: razorpayResponse.status,
         gateway_code: gatewayCode || null
-      }, 502);
+      }, 401);
     }
-    return json({ error: description || "Razorpay could not create the payment order.", gateway_code: gatewayCode || null }, 502);
+    return json({ error: description || "Razorpay could not create the payment order.", gateway_code: gatewayCode || null }, 500);
   }
   if (!razorpayOrder?.id || razorpayOrder.amount !== amount || razorpayOrder.currency !== "INR") {
-    return json({ error: "Razorpay returned an invalid order. Please try again." }, 502);
+    return json({ error: "Razorpay returned an invalid order. Please try again." }, 500);
   }
 
   try {
