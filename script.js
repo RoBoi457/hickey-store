@@ -223,7 +223,7 @@ function openCheckout() {
   checkoutLayer.setAttribute("aria-hidden", "false");
   scrim.classList.add("is-visible");
   document.body.classList.add("modal-open");
-  setTimeout(() => document.querySelector('input[name="customerName"]').focus(), 120);
+  setTimeout(() => document.querySelector('input[name="address"]').focus(), 120);
 }
 
 function closeCheckout() {
@@ -315,14 +315,15 @@ async function startRazorpayCheckout(formData) {
   const message = document.getElementById("payment-message");
   message.textContent = "";
   setBusy(true);
-
+const customerName = formData.customerName || window.HickeyAuth?.user?.name || "";
+  const customerEmail = formData.email || window.HickeyAuth?.user?.email || "";
   try {
     const orderResponse = await fetch("/api/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         items: Object.entries(basket).map(([id, quantity]) => ({ id, quantity })),
-        customerName: formData.customerName,
+  customerName,      
         address: formData.address,
         phone: formData.phone
       })
@@ -345,7 +346,7 @@ async function startRazorpayCheckout(formData) {
       name: "Hickey",
       description: "Hickey order " + orderData.receipt,
       order_id: orderData.order_id,
-      prefill: { name: formData.customerName, email: window.HickeyAuth?.user?.email || "", contact },
+  prefill: { name: customerName, email: customerEmail, contact },    
       notes: { order_ref: orderData.receipt },
       theme: { color: "#ef234c" },
       modal: {
