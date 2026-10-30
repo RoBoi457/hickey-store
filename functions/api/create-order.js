@@ -48,7 +48,7 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Invalid order details." }, 400);
   }
 
-  const customerName = typeof body.customerName === "string" ? body.customerName.trim() : "";
+  const customerName = (typeof body.customerName === "string" && body.customerName.trim()) ? body.customerName.trim() : (typeof user.name === "string" ? user.name.trim() : "");
   const address = typeof body.address === "string" ? body.address.trim() : "";
   const phone = typeof body.phone === "string" ? body.phone.replace(/[^+\d]/g, "") : "";
   if (customerName.length < 2 || customerName.length > 100 || address.length < 8 || address.length > 350 ||
