@@ -1,6 +1,7 @@
 -- Persistent customer accounts, sessions, baskets, and account-linked order history.
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
+  name TEXT NOT NULL DEFAULT '',
   email TEXT NOT NULL COLLATE NOCASE UNIQUE,
   password_hash TEXT,
   password_salt TEXT,

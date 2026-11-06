@@ -1,7 +1,61 @@
 const encoder = new TextEncoder();
 const SESSION_COOKIE = "hickey_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
-export const PASSWORD_ITERATIONS = 310000;
+export const PASSWORD_ITERATIONS = 100000;
+
+let schemaReadyPromise = null;
+
+export async function ensureAuthSchema(env) {
+  if (!env?.DB) return;
+  if (!schemaReadyPromise) {
+    schemaReadyPromise = (async () => {
+      await env.DB.prepare(
+        "CREATE TABLE IF NOT EXISTS users (" +
+        "id TEXT PRIMARY KEY, " +
+        "name TEXT NOT NULL DEFAULT '', " +
+        "email TEXT NOT NULL COLLATE NOCASE UNIQUE, " +
+        "password_hash TEXT, " +
+        "password_salt TEXT, " +
+        "password_iterations INTEGER, " +
+        "google_sub TEXT UNIQUE, " +
+        "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+      ).run();
+      try {
+        await env.DB.prepare("ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''").run();
+      } catch {}
+      await env.DB.prepare(
+        "CREATE TABLE IF NOT EXISTS sessions (" +
+        "token_hash TEXT PRIMARY KEY, " +
+        "user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, " +
+        "expires_at TEXT NOT NULL, " +
+        "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+      ).run();
+      await env.DB.prepare("CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions (user_id)").run();
+      await env.DB.prepare("CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expires_at)").run();
+      await env.DB.prepare(
+        "CREATE TABLE IF NOT EXISTS cart_items (" +
+        "user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, " +
+        "product_id TEXT NOT NULL, " +
+        "quantity INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 99), " +
+        "updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+        "PRIMARY KEY (user_id, product_id))"
+      ).run();
+      try {
+        await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
+      } catch {}
+      try {
+        await env.DB.prepare("ALTER TABLE orders ADD COLUMN user_id TEXT").run();
+      } catch {}
+      try {
+        await env.DB.prepare("CREATE INDEX IF NOT EXISTS orders_user_created_idx ON orders (user_id, created_at DESC)").run();
+      } catch {}
+    })().catch((err) => {
+      schemaReadyPromise = null;
+      throw err;
+    });
+  }
+  return schemaReadyPromise;
+}
 
 export function jsonResponse(data, status = 200, extraHeaders = {}) {
   const headers = new Headers({
@@ -24,7 +78,8 @@ export function validEmail(value) {
 
 export function sameOriginRequest(request) {
   const origin = request.headers.get("Origin");
-  return typeof origin === "string" && origin === new URL(request.url).origin;
+  if (!origin) return true;
+  return origin === new URL(request.url).origin;
 }
 
 export function randomHex(byteLength) {
@@ -46,11 +101,12 @@ function toHex(bytes) {
 }
 
 export async function hashPassword(password, saltHex, iterations = PASSWORD_ITERATIONS) {
+  const safeIterations = Math.min(100000, Math.max(10000, Number(iterations) || PASSWORD_ITERATIONS));
   const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits({
     name: "PBKDF2",
     salt: hexBytes(saltHex),
-    iterations,
+    iterations: safeIterations,
     hash: "SHA-256"
   }, key, 256);
   return toHex(new Uint8Array(bits));
@@ -84,18 +140,22 @@ export function requestSessionToken(request) {
 
 export async function getAuthenticatedUser(request, env) {
   if (!env.DB) return null;
+  await ensureAuthSchema(env);
   const token = requestSessionToken(request);
   if (!token) return null;
   const tokenHash = await sha256Hex(token);
   const now = new Date().toISOString();
   const row = await env.DB.prepare(
-    "SELECT users.id, users.email FROM sessions JOIN users ON users.id = sessions.user_id " +
+    "SELECT users.id, users.name, users.email FROM sessions JOIN users ON users.id = sessions.user_id " +
     "WHERE sessions.token_hash = ? AND sessions.expires_at > ?"
   ).bind(tokenHash, now).first();
-  return row ? { id: row.id, email: row.email } : null;
+  if (!row) return null;
+  const fallbackName = row.name && row.name.trim() ? row.name.trim() : row.email.split("@")[0];
+  return { id: row.id, name: fallbackName, email: row.email };
 }
 
 export async function issueSession(user, env) {
+  await ensureAuthSchema(env);
   const token = randomHex(32);
   const tokenHash = await sha256Hex(token);
   const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString();

@@ -31,12 +31,14 @@
   }
 
   function setUser(next) {
-    user = next && typeof next.id === "string" && typeof next.email === "string" ? next : null;
+    user = next && typeof next.id === "string" && typeof next.email === "string"
+      ? { id: next.id, name: (next.name || next.email.split("@")[0] || "").trim(), email: next.email }
+      : null;
     const button = $("open-account");
     if (button) {
-      const label = user ? "My account, " + user.email : "Sign in or create an account";
+      const label = user ? "My account (" + (user.name || user.email) + ")" : "Sign in or create an account";
       button.setAttribute("aria-label", label);
-      button.title = user ? "My account" : "Sign in";
+      button.title = user ? "Account & Sign out (" + (user.name || user.email) + ")" : "Sign in";
       button.classList.toggle("is-signed-in", Boolean(user));
     }
   }
@@ -46,14 +48,38 @@
     const signup = authMode === "signup";
     $("account-login-tab").setAttribute("aria-pressed", String(!signup));
     $("account-signup-tab").setAttribute("aria-pressed", String(signup));
-    $("account-title").textContent = signup ? "Create your Hickey account." : "Sign in to save your basket.";
+    $("account-title").textContent = signup ? "Create your Hickey account." : "Sign in to your account.";
     $("account-description").textContent = signup
-      ? "Your basket and order history will stay with your account."
-      : "Sign in to keep your basket and order history in sync.";
+      ? "Enter your details once — your basket and checkout will use them automatically."
+      : "Sign in with your email or username, or create a new account below.";
+
+    const nameField = $("account-name-field");
+    const nameInput = $("account-name");
+    if (nameField && nameInput) {
+      nameField.hidden = !signup;
+      nameInput.required = signup;
+    }
+
+    const emailLabel = $("account-email-label");
+    const emailInput = $("account-email");
+    if (emailLabel && emailInput) {
+      emailLabel.textContent = signup ? "Email address" : "Email or username";
+      emailInput.type = signup ? "email" : "text";
+      emailInput.autocomplete = signup ? "email" : "username";
+      emailInput.placeholder = signup ? "you@example.com" : "Email address or username";
+    }
+
     $("account-password").autocomplete = signup ? "new-password" : "current-password";
-    $("account-password").minLength = signup ? 12 : 1;
-    $("account-password").placeholder = signup ? "Create a password (12+ characters)" : "Password";
-    $("account-submit").textContent = signup ? "Create account" : "Sign in";
+    $("account-password").minLength = signup ? 6 : 1;
+    $("account-password").placeholder = signup ? "Create a password (6+ characters)" : "Password";
+    $("account-submit").textContent = signup ? "Create new account" : "Sign in";
+
+    const switchText = $("account-switch-text");
+    const switchBtn = $("account-switch-mode");
+    if (switchText && switchBtn) {
+      switchText.textContent = signup ? "Already have an account?" : "Logging in for the first time?";
+      switchBtn.textContent = signup ? "Sign in" : "Create new account";
+    }
     setStatus("");
   }
 
@@ -61,12 +87,18 @@
     $("account-auth-view").hidden = false;
     $("account-profile-view").hidden = true;
     updateAuthMode(authMode);
-    setTimeout(() => $("account-email").focus(), 80);
+    setTimeout(() => {
+      const target = authMode === "signup" && $("account-name") ? $("account-name") : $("account-email");
+      target?.focus();
+    }, 80);
   }
 
   function showProfile() {
     $("account-auth-view").hidden = true;
     $("account-profile-view").hidden = false;
+    if ($("account-name-display")) {
+      $("account-name-display").textContent = user ? (user.name || user.email.split("@")[0]) : "";
+    }
     $("account-email-display").textContent = user ? user.email : "";
     setStatus("");
     loadOrders();
@@ -127,7 +159,7 @@
     try { imported = localStorage.getItem(key) === "1"; } catch {}
     if (!imported && callbacks) {
       const legacy = cleanBasket(callbacks.getBasket());
-      for (const [id, quantity] of Object.entries(legacy)) merged[id] = Math.min(99, (merged[id] || 0) + quantity);
+      for (const [id, quantity] of Object.entries(legacy)) merged[id] = Math.min(99, (merged[id || ""] || 0) + quantity);
       try { localStorage.setItem(key, "1"); } catch {}
     }
     if (callbacks) callbacks.setBasket(merged);
@@ -205,7 +237,8 @@
       const data = await api(authMode === "signup" ? "/api/auth/register" : "/api/auth/login", {
         method: "POST",
         body: JSON.stringify({
-          email: String(formData.get("email") || ""),
+          name: String(formData.get("name") || "").trim(),
+          email: String(formData.get("email") || "").trim(),
           password: String(formData.get("password") || "")
         })
       });
@@ -299,8 +332,10 @@
     $("account-form").addEventListener("submit", handleAccountSubmit);
     $("account-login-tab").addEventListener("click", () => updateAuthMode("login"));
     $("account-signup-tab").addEventListener("click", () => updateAuthMode("signup"));
+    $("account-switch-mode")?.addEventListener("click", () => updateAuthMode(authMode === "signup" ? "login" : "signup"));
     $("close-account").addEventListener("click", closeModal);
     $("account-signout").addEventListener("click", signOut);
+    $("account-signout-top")?.addEventListener("click", signOut);
     $("account-refresh-orders").addEventListener("click", loadOrders);
     $("open-account").addEventListener("click", () => requestAuth());
     layer.addEventListener("click", (event) => { if (event.target === layer) closeModal(); });
