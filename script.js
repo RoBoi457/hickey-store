@@ -1,17 +1,17 @@
 const PRODUCTS = {
-  "kathor-clock": { name: "Rohtak Standard Time", price: 299, image: "assets/keychain-products/01-rohtak-standard-time.png" },
-  pda: { name: "P.D.A. (Please Don’t Ask)", price: 299, image: "assets/keychain-products/02-pda-campus.png" },
-  "submit-mode": { name: "Just Put It In", price: 299, image: "assets/keychain-products/03-atp-submit.png" },
-  "clock-it": { name: "Clock It!", price: 299, image: "assets/keychain-products/04-clock-it.png" },
-  "coke-paglu": { name: "Diet Coke Paglu Club", price: 299, image: "assets/keychain-products/05-diet-coke-paglu.png" },
-  cooks: { name: "Cooks Club", price: 299, image: "assets/keychain-products/06-cooks.png" },
-  "proxy-pass": { name: "Proxy Mat Laga!", price: 299, image: "assets/keychain-products/07-proxy-mat-laga.png" },
-  baddie: { name: "Baddie Business", price: 299, image: "assets/keychain-products/08-baddie.png" },
-  "kathor-land": { name: "Kathor Land", price: 299, image: "assets/keychain-products/09-kathor-land.png" },
-  nonchalant: { name: "Nonchalant Energy", price: 299, image: "assets/keychain-products/11-nonchalant.png" },
-  "two-friends": { name: "Underwater Besties", price: 499, image: "assets/keychain-products/12-two-friends.png" },
-  "campus-cat-nap": { name: "Cat-Whore Campus Nap", price: 299, image: "assets/keychain-products/13-cat-whore-campus-nap.png" },
-  "clinger-cat-club": { name: "Clinger Cat Club", price: 299, image: "assets/keychain-products/14-clinger-cat-club.png" }
+  "kathor-clock": { name: "Rohtak Standard Time", price: 5, image: "assets/keychain-products/01-rohtak-standard-time.png" },
+  pda: { name: "P.D.A. (Please Don’t Ask)", price: 5, image: "assets/keychain-products/02-pda-campus.png" },
+  "submit-mode": { name: "Just Put It In", price: 5, image: "assets/keychain-products/03-atp-submit.png" },
+  "clock-it": { name: "Clock It!", price: 5, image: "assets/keychain-products/04-clock-it.png" },
+  "coke-paglu": { name: "Diet Coke Paglu Club", price: 5, image: "assets/keychain-products/05-diet-coke-paglu.png" },
+  cooks: { name: "Cooks Club", price: 5, image: "assets/keychain-products/06-cooks.png" },
+  "proxy-pass": { name: "Proxy Mat Laga!", price: 5, image: "assets/keychain-products/07-proxy-mat-laga.png" },
+  baddie: { name: "Baddie Business", price: 5, image: "assets/keychain-products/08-baddie.png" },
+  "kathor-land": { name: "Kathor Land", price: 5, image: "assets/keychain-products/09-kathor-land.png" },
+  nonchalant: { name: "Nonchalant Energy", price: 5, image: "assets/keychain-products/11-nonchalant.png" },
+  "two-friends": { name: "Underwater Besties", price: 5, image: "assets/keychain-products/12-two-friends.png" },
+  "campus-cat-nap": { name: "Cat-Whore Campus Nap", price: 5, image: "assets/keychain-products/13-cat-whore-campus-nap.png" },
+  "clinger-cat-club": { name: "Clinger Cat Club", price: 5, image: "assets/keychain-products/14-clinger-cat-club.png" }
 };
 
 document.documentElement.classList.add("motion-ready");
