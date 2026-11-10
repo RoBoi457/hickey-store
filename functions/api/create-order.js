@@ -1,19 +1,19 @@
 import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
 
 const catalog = {
-  "kathor-clock": { name: "Rohtak Standard Time", price: 299 },
-  pda: { name: "P.D.A. (Please Don’t Ask)", price: 299 },
-  "submit-mode": { name: "Just Put It In", price: 299 },
-  "clock-it": { name: "Clock It!", price: 299 },
-  "coke-paglu": { name: "Diet Coke Paglu Club", price: 299 },
-  cooks: { name: "Cooks Club", price: 299 },
-  "proxy-pass": { name: "Proxy Mat Laga!", price: 299 },
-  baddie: { name: "Baddie Business", price: 299 },
-  "kathor-land": { name: "Kathor Land", price: 299 },
-  nonchalant: { name: "Nonchalant Energy", price: 299 },
-  "two-friends": { name: "Underwater Besties", price: 499 },
-  "campus-cat-nap": { name: "Cat-Whore Campus Nap", price: 299 },
-  "clinger-cat-club": { name: "Clinger Cat Club", price: 299 }
+  "kathor-clock": { name: "Rohtak Standard Time", price: 5 },
+  pda: { name: "P.D.A. (Please Don’t Ask)", price: 5 },
+  "submit-mode": { name: "Just Put It In", price: 5 },
+  "clock-it": { name: "Clock It!", price: 5 },
+  "coke-paglu": { name: "Diet Coke Paglu Club", price: 5 },
+  cooks: { name: "Cooks Club", price: 5 },
+  "proxy-pass": { name: "Proxy Mat Laga!", price: 5 },
+  baddie: { name: "Baddie Business", price: 5 },
+  "kathor-land": { name: "Kathor Land", price: 5 },
+  nonchalant: { name: "Nonchalant Energy", price: 5 },
+  "two-friends": { name: "Underwater Besties", price: 5 },
+  "campus-cat-nap": { name: "Cat-Whore Campus Nap", price: 5 },
+  "clinger-cat-club": { name: "Clinger Cat Club", price: 5 }
 };
 
 function json(data, status = 200) {
