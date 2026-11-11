@@ -136,12 +136,19 @@ html.motion-ready #treasury .section-heading.is-visible .treasury-description { 
 .faq-heading h2 { margin: 0; font-family: var(--serif); font-size: clamp(2.8rem, 5.3vw, 5.2rem); font-weight: 500; line-height: .96; letter-spacing: -.055em; }
 .faq-heading h2 em { color: var(--red); font-weight: 400; }
 .faq-heading p { max-width: 570px; margin: 15px 0 0; color: #747e8e; font-size: clamp(14px, 1.25vw, 17px); line-height: 1.55; }
-.faq-counter { display: grid; min-width: 132px; justify-items: center; gap: 3px; padding: 13px 15px 11px; border: 1px solid rgba(255,255,255,.92); border-radius: 20px; background: rgba(255,255,255,.47); box-shadow: 0 10px 35px rgba(32,50,88,.07),inset 0 1px 0 rgba(255,255,255,.8); transform: rotate(3deg); backdrop-filter: blur(18px); }
-.faq-counter-label, .faq-counter-caption { color: #9299a6; font-size: 8px; font-weight: 700; letter-spacing: .14em; }
-.faq-counter strong { display: flex; align-items: baseline; gap: 6px; color: var(--ink); font-family: var(--serif); font-size: 27px; font-weight: 500; font-variant-numeric: tabular-nums; }
-.faq-counter strong span { display: inline-block; transform-origin: 50% 45%; backface-visibility: hidden; }
-.faq-counter.is-changing strong span { animation: faq-drum .48s cubic-bezier(.2,.8,.2,1); }
-.faq-counter strong i { color: #c4c8d0; font-family: var(--sans); font-size: 14px; font-style: normal; }
+.faq-graphic { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.faq-graphic-pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px 6px 10px; border: 1px solid rgba(255,255,255,.95); border-radius: 99px; background: rgba(255,255,255,.62); box-shadow: 0 8px 24px rgba(32,50,88,.06); color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .16em; backdrop-filter: blur(14px); }
+.faq-badge-dot { color: var(--red); font-size: 11px; animation: twinkle 3s ease-in-out infinite; }
+.faq-graphic-art { position: relative; width: 170px; height: 86px; border: 1px solid rgba(255,255,255,.85); border-radius: 24px; background: linear-gradient(135deg,rgba(255,255,255,.7),rgba(235,243,255,.55) 48%,rgba(255,230,236,.65)); box-shadow: 0 16px 40px rgba(32,50,88,.08),inset 0 1px 1px white; backdrop-filter: blur(20px); overflow: hidden; }
+.faq-sparkle { position: absolute; font-size: 14px; pointer-events: none; animation: twinkle 3s ease-in-out infinite; }
+.sp-1 { top: 10px; left: 14px; color: var(--sky); font-size: 15px; }
+.sp-2 { top: 12px; right: 18px; color: var(--red); font-size: 13px; animation-delay: 1.2s; }
+.sp-3 { bottom: 12px; left: 24px; color: #ffbe53; font-size: 11px; animation-delay: .7s; }
+.faq-bubble { position: absolute; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid rgba(255,255,255,.9); border-radius: 99px; font-size: 11px; font-weight: 700; box-shadow: 0 4px 14px rgba(18,26,43,.08); backdrop-filter: blur(8px); }
+.b-1 { top: 18px; left: 32px; background: rgba(255,255,255,.88); color: var(--ink); }
+.b-1 .bubble-emoji { font-size: 12px; }
+.b-2 { bottom: 16px; right: 16px; background: var(--ink); color: #fff; font-size: 9px; letter-spacing: .14em; padding: 4px 10px; }
+.b-2 .bubble-tag { color: #4ee09b; font-weight: 800; }
 .faq-window { position: relative; overflow: hidden; padding: 0 18px 14px; border: 1px solid rgba(255,255,255,.82); border-radius: 32px; background: linear-gradient(140deg,rgba(255,255,255,.49),rgba(242,247,255,.25) 46%,rgba(255,255,255,.38)); box-shadow: inset 0 1px 0 rgba(255,255,255,.88),inset 0 -16px 30px rgba(255,255,255,.14),0 20px 52px rgba(24,48,83,.09); backdrop-filter: blur(28px) saturate(155%); }
 .faq-window::before { position: absolute; z-index: 1; inset: 0 0 auto; height: 1px; pointer-events: none; content: ""; background: linear-gradient(90deg,transparent,rgba(255,255,255,.97) 24%,rgba(255,255,255,.62) 76%,transparent); }
 .faq-toolbar { display: flex; min-height: 46px; align-items: center; justify-content: space-between; gap: 12px; color: #808b9b; font-size: 8px; font-weight: 700; letter-spacing: .14em; }
@@ -457,7 +464,7 @@ html.motion-ready .product-grid .snap-tile.is-snapped { opacity: 1; filter: none
   .faq-heading .eyebrow { max-width: 230px; font-size: 8.5px; line-height: 1.45; letter-spacing: .18em; }
   .faq-heading h2 { font-size: clamp(2.3rem, 9.5vw, 3.5rem); }
   .faq-heading p { margin-top: 10px; font-size: 13.5px; }
-  .faq-counter { min-width: 83px; gap: 3px; padding: 11px 8px 10px; border-radius: 16px; }
+  .faq-graphic { display: none !important; }
   .faq-counter-label, .faq-counter-caption { font-size: 7px; letter-spacing: .1em; }
   .faq-counter strong { gap: 3px; font-size: 22px; }
   .faq-counter strong i { font-size: 11px; }
@@ -782,7 +789,7 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 }
 @media (max-width: 760px) {
   .faq-panel { padding: 26px 13px 16px; }
-  .faq-counter { width: 74px; height: 74px; min-width: 74px; flex-basis: 74px; padding: 8px; }
+  .faq-graphic { display: none !important; }
   .faq-counter::before { inset: 5px; }
   .faq-counter-label, .faq-counter-caption { font-size: 6px; letter-spacing: .08em; }
   .faq-counter strong { gap: 2px; font-size: 18px; }
