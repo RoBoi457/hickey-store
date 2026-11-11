@@ -40,8 +40,13 @@ export async function onRequestGet({ request, env }) {
       "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
     ).run();
 
+    try {
+      await env.DB.prepare("DELETE FROM customer_messages WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
+    } catch (_) {}
+
     const result = await env.DB.prepare(
       "SELECT id, user_id, name, email, type, message, quantity, created_at FROM customer_messages " +
+      "WHERE datetime(created_at) >= '2026-11-11 17:30:00' " +
       "ORDER BY created_at DESC LIMIT 200"
     ).all();
 

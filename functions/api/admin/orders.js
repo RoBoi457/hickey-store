@@ -37,7 +37,7 @@ function parseFilters(url) {
 }
 
 function whereClause(filters) {
-  const clauses = [];
+  const clauses = ["datetime(created_at) >= '2026-11-11 17:30:00'"];
   const bindings = [];
   if (filters.status) { clauses.push("status = ?"); bindings.push(filters.status); }
   if (filters.from) { clauses.push("date(created_at) >= date(?)"); bindings.push(filters.from); }
@@ -82,6 +82,9 @@ export async function onRequestGet({ request, env }) {
     try {
       await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
     } catch (_) {}
+    try {
+      await env.DB.prepare("DELETE FROM orders WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
+    } catch (_) {}
 
     if (format === "csv") {
       const result = await env.DB.prepare(
@@ -118,12 +121,12 @@ export async function onRequestGet({ request, env }) {
         "SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_count, " +
         "SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_count, " +
         "SUM(CASE WHEN status = 'paid' THEN amount_rupees ELSE 0 END) AS paid_rupees " +
-        "FROM orders"
+        "FROM orders WHERE datetime(created_at) >= '2026-11-11 17:30:00'"
       ).first(),
       env.DB.prepare(
         "SELECT date(created_at) AS day, SUM(CASE WHEN status = 'paid' THEN amount_rupees ELSE 0 END) AS revenue, " +
         "SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_orders " +
-        "FROM orders WHERE created_at >= datetime('now', '-13 days') GROUP BY date(created_at) ORDER BY day"
+        "FROM orders WHERE datetime(created_at) >= '2026-11-11 17:30:00' GROUP BY date(created_at) ORDER BY day"
       ).all()
     ]);
     const orders = (listResult.results || []).map((order) => ({
