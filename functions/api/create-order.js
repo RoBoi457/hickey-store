@@ -7,7 +7,7 @@ const catalog = {
   "clock-it": { name: "Clock It", price: 69 },
   "coke-paglu": { name: "Diet Coke Paglu", price: 69 },
   cooks: { name: "Cooked", price: 69 },
-  "proxy-pass": { name: "Claude Proxt mt laga", price: 69 },
+  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69 },
   baddie: { name: "The Baddie Club", price: 69 },
   "kathor-land": { name: "Kathor Land", price: 69 },
   nonchalant: { name: "Non Chalant", price: 69 },

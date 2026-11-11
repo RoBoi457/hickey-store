@@ -918,3 +918,12 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 @media (max-width: 760px) {
   .site-footer > .footer-legal { gap: 12px; }
 }
+
+/* Direct team contact phone numbers in popup */
+.contact-team { margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(18,26,43,.08); }
+.contact-team-title { display: block; margin-bottom: 11px; color: #767d8a; font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+.contact-team-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.contact-team-chip { display: inline-flex; align-items: baseline; gap: 6px; padding: 7px 12px; border: 1px solid rgba(18,26,43,.09); border-radius: 12px; background: rgba(255,255,255,.82); color: var(--ink); text-decoration: none; font-size: 12.5px; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+.contact-team-chip:hover { transform: translateY(-1px); border-color: rgba(69,186,240,.8); background: white; color: var(--red); }
+.contact-team-chip span { color: #878f9c; font-size: 11px; font-weight: 600; }
+.contact-team-chip strong { font-weight: 700; color: inherit; }
