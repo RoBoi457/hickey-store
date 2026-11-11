@@ -62,7 +62,7 @@ function itemSummary(itemsJson) {
     return Array.isArray(items)
       ? items.map((item) => [item.name || item.id || "Item", "×" + (Number(item.quantity) || 1)].join(" ")).join("; ")
       : "";
-  } catch {
+  } catch (err) {
     return "";
   }
 }
@@ -79,12 +79,10 @@ export async function onRequestGet({ request, env }) {
   const { sql: where, bindings } = whereClause(filters);
   const format = url.searchParams.get("format");
   try {
-    try {
-      await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
-      try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run(); } catch (_) {}
-      try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run(); } catch (_) {}
-      try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run(); } catch (_) {}
-    } catch (_) {}
+    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run(); } catch (_) {}
+    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run(); } catch (_) {}
+    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run(); } catch (_) {}
+    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run(); } catch (_) {}
     try {
       await env.DB.prepare("DELETE FROM orders WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
     } catch (_) {}
@@ -150,7 +148,7 @@ export async function onRequestGet({ request, env }) {
       },
       daily: daily.results || []
     });
-  } catch {
-    return json({ error: "Could not load orders. Check the D1 binding and run both order migrations." }, 500);
+  } catch (err) {
+    return json({ error: (err && err.message) ? err.message : "Could not load orders." }, 500);
   }
 }
