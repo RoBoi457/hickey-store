@@ -236,6 +236,12 @@ html.motion-ready #treasury .section-heading.is-visible .treasury-description { 
 .preview-copy .eyebrow { margin-bottom: 14px; color: var(--red); }
 .preview-copy h2 { margin: 0; font-family: var(--serif); font-size: clamp(2.1rem, 4vw, 3.35rem); line-height: 1.04; letter-spacing: -.04em; }
 .preview-copy > p { margin: 19px 0 0; color: #777e8b; font-size: clamp(1rem, 1.4vw, 1.15rem); line-height: 1.7; }
+
+.preview-specs { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 0; }
+.spec-pill { display: inline-flex; align-items: baseline; gap: 8px; padding: 8px 14px; border: 1px solid rgba(18,26,43,.08); border-radius: 12px; background: rgba(255,255,255,.8); font-size: 13px; color: #727a87; }
+.spec-pill span { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: #9aa1ad; }
+.spec-pill strong { color: var(--ink); font-weight: 600; font-size: 13px; }
+
 .preview-purchase { display: flex; flex-wrap: wrap; align-items: baseline; gap: 9px; margin: 27px 0 22px; }
 .preview-purchase strong { font-family: var(--serif); font-size: 2rem; font-weight: 600; }
 .preview-purchase span { color: #9197a2; font-size: 13px; }

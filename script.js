@@ -679,15 +679,11 @@ if ("IntersectionObserver" in window) {
   }
 
   const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
-    if (isMobileViewport()) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      }
-      return;
+    if (entry.isIntersecting) {
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
     }
-    entry.target.classList.toggle("is-visible", entry.isIntersecting);
-  }), { threshold: isMobileViewport() ? 0.05 : 0.12, rootMargin: isMobileViewport() ? "40px 0px 20px 0px" : "0px 0px -5% 0px" });
+  }), { threshold: 0.05, rootMargin: "40px 0px 20px 0px" });
   document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
 
   const tileObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
@@ -701,16 +697,11 @@ if ("IntersectionObserver" in window) {
         : (tileIndex % Math.max(1, columns)) * 35;
       entry.target.style.setProperty("--snap-delay", `${delay}ms`);
       if (entry.target.matches(".faq-item")) entry.target.style.setProperty("--faq-delay", `${delay}ms`);
-      if (isMobileViewport()) {
-        entry.target.classList.add("is-snapped");
-        tileObserver.unobserve(entry.target);
-        return;
-      }
+      entry.target.classList.add("is-snapped");
+      // Once snapped/revealed, latch it permanently so scrolling back and forth never glitches or jumps!
+      tileObserver.unobserve(entry.target);
     }
-    if (!isMobileViewport()) {
-      entry.target.classList.toggle("is-snapped", entry.isIntersecting);
-    }
-  }), { threshold: isMobileViewport() ? 0.04 : 0.16, rootMargin: isMobileViewport() ? "60px 0px 40px 0px" : "0px 0px -4% 0px" });
+  }), { threshold: 0.04, rootMargin: "60px 0px 40px 0px" });
   document.querySelectorAll(".snap-tile").forEach((element) => tileObserver.observe(element));
 } else {
   document.querySelector(".marquee")?.classList.add("is-in-view");

@@ -13,11 +13,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1794411810">
+    <link rel="stylesheet" href="styles.css?v=1794416047">
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="auth-client.js?v=1794411810" defer></script>
-    <script src="script.js?v=1794411810" defer></script>
+    <script src="auth-client.js?v=1794416047" defer></script>
+    <script src="script.js?v=1794416047" defer></script>
   </head>
   <body>
     <div class="page-glow" aria-hidden="true"></div>
@@ -205,7 +205,7 @@
             <label class="contact-field-label" for="contact-quantity" id="contact-quantity-label" hidden>Small production run <span>(rough estimate)</span></label>
             <input id="contact-quantity" name="quantity" type="number" min="2" max="100" placeholder="How many pieces?" hidden>
           </div>
-          <button class="button button-dark contact-submit" id="contact-submit" type="submit">Open email to send <span aria-hidden="true">↗</span></button>
+          <button class="button button-dark contact-submit" id="contact-submit" type="submit">Send</button>
           <p class="contact-note" id="contact-note" role="status">Your email app will open with this message ready to send.</p>
         </form>
       </section>
@@ -219,6 +219,10 @@
           <span class="eyebrow">A LITTLE CAMPUS LEGEND</span>
           <h2 id="preview-title"></h2>
           <p id="preview-description"></p>
+          <div class="preview-specs" aria-label="Product specifications">
+            <div class="spec-pill"><span>Size</span><strong>2.25cm radius</strong></div>
+            <div class="spec-pill"><span>Material</span><strong>Acrylic</strong></div>
+          </div>
           <div class="preview-purchase"><strong id="preview-price"></strong><span>· UPI via Razorpay</span></div>
           <button class="button button-dark preview-add" id="preview-add" type="button">Add to basket <span aria-hidden="true">＋</span></button>
           <div class="preview-quantity" id="preview-quantity" aria-label="Product quantity" hidden><button type="button" id="preview-minus" aria-label="Remove one">−</button><span id="preview-quantity-count" aria-live="polite">1</span><button type="button" id="preview-plus" aria-label="Add one">+</button></div>
