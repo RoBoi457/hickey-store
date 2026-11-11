@@ -215,7 +215,8 @@ html.motion-ready #treasury .section-heading.is-visible .treasury-description { 
 .contact-extra[hidden], .contact-extra [hidden] { display: none !important; }
 .contact-submit { width: 100%; min-height: 58px; margin-top: 20px; }
 .contact-note { margin: 10px 0 0; color: #9096a1; font-size: 11px; line-height: 1.5; text-align: center; }
-.site-footer { display: grid; grid-template-columns: 1fr auto 1fr; min-height: 120px; align-items: center; gap: 20px; padding-top: 8px; padding-bottom: 35px; color: #969aa4; font-size: 10px; font-weight: 600; letter-spacing: .15em; }
+.site-footer { display: grid; grid-template-columns: 1fr auto 1fr; min-height: 110px; align-items: center; justify-items: center; gap: 20px; padding-top: 20px; padding-bottom: 35px; color: #969aa4; font-size: 10px; font-weight: 600; letter-spacing: .15em; }
+.site-footer > :first-child { justify-self: start; }
 .site-footer > :nth-child(2) { justify-self: center; text-align: center; }
 .site-footer > :last-child { justify-self: end; text-align: right; }
 .footer-logo { display: inline-flex; width: 142px; align-items: center; color: var(--ink); font-size: 22px; font-weight: 800; letter-spacing: -.08em; text-decoration: none; }
@@ -481,7 +482,7 @@ html.motion-ready .product-grid .snap-tile.is-snapped { opacity: 1; filter: none
   .contact-layer { padding: 11px; }
   .contact-card { max-height: 92dvh; padding: 30px 20px 22px; border-radius: 24px; }
   .contact-card textarea, .contact-extra input, .field input { font-size: 16px; }
-  .site-footer { display: flex; min-height: 0; flex-direction: column; justify-content: center; gap: 7px; padding-top: 8px; padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); text-align: center; }
+  .site-footer { display: flex; min-height: 0; flex-direction: column; align-items: center; justify-content: center; gap: 9px; padding-top: 18px; padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); text-align: center; }
   .site-footer > :last-child { text-align: center; }
   .basket-drawer { width: 100%; padding-inline: 19px; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
   .drawer-head { min-height: 74px; margin-inline: -19px; padding-inline: 21px; }
@@ -823,7 +824,7 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 /* Customer accounts and saved order history. */
 .account-nav svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .account-nav.is-signed-in { color: var(--blue-deep); background: rgba(69,186,240,.14); }
-.account-nav.is-signed-in::after { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; border: 1.5px solid white; border-radius: 50%; background: #1ec773; content: ""; }
+/* Green notification dot removed per design */
 .account-layer { position: fixed; z-index: 90; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(16,23,38,.38); opacity: 0; visibility: hidden; pointer-events: none; backdrop-filter: blur(0); transition: opacity .25s ease, backdrop-filter .25s ease, visibility 0s linear .25s; }
 .account-layer.is-open { opacity: 1; visibility: visible; pointer-events: auto; backdrop-filter: blur(9px); transition: opacity .25s ease, backdrop-filter .25s ease, visibility 0s; }
 .account-card { position: relative; width: min(100%, 510px); max-height: min(90dvh, 760px); overflow-y: auto; padding: clamp(26px, 5vw, 42px); border: 1px solid rgba(255,255,255,.88); border-radius: 30px; background: linear-gradient(145deg,rgba(255,255,255,.97),rgba(250,247,245,.94)); box-shadow: 0 34px 100px rgba(20,31,53,.22), inset 0 1px 0 white; transform: translateY(16px) scale(.985); transition: transform .25s cubic-bezier(.2,.8,.2,1); }
@@ -852,7 +853,13 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 .account-profile-meta { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
 .account-name-display { color: var(--ink); font-size: 14px; font-weight: 750; }
 .account-email-sub { color: var(--muted); font-size: 12px; }
-.account-signout-inline { flex: 0 0 auto; min-height: 38px; padding: 0 15px; border-radius: 11px; font-size: 12px; }
+.account-signout-inline { flex: 0 0 auto; min-height: 36px; padding: 0 14px; border: 1px solid rgba(225,50,75,.35); border-radius: 11px; background: rgba(255,255,255,.95); color: #c02538; font-size: 12px; font-weight: 750; box-shadow: 0 2px 6px rgba(225,50,75,.08); }
+.account-signout-inline:hover { background: #c02538; color: white; border-color: #c02538; }
+.account-details-section { padding-top: 16px; margin-bottom: 18px; border-top: 1px solid rgba(18,26,43,.08); }
+.account-details-form { padding: 14px 16px; margin-top: 12px; border: 1px solid rgba(18,26,43,.08); border-radius: 18px; background: rgba(255,255,255,.75); }
+.account-failed-banner { margin: 12px 0 14px; padding: 14px 16px; border: 1px solid rgba(225,50,75,.28); border-radius: 15px; background: rgba(255,242,244,.95); color: #8e1c2c; }
+.account-failed-banner strong { display: block; font-size: 13px; font-weight: 800; margin-bottom: 4px; color: #b8192d; }
+.account-failed-banner span { display: block; font-size: 11.5px; line-height: 1.45; color: #6e202c; }
 .account-orders { padding-top: 15px; border-top: 1px solid rgba(18,26,43,.08); }
 .account-orders-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .account-orders-heading h3 { margin: 0; font: 500 20px/1.1 var(--serif); }
@@ -864,7 +871,8 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 .account-order-top span { color: var(--muted); font-size: 10px; text-transform: capitalize; }
 .account-order-card p { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
 .account-orders-empty { margin: 14px 0 0; color: var(--muted); font-size: 12px; }
-.account-signout { width: 100%; margin-top: 16px; }
+.account-signout { width: 100%; min-height: 48px; margin-top: 20px; border: 1px solid rgba(18,26,43,.18); border-radius: 14px; background: #121a2b; color: #ffffff; font-weight: 700; font-size: 13px; box-shadow: 0 4px 14px rgba(18,26,43,.12); }
+.account-signout:hover { background: #1e2b45; }
 [hidden] { display: none !important; }
 @media (max-width: 600px) {
   .account-layer { align-items: end; padding: 8px; }

@@ -32,7 +32,7 @@
 
   function setUser(next) {
     user = next && typeof next.id === "string" && typeof next.email === "string"
-      ? { id: next.id, name: (next.name || next.email.split("@")[0] || "").trim(), email: next.email }
+      ? { id: next.id, name: (next.name || next.email.split("@")[0] || "").trim(), email: next.email, phone: next.phone || "", address: next.address || "" }
       : null;
     const button = $("open-account");
     if (button) {
@@ -167,13 +167,21 @@
 
   async function loadOrders() {
     const list = $("account-orders-list");
+    const failedBanner = $("account-failed-banner");
     if (!list || !user) return;
     list.replaceChildren();
+    if (failedBanner) failedBanner.hidden = true;
     $("account-orders-empty").hidden = true;
-    setStatus("Loading your orders…", true);
+    setStatus("Checking confirmed orders…", true);
     try {
       const data = await api("/api/account/orders");
       const orders = Array.isArray(data.orders) ? data.orders : [];
+      const failed = Array.isArray(data.failed_orders) ? data.failed_orders : [];
+
+      if (failedBanner && failed.length > 0) {
+        failedBanner.hidden = false;
+      }
+
       $("account-orders-empty").hidden = orders.length > 0;
       for (const order of orders) {
         const card = document.createElement("article");
@@ -183,8 +191,10 @@
         const ref = document.createElement("strong");
         ref.textContent = order.order_ref || "Hickey order";
         const state = document.createElement("span");
-        state.textContent = String(order.status || "pending");
+        state.textContent = "Confirmed · Paid";
         state.className = "account-order-status";
+        state.style.color = "#1ec773";
+        state.style.fontWeight = "700";
         top.append(ref, state);
         const detail = document.createElement("p");
         const items = Array.isArray(order.items)
@@ -205,6 +215,64 @@
     } catch (error) {
       setStatus(error.message, true);
     }
+  }
+
+  function setupAccountDetails() {
+    const toggleBtn = $("toggle-account-details");
+    const form = $("account-details-form");
+    const saveStatus = $("profile-save-status");
+    if (!toggleBtn || !form) return;
+
+    toggleBtn.addEventListener("click", () => {
+      const isHidden = form.hidden;
+      form.hidden = !isHidden;
+      toggleBtn.textContent = isHidden ? "Close details" : "Edit details";
+      if (isHidden && user) {
+        $("profile-name").value = user.name || "";
+        $("profile-email").value = user.email || "";
+        $("profile-phone").value = user.phone || "";
+        $("profile-address").value = user.address || "";
+        if (saveStatus) saveStatus.textContent = "";
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const saveBtn = $("profile-save-btn");
+      if (saveBtn) saveBtn.disabled = true;
+      if (saveStatus) {
+        saveStatus.style.color = "var(--muted)";
+        saveStatus.textContent = "Saving account details…";
+      }
+      try {
+        const payload = {
+          name: $("profile-name").value.trim(),
+          email: $("profile-email").value.trim(),
+          phone: $("profile-phone").value.trim(),
+          address: $("profile-address").value.trim()
+        };
+        const res = await api("/api/account/orders", {
+          method: "PUT",
+          body: JSON.stringify(payload)
+        });
+        if (res.user) {
+          setUser({ ...user, ...res.user });
+          if ($("account-name-display")) $("account-name-display").textContent = res.user.name || res.user.email;
+          if ($("account-email-display")) $("account-email-display").textContent = res.user.email;
+        }
+        if (saveStatus) {
+          saveStatus.style.color = "#1ec773";
+          saveStatus.textContent = "Account details updated successfully!";
+        }
+      } catch (err) {
+        if (saveStatus) {
+          saveStatus.style.color = "#c02538";
+          saveStatus.textContent = err.message || "Could not save details.";
+        }
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    });
   }
 
   async function finishAuth(nextUser) {
@@ -354,6 +422,7 @@
         setUser(null);
       }
     })();
+    setupAccountDetails();
     setupGoogleButton();
     return initPromise;
   }

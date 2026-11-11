@@ -277,13 +277,15 @@
           <p id="account-description" class="account-description">Sign in to keep your basket and order history in sync.</p>
           <div class="account-mode-switch" role="group" aria-label="Account action">
             <button id="account-login-tab" type="button" aria-pressed="true">Sign in</button>
-            <button id="account-signup-tab" type="button" aria-pressed="false">Sign up</button>
+            <button id="account-signup-tab" type="button" aria-pressed="false">Create new account</button>
           </div>
           <form id="account-form">
-            <label class="account-field"><span>Email address</span><input id="account-email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></label>
+            <label class="account-field" id="account-name-field" hidden><span>Full name / Username</span><input id="account-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="100" placeholder="Your name or username"></label>
+            <label class="account-field"><span id="account-email-label">Email or username</span><input id="account-email" name="email" type="text" autocomplete="username" required maxlength="254" placeholder="Email address or username"></label>
             <label class="account-field"><span>Password</span><input id="account-password" name="password" type="password" autocomplete="current-password" required minlength="1" maxlength="128" placeholder="Password"></label>
             <button class="button button-dark account-submit" id="account-submit" type="submit">Sign in</button>
           </form>
+          <p class="account-switch-prompt"><span id="account-switch-text">Logging in for the first time?</span> <button type="button" id="account-switch-mode" class="account-switch-link">Create new account</button></p>
           <p class="account-status" id="account-status" role="status" aria-live="polite"></p>
           <div class="account-divider"><span>or</span></div>
           <div id="google-signin" class="google-signin"></div>
@@ -291,15 +293,41 @@
         </div>
         <div class="account-body" id="account-profile-view" hidden>
           <span class="eyebrow">YOUR ACCOUNT</span>
-          <h2>Your Hickey <em>history.</em></h2>
-          <p class="account-email-display">Signed in as <strong id="account-email-display"></strong></p>
+          <h2>Your Hickey <em>profile.</em></h2>
+          <div class="account-profile-bar">
+            <div class="account-profile-meta">
+              <strong id="account-name-display" class="account-name-display"></strong>
+              <span class="account-email-sub" id="account-email-display"></span>
+            </div>
+            <button class="button account-signout-inline" id="account-signout-top" type="button">Sign out</button>
+          </div>
+
+          <section class="account-details-section" aria-labelledby="account-details-title">
+            <div class="account-orders-heading">
+              <h3 id="account-details-title">Account details</h3>
+              <button type="button" id="toggle-account-details" class="account-refresh">Edit details</button>
+            </div>
+            <form id="account-details-form" class="account-details-form" hidden>
+              <label class="account-field"><span>Full name</span><input id="profile-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="100"></label>
+              <label class="account-field"><span>Email ID</span><input id="profile-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
+              <label class="account-field"><span>Phone number</span><input id="profile-phone" name="phone" type="tel" autocomplete="tel" placeholder="10-digit mobile number"></label>
+              <label class="account-field"><span>Delivery address (include dorm number)</span><input id="profile-address" name="address" type="text" autocomplete="street-address" placeholder="Room / Dorm / Hostel & Campus"></label>
+              <button class="button button-dark" id="profile-save-btn" type="submit" style="width:100%; min-height:46px; margin-top:8px;">Save details</button>
+              <p class="account-status" id="profile-save-status" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
           <section class="account-orders" aria-labelledby="account-orders-title">
-            <div class="account-orders-heading"><h3 id="account-orders-title">Past orders</h3><button type="button" id="account-refresh-orders" class="account-refresh">Refresh</button></div>
+            <div class="account-orders-heading"><h3 id="account-orders-title">Confirmed orders</h3><button type="button" id="account-refresh-orders" class="account-refresh">Refresh</button></div>
+            <div id="account-failed-banner" class="account-failed-banner" hidden>
+              <strong>Payment failed — order not placed.</strong>
+              <span>One or more recent payment attempts were incomplete or rejected by Razorpay. No charge was captured and the order was not accepted.</span>
+            </div>
             <div id="account-orders-list" class="account-orders-list"></div>
-            <p id="account-orders-empty" class="account-orders-empty" hidden>No orders yet. Your future orders will appear here.</p>
+            <p id="account-orders-empty" class="account-orders-empty" hidden>No confirmed orders yet. Your confirmed orders will appear here once payment is successful.</p>
           </section>
           <p class="account-status" id="account-profile-status" role="status" aria-live="polite"></p>
-          <button class="button button-outline account-signout" id="account-signout" type="button">Sign out</button>
+          <button class="button account-signout" id="account-signout" type="button">Sign out</button>
         </div>
       </section>
     </div>
