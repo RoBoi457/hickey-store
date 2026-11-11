@@ -22,9 +22,14 @@ export async function ensureAuthSchema(env) {
       ).run();
       try {
         await env.DB.prepare("ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''").run();
-      } catch {}try { await env.DB.prepare("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''").run(); } catch {}
-    }try { await env.DB.prepare("ALTER TABLE users ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''").run(); } catch {}
-    
+      } catch {}
+      try {
+        await env.DB.prepare("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''").run();
+      } catch {}
+      try {
+        await env.DB.prepare("ALTER TABLE users ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''").run();
+      } catch {}
+
       
       await env.DB.prepare(
         "CREATE TABLE IF NOT EXISTS sessions (" +
