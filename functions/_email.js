@@ -171,17 +171,22 @@ export async function sendOrderEmail(env, order) {
     }
   }
 
-  // 2. Fallback: Resend or SendGrid if configured
+  // 1. Resend HTTPS API (Primary HTTPS dispatcher for Cloudflare)
   if (typeof env.RESEND_API_KEY === "string" && env.RESEND_API_KEY.trim()) {
+    const resendKey = env.RESEND_API_KEY.trim();
+    const fromAddress = (typeof env.RESEND_FROM_EMAIL === "string" && env.RESEND_FROM_EMAIL.trim())
+      ? env.RESEND_FROM_EMAIL.trim()
+      : `Team Hickey <onboarding@resend.dev>`;
+
     try {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer " + env.RESEND_API_KEY.trim(),
+          "Authorization": "Bearer " + resendKey,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          from: `Team Hickey <${SUPPORT_EMAIL}>`,
+          from: fromAddress,
           to: [recipientEmail],
           reply_to: SUPPORT_EMAIL,
           subject,
@@ -189,8 +194,9 @@ export async function sendOrderEmail(env, order) {
           html: bodyHtml
         })
       });
-      if (res.ok) {
-        return { sent: true, sent_at: new Date().toISOString(), body: bodyText, provider: "resend" };
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.id) {
+        return { sent: true, sent_at: new Date().toISOString(), body: bodyText, provider: "resend", id: data.id };
       }
     } catch (_) {}
   }
