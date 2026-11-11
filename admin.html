@@ -33,11 +33,12 @@
         <div><p class="kicker">The small business command center</p><div class="brand">Hickey <span>order desk</span></div><p class="sub">Orders, payments and shipping details in one place.</p></div>
         <div class="top-right"><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
       </header>
-      <div class="stats">
+      <div class="stats" style="grid-template-columns: repeat(5, 1fr);">
         <article class="stat glass"><div class="stat-label">Gross paid</div><div id="revenue" class="stat-value">—</div><div class="stat-note">Captured UPI orders</div></article>
         <article class="stat glass"><div class="stat-label">Paid orders</div><div id="paid" class="stat-value">—</div><div class="stat-note">Ready to fulfil</div></article>
         <article class="stat glass"><div class="stat-label">Awaiting payment</div><div id="pending" class="stat-value">—</div><div class="stat-note">Pending checkout</div></article>
         <article class="stat glass"><div class="stat-label">All orders</div><div id="total" class="stat-value">—</div><div class="stat-note">Across all statuses</div></article>
+        <article class="stat glass"><div class="stat-label">Customer notes</div><div id="msg-count" class="stat-value">0</div><div class="stat-note">In website inbox</div></article>
       </div>
       <section class="chart-card glass">
         <div class="chart-head"><strong>Last 14 days</strong><span>Paid revenue · ₹</span></div>
@@ -52,6 +53,32 @@
         <p id="customer-error" class="error" style="padding:0 18px"></p>
         <div class="table-wrap"><table style="min-width:560px"><thead><tr><th>Email</th><th>Account created</th><th>Orders</th></tr></thead><tbody id="customer-rows"></tbody></table><div id="customers-empty" class="empty hidden">No customer accounts yet.</div></div>
       </section>
+            <!-- Customer messages & feedback inbox -->
+      <section class="chart-card glass" style="margin-bottom: 24px;">
+        <div class="chart-head" style="margin-bottom: 14px;">
+          <div>
+            <strong style="font-size: 22px;">Customer Inbox & Suggestions</strong>
+            <p style="margin: 4px 0 0; color: var(--muted); font-size: 12px;">Messages, design ideas, and custom order requests sent directly through the website.</p>
+          </div>
+          <span id="messages-label" style="font-weight: 700; color: var(--red);">0 messages</span>
+        </div>
+        <p id="messages-error" class="error" style="margin: 0 0 10px;"></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 170px;">Date & Sender</th>
+                <th style="width: 120px;">Category</th>
+                <th>Customer Message</th>
+                <th style="width: 140px;">Extra info</th>
+              </tr>
+            </thead>
+            <tbody id="message-rows"></tbody>
+          </table>
+          <div id="messages-empty" class="empty">No customer messages yet. When customers use the chat/feedback option on your site, their notes appear right here.</div>
+        </div>
+      </section>
+
       <section class="orders glass">
         <div class="toolbar">
           <input id="search" class="input search" type="search" placeholder="Search name, email, phone, address or order ref">
@@ -117,7 +144,50 @@
         rows.append(tr);
       }
     }
+    function drawMessages(messages) {
+      const rows = $("message-rows"); rows.replaceChildren();
+      $("messages-empty").classList.toggle("hidden", messages.length > 0);
+      $("messages-label").textContent = messages.length + " notes received";
+      if ($("msg-count")) $("msg-count").textContent = messages.length;
+      for (const msg of messages) {
+        const tr = document.createElement("tr");
+        const sender = cell("td", msg.name || "Anonymous", "ref");
+        sender.append(cell("small", msg.email || "No email provided"));
+        const createdDate = msg.created_at ? new Date(msg.created_at.replace(" ", "T") + "Z") : new Date();
+        sender.append(cell("small", createdDate.toLocaleString("en-IN")));
+
+        const typeBadge = cell("td", "", "");
+        const badge = cell("span", msg.type || "note", "status");
+        if (msg.type === "custom") { badge.style.background = "#eef4ff"; badge.style.color = "#1e50bb"; }
+        else if (msg.type === "feedback") { badge.style.background = "#fff4e5"; badge.style.color = "#995800"; }
+        else { badge.style.background = "#f4f1fb"; badge.style.color = "#6b3ba7"; }
+        typeBadge.append(badge);
+
+        const content = cell("td", msg.message, "");
+        content.style.whiteSpace = "pre-wrap";
+        content.style.lineHeight = "1.5";
+        content.style.fontSize = "13px";
+
+        const extra = cell("td", msg.quantity ? "Pieces: " + msg.quantity : "—", "");
+        extra.style.color = "var(--muted)";
+        extra.style.fontSize = "12px";
+
+        for (const col of [sender, typeBadge, content, extra]) tr.append(col);
+        rows.append(tr);
+      }
+    }
+    async function loadMessages() {
+      if (!$("message-rows")) return;
+      $("messages-error").textContent = "";
+      try {
+        const {data} = await request("/api/admin/messages");
+        drawMessages(Array.isArray(data.messages) ? data.messages : []);
+      } catch (error) {
+        $("messages-error").textContent = error.message;
+      }
+    }
     async function loadCustomers() {
+      if (!$("customer-error")) return;
       $("customer-error").textContent = "";
       try {
         const {data} = await request("/api/admin/customers");
@@ -132,7 +202,7 @@
         const {data}=await request("/api/admin/orders?"+queryString(activeFilters,{page}));
         $("revenue").textContent=money(data.summary.revenueRupees);$("paid").textContent=data.summary.paid;
         $("pending").textContent=data.summary.pending;$("total").textContent=data.summary.total;
-        drawChart(data.daily);drawOrders(data.orders,data.totalFiltered);await loadCustomers();
+        drawChart(data.daily);drawOrders(data.orders,data.totalFiltered);await Promise.all([loadCustomers(), loadMessages()]);
       }catch(error){$("app-error").textContent=error.message;if(error.message==="Admin access required.")lock();}
       finally{$("app").classList.remove("loading");}
     }
