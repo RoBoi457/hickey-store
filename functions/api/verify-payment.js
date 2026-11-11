@@ -1,3 +1,4 @@
+import { sendOrderEmail } from "../_email.js";
 import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
 
 function json(data, status = 200) {
@@ -98,12 +99,28 @@ export async function onRequestPost({ request, env }) {
       return json({ verified: false, error: "Razorpay has not confirmed a captured payment for this order yet." }, 402);
     }
 
+    try {
+      await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run();
+      await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run();
+      await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run();
+    } catch (_) {}
+
     await env.DB.prepare("UPDATE orders SET status = 'paid', payment_method = ?, razorpay_payment_id = ? WHERE razorpay_order_id = ? AND status = 'pending'")
       .bind(payment.method || "unknown", payment.id, order.id)
       .run();
-    const confirmed = await env.DB.prepare("SELECT order_ref, status, razorpay_payment_id FROM orders WHERE razorpay_order_id = ?")
+    const confirmed = await env.DB.prepare("SELECT id, order_ref, status, customer_name, customer_email, razorpay_payment_id FROM orders WHERE razorpay_order_id = ?")
       .bind(order.id)
       .first();
+
+    // Trigger automated order confirmation email dispatch:
+    try {
+      const emailResult = await sendOrderEmail(env, confirmed);
+      if (emailResult.sent) {
+        await env.DB.prepare("UPDATE orders SET email_sent = 1, email_sent_at = ?, email_body = ? WHERE id = ?")
+          .bind(emailResult.sent_at || new Date().toISOString(), emailResult.body || "", confirmed.id)
+          .run();
+      }
+    } catch (_) {}
     if (confirmed?.status !== "paid" || confirmed.razorpay_payment_id !== payment.id) {
       return json({ verified: false, error: "We couldn't save the payment confirmation. Please contact Hickey before retrying." }, 500);
     }

@@ -89,10 +89,26 @@
           <button id="export" class="button primary">Download CSV</button>
         </div>
         <p id="app-error" class="error" style="padding:0 18px"></p>
-        <div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer & shipping</th><th>Items</th><th>Amount</th><th>Status</th><th>Payment reference</th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty hidden">No orders match these filters.</div></div>
+        <div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer & shipping</th><th>Items</th><th>Amount</th><th>Status</th><th>Email confirmation</th><th>Payment reference</th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty hidden">No orders match these filters.</div></div>
         <div class="pager"><span id="page-label">—</span><div><button id="prev" class="button">← Previous</button> <button id="next" class="button">Next →</button></div></div>
       </section>
     </section>
+  
+    <!-- Sent Email Modal -->
+    <div id="email-modal" class="account-layer hidden" style="position:fixed; z-index:99; inset:0; display:grid; place-items:center; padding:18px; background:rgba(16,23,38,.45); backdrop-filter:blur(8px);">
+      <div class="glass" style="max-width:580px; width:100%; max-height:85vh; overflow-y:auto; padding:28px; border-radius:24px; position:relative; background:white;">
+        <button id="close-email-modal" style="position:absolute; top:16px; right:16px; border:none; background:none; font-size:24px; cursor:pointer;">×</button>
+        <p class="kicker" style="margin-bottom:6px;">AUTOMATED ORDER CONFIRMATION</p>
+        <h2 id="modal-email-title" style="margin:0 0 14px; font-size:20px; font-family:Georgia,serif;">Order Email</h2>
+        <div style="padding:10px 14px; background:#f4f6fa; border-radius:12px; margin-bottom:16px; font-size:12px; color:var(--muted);">
+          <div><strong>Sender:</strong> support.hickey@gmail.com</div>
+          <div><strong>Recipient:</strong> <span id="modal-email-recipient">—</span></div>
+          <div><strong>Sent at:</strong> <span id="modal-email-time">—</span></div>
+        </div>
+        <pre id="modal-email-content" style="white-space:pre-wrap; font-family:inherit; font-size:14px; line-height:1.6; color:var(--ink); background:#fafbfe; padding:18px; border-radius:16px; border:1px solid var(--line);"></pre>
+      </div>
+    </div>
+
   </main>
   <script>
     const $ = (id) => document.getElementById(id);
@@ -125,8 +141,24 @@
         const items=cell("td",order.items);items.style.maxWidth="260px";
         const amount=cell("td",money(order.amount_rupees));amount.style.fontWeight="800";
         const state=cell("td","","");state.append(cell("span",order.status,"status "+order.status));
+
+        const emailCol=cell("td","","");
+        if(order.email_sent){
+          const tag=cell("span","✓ Sent","status");
+          tag.style.background="#def6ea";tag.style.color="#14784b";tag.style.fontWeight="700";
+          const viewBtn=document.createElement("button");
+          viewBtn.textContent="View mail ↗";
+          viewBtn.className="button";
+          viewBtn.style.padding="4px 9px";viewBtn.style.fontSize="11px";viewBtn.style.marginLeft="8px";viewBtn.style.borderRadius="8px";
+          viewBtn.onclick=()=>showEmailModal(order);
+          emailCol.append(tag,viewBtn);
+        } else {
+          const tag=cell("span","—","");tag.style.color="var(--muted)";
+          emailCol.append(tag);
+        }
+
         const payment=cell("td",order.razorpay_payment_id||"—","");payment.style.fontFamily="ui-monospace,monospace";payment.style.fontSize="11px";payment.style.overflowWrap="anywhere";
-        for(const c of [ref,who,items,amount,state,payment])tr.append(c);rows.append(tr);
+        for(const c of [ref,who,items,amount,state,emailCol,payment])tr.append(c);rows.append(tr);
       }
       $("page-label").textContent=total+" matching orders · page "+page;
       $("prev").disabled=page<=1;$("next").disabled=orders.length<100;
@@ -214,6 +246,31 @@
     $("refresh").addEventListener("click",load);$("logout").addEventListener("click",lock);
     $("prev").addEventListener("click",()=>{if(page>1){page--;load();}});$("next").addEventListener("click",()=>{page++;load();});
     $("export").addEventListener("click",async()=>{try{const {response}=await request("/api/admin/orders?"+queryString(activeFilters,{format:"csv"}));const blob=await response.blob();const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="hickey-orders.csv";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);}catch(error){$("app-error").textContent=error.message;}});
+    
+    function showEmailModal(order) {
+      $("modal-email-title").textContent = "Email sent for " + order.order_ref;
+      $("modal-email-recipient").textContent = (order.customer_name ? order.customer_name + " <" : "") + (order.customer_email || "No email") + (order.customer_name ? ">" : "");
+      $("modal-email-time").textContent = order.email_sent_at ? new Date(order.email_sent_at).toLocaleString("en-IN") : "Recorded upon capture";
+      
+      const body = order.email_body || [
+        "Subject: Your Hickey is on the Way!\n",
+        "Good news, " + (order.customer_name || "there") + "!\n",
+        "Your Hickey order is officially in, and we're getting everything ready for you!\n",
+        "We're excited to have you here. Your little piece of happiness is now on its way to becoming yours.\n",
+        "Order ID: " + order.order_ref + "\n",
+        "We'll keep you updated at every step of the journey.\n",
+        "Thank you for choosing Hickey!\n",
+        "With love,",
+        "Team Hickey\n",
+        "Customer Support: Prabhu: +91 89564 42297 | Rohan: +91 86608 50435 | support.hickey@gmail.com"
+      ].join("\n");
+      
+      $("modal-email-content").textContent = body;
+      $("email-modal").classList.remove("hidden");
+    }
+    $("close-email-modal")?.addEventListener("click", () => $("email-modal").classList.add("hidden"));
+    $("email-modal")?.addEventListener("click", (e) => { if (e.target === $("email-modal")) $("email-modal").classList.add("hidden"); });
+
     const saved=sessionStorage.getItem("hickey-admin-token");if(saved)unlock(saved);
   </script>
 </body>
