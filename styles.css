@@ -112,14 +112,14 @@ html.motion-ready #treasury .section-heading.is-visible .treasury-description { 
 .photo-tee img { object-position: 50% 45%; }
 .photo-tote img { object-position: 50% 50%; }
 .badge { position: absolute; z-index: 2; top: 22px; left: 22px; padding: 7px 15px 8px; border-radius: 99px; color: #fff; background: var(--red); box-shadow: 0 8px 20px rgba(237,36,66,.17); font-size: 13px; font-weight: 500; }
-.add-button { position: absolute; z-index: 2; right: 25px; bottom: 25px; display: grid; width: 58px; height: 58px; place-items: center; padding: 0 0 4px; border: 1px solid rgba(255,255,255,.78); border-radius: 50%; color: #fff; background: rgba(18,26,43,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.34),0 7px 20px rgba(18,26,43,.11); backdrop-filter: blur(8px) saturate(130%); font-size: 33px; font-weight: 300; line-height: 1; cursor: pointer; transition: color .24s, background .24s, transform .24s, border-color .24s; }
+.add-button { position: absolute; z-index: 2; right: 25px; bottom: 25px; display: grid; width: 54px; height: 54px; place-items: center; padding: 0 0 3px; border: 1px solid rgba(255,255,255,.55); border-radius: 50%; color: #111a2b; background: rgba(255,255,255,.14); box-shadow: inset 0 1px 1px rgba(255,255,255,.75),0 8px 24px rgba(18,26,43,.08); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font-size: 30px; font-weight: 300; line-height: 1; cursor: pointer; transition: color .2s, background .2s, transform .2s, border-color .2s; }
 .add-button[hidden], .product-quantity[hidden] { display: none !important; }
-.add-button:hover { color: #fff; border-color: rgba(255,255,255,.95); background: rgba(237,36,66,.48); transform: rotate(90deg) scale(1.06); }
-.add-button.added { background: rgba(237,36,66,.4); transform: rotate(45deg); }
-.product-quantity { position: absolute; z-index: 3; right: 25px; bottom: 25px; display: grid; min-width: 146px; height: 58px; grid-template-columns: 1fr 1fr 1fr; align-items: center; overflow: hidden; border: 1px solid rgba(255,255,255,.78); border-radius: 999px; color: #fff; background: rgba(18,26,43,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.34),0 7px 20px rgba(18,26,43,.11); backdrop-filter: blur(8px) saturate(130%); animation: quantity-in .2s ease-out both; }
-.product-quantity button { display: grid; height: 100%; min-width: 44px; place-items: center; padding: 0 0 3px; border: 0; color: inherit; background: transparent; font: inherit; font-size: 27px; line-height: 1; cursor: pointer; transition: color .2s, background .2s; }
-.product-quantity button:hover { color: #fff; background: rgba(237,36,66,.4); }
-.product-quantity span { justify-self: center; min-width: 20px; text-align: center; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.add-button:hover { color: #fff; border-color: rgba(255,255,255,.9); background: rgba(237,36,66,.72); transform: rotate(90deg) scale(1.08); }
+.add-button.added { background: rgba(237,36,66,.75); color: #fff; transform: rotate(45deg); }
+.product-quantity { position: absolute; z-index: 3; right: 25px; bottom: 25px; display: grid; min-width: 136px; height: 54px; grid-template-columns: 1fr 1fr 1fr; align-items: center; overflow: hidden; border: 1px solid rgba(255,255,255,.55); border-radius: 999px; color: #111a2b; background: rgba(255,255,255,.15); box-shadow: inset 0 1px 1px rgba(255,255,255,.8),0 8px 24px rgba(18,26,43,.08); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); animation: quantity-in .2s ease-out both; }
+.product-quantity button { display: grid; height: 100%; min-width: 40px; place-items: center; padding: 0 0 2px; border: 0; color: inherit; background: transparent; font: inherit; font-size: 24px; line-height: 1; cursor: pointer; transition: color .2s, background .2s; }
+.product-quantity button:hover { color: #fff; background: rgba(237,36,66,.72); }
+.product-quantity span { justify-self: center; min-width: 20px; text-align: center; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
 @keyframes quantity-in { from { opacity: 0; transform: translateY(6px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .product-info { padding: 23px 27px 26px; }
 .product-info h3 { margin: 0 0 6px; font-family: var(--serif); font-size: clamp(1.32rem, 1.8vw, 1.65rem); font-weight: 600; letter-spacing: -.025em; }
@@ -435,9 +435,9 @@ html.motion-ready .product-grid .snap-tile.is-snapped { opacity: 1; filter: none
   .product-photo { width: 100%; aspect-ratio: 1 / 1; min-height: 136px; flex-shrink: 0; }
   .product-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .badge { top: 10px; left: 10px; padding: 4px 9px; font-size: 10px; }
-  .add-button { right: 10px; bottom: 10px; width: 40px; height: 40px; padding-bottom: 3px; font-size: 25px; }
-  .product-quantity { right: 10px; bottom: 10px; min-width: 112px; height: 40px; }
-  .product-quantity button { min-width: 34px; padding-bottom: 2px; font-size: 20px; }
+  .add-button { right: 10px; bottom: 10px; width: 38px; height: 38px; padding-bottom: 2px; font-size: 22px; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .product-quantity { right: 10px; bottom: 10px; min-width: 106px; height: 38px; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.16); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .product-quantity button { min-width: 32px; padding-bottom: 2px; font-size: 18px; }
   .product-quantity span { font-size: 13px; }
   .product-info { display: flex; flex-direction: column; flex: 1; padding: 12px 12px 14px; }
   .product-info h3 { font-size: 1.05rem; line-height: 1.18; }
