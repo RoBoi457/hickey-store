@@ -12,7 +12,7 @@ const PRODUCTS = {
   "two-friends": { name: "Couple Design", price: 99, image: "assets/keychain-products/12-two-friends.png" },
   "campus-cat-nap": { name: "CAT Whore", price: 69, image: "assets/keychain-products/13-cat-whore-campus-nap.png" },
   "clinger-cat-club": { name: "Gingerrrrr", price: 69, image: "assets/keychain-products/14-clinger-cat-club.png" },
-  "same-old-day": { name: "Same Old Day", price: 69, image: "assets/keychain-products/15-same-old-day.png" }
+  "same-old-day": { name: "CAT checklist", price: 69, image: "assets/keychain-products/15-same-old-day.png" }
 };
 
 document.documentElement.classList.add("motion-ready");

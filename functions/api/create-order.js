@@ -14,7 +14,7 @@ const catalog = {
   "two-friends": { name: "Couple Design", price: 99 },
   "campus-cat-nap": { name: "CAT Whore", price: 69 },
   "clinger-cat-club": { name: "Gingerrrrr", price: 69 },
-  "same-old-day": { name: "Same Old Day", price: 69 }
+  "same-old-day": { name: "CAT checklist", price: 69 }
 };
 
 function json(data, status = 200) {
