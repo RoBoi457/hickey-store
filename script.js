@@ -72,7 +72,7 @@ function openContact(type, trigger) {
   extras.hidden = contactType === "suggestion";
   document.getElementById("contact-quantity-label").hidden = contactType !== "custom";
   document.getElementById("contact-quantity").hidden = contactType !== "custom";
-  document.getElementById("contact-note").textContent = "Your email app will open with this message ready to send.";
+  document.getElementById("contact-note").textContent = "Your message will be sent directly to our team.";
   contactForm.reset();
   contactLayer.classList.add("is-open");
   contactLayer.setAttribute("aria-hidden", "false");
@@ -338,8 +338,8 @@ const customerName = formData.customerName || window.HickeyAuth?.user?.name || "
     }
 
     let paymentSubmitted = false;
-    const contactDigits = String(formData.phone || "").replace(/\D/g, "");
-    const contact = String(formData.phone || "").trim().startsWith("+") ? "+" + contactDigits : "+91" + contactDigits;
+    const contactDigits = String(formData.phone || window.HickeyAuth?.user?.phone || "").replace(/\D/g, "");
+    const contact = String(formData.phone || window.HickeyAuth?.user?.phone || "").trim().startsWith("+") ? "+" + contactDigits : (contactDigits ? "+91" + contactDigits : "");
     const checkout = new window.Razorpay({
       key: orderData.key_id,
       amount: orderData.amount,
@@ -347,7 +347,8 @@ const customerName = formData.customerName || window.HickeyAuth?.user?.name || "
       name: "Hickey",
       description: "Hickey order " + orderData.receipt,
       order_id: orderData.order_id,
-  prefill: { name: customerName, email: customerEmail, contact },    
+      prefill: { name: customerName, email: customerEmail, contact },
+      readonly: { name: Boolean(customerName), email: Boolean(customerEmail), contact: Boolean(contact) },
       notes: { order_ref: orderData.receipt },
       theme: { color: "#ef234c" },
       modal: {
@@ -514,20 +515,40 @@ document.getElementById("close-contact").addEventListener("click", closeContact)
 contactLayer.addEventListener("click", (event) => {
   if (event.target === contactLayer) closeContact();
 });
-contactForm.addEventListener("submit", (event) => {
+contactForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!contactForm.reportValidity()) return;
+  const submitBtn = contactForm.querySelector('button[type="submit"]');
+  const noteEl = document.getElementById("contact-note");
+  if (submitBtn) submitBtn.disabled = true;
+  if (noteEl) noteEl.textContent = "Sending your message directly to our team…";
+
   const fields = Object.fromEntries(new FormData(contactForm).entries());
-  const details = [
-    "Message:", fields.message,
-    fields.name ? "\nName: " + fields.name : "",
-    window.HickeyAuth?.user?.email ? "\nReply to: " + window.HickeyAuth.user.email : "",
-    contactType === "custom" && fields.quantity ? "\nEstimated small-run quantity: " + fields.quantity : ""
-  ].filter(Boolean).join("\n");
-  const copy = contactCopy[contactType];
-  const mailto = "mailto:hello@hickey.store?subject=" + encodeURIComponent(copy.subject) + "&body=" + encodeURIComponent(details);
-  window.location.href = mailto;
-  document.getElementById("contact-note").textContent = "Your email app should open now. Review the message and press Send to get it to us.";
+  const payload = {
+    type: contactType,
+    message: fields.message,
+    name: fields.name || window.HickeyAuth?.user?.name || "",
+    email: window.HickeyAuth?.user?.email || "",
+    quantity: contactType === "custom" ? fields.quantity : ""
+  };
+
+  try {
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Could not send message.");
+    if (noteEl) noteEl.textContent = data.message || "Message sent! We received it directly.";
+    contactForm.reset();
+    showToast("Message sent directly to our team!");
+    setTimeout(() => closeContact(), 1600);
+  } catch (err) {
+    if (noteEl) noteEl.textContent = err.message || "Could not send message. Please try again.";
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
 });
 
 checkoutForm.addEventListener("submit", async (event) => {

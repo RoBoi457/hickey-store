@@ -57,6 +57,19 @@ export async function ensureAuthSchema(env) {
       try {
         await env.DB.prepare("CREATE INDEX IF NOT EXISTS orders_user_created_idx ON orders (user_id, created_at DESC)").run();
       } catch {}
+      try {
+        await env.DB.prepare(
+          "CREATE TABLE IF NOT EXISTS customer_messages (" +
+          "id TEXT PRIMARY KEY, " +
+          "user_id TEXT, " +
+          "name TEXT NOT NULL DEFAULT '', " +
+          "email TEXT NOT NULL DEFAULT '', " +
+          "type TEXT NOT NULL DEFAULT 'suggestion', " +
+          "message TEXT NOT NULL, " +
+          "quantity TEXT DEFAULT '', " +
+          "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+        ).run();
+      } catch {}
     })().catch((err) => {
       schemaReadyPromise = null;
       throw err;
