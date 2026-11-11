@@ -22,7 +22,10 @@ export async function ensureAuthSchema(env) {
       ).run();
       try {
         await env.DB.prepare("ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''").run();
-      } catch {}
+      } catch {}try { await env.DB.prepare("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''").run(); } catch {}
+    }try { await env.DB.prepare("ALTER TABLE users ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''").run(); } catch {}
+    
+      
       await env.DB.prepare(
         "CREATE TABLE IF NOT EXISTS sessions (" +
         "token_hash TEXT PRIMARY KEY, " +
@@ -146,12 +149,12 @@ export async function getAuthenticatedUser(request, env) {
   const tokenHash = await sha256Hex(token);
   const now = new Date().toISOString();
   const row = await env.DB.prepare(
-    "SELECT users.id, users.name, users.email FROM sessions JOIN users ON users.id = sessions.user_id " +
+    "SELECT users.id, users.name, users.email, users.phone, users.delivery_address FROM sessions JOIN users ON users.id = sessions.user_id " +
     "WHERE sessions.token_hash = ? AND sessions.expires_at > ?"
   ).bind(tokenHash, now).first();
   if (!row) return null;
   const fallbackName = row.name && row.name.trim() ? row.name.trim() : row.email.split("@")[0];
-  return { id: row.id, name: fallbackName, email: row.email };
+  return { id: row.id, name: fallbackName, email: row.email , phone: row.phone || "", address: row.delivery_address || ""};
 }
 
 export async function issueSession(user, env) {
