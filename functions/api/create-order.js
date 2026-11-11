@@ -1,19 +1,20 @@
 import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
 
 const catalog = {
-  "kathor-clock": { name: "Rohtak Standard Time", price: 5 },
-  pda: { name: "P.D.A. (Please Don’t Ask)", price: 5 },
-  "submit-mode": { name: "Just Put It In", price: 5 },
-  "clock-it": { name: "Clock It!", price: 5 },
-  "coke-paglu": { name: "Diet Coke Paglu Club", price: 5 },
-  cooks: { name: "Cooks Club", price: 5 },
-  "proxy-pass": { name: "Proxy Mat Laga!", price: 5 },
-  baddie: { name: "Baddie Business", price: 5 },
+  "kathor-clock": { name: "The Rohtak Clock", price: 5 },
+  pda: { name: "PDA Tree", price: 5 },
+  "submit-mode": { name: "Spiderman", price: 5 },
+  "clock-it": { name: "Clock It", price: 5 },
+  "coke-paglu": { name: "Diet Coke Paglu", price: 5 },
+  cooks: { name: "Cooked", price: 5 },
+  "proxy-pass": { name: "Claude Proxt mt laga", price: 5 },
+  baddie: { name: "The Baddie Club", price: 5 },
   "kathor-land": { name: "Kathor Land", price: 5 },
-  nonchalant: { name: "Nonchalant Energy", price: 5 },
-  "two-friends": { name: "Underwater Besties", price: 5 },
-  "campus-cat-nap": { name: "Cat-Whore Campus Nap", price: 5 },
-  "clinger-cat-club": { name: "Clinger Cat Club", price: 5 }
+  nonchalant: { name: "Non Chalant", price: 5 },
+  "two-friends": { name: "Couple Design", price: 5 },
+  "campus-cat-nap": { name: "CAT Whore", price: 5 },
+  "clinger-cat-club": { name: "Gingerrrrr", price: 5 },
+  "same-old-day": { name: "Same Old Day", price: 5 }
 };
 
 function json(data, status = 200) {
