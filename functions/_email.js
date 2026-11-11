@@ -5,7 +5,7 @@ export const SUPPORT_EMAIL = "support.hickey@gmail.com";
 export function buildOrderConfirmationEmail(order) {
   const name = order.customer_name && order.customer_name.trim() ? order.customer_name.trim() : "there";
   const id = order.order_ref || order.id || "";
-  const supportContacts = "Prabhu: +91 89564 42297 | Rohan: +91 86608 50435 | support.hickey@gmail.com";
+  const supportContacts = "Prabhu: +91 89564 42297 | Chaitanya: +91 87073 12125 | Rohan: +91 86608 50435 | Naman Navlani: +91 87707 94490 | Harjaap: +91 70153 38429 | support.hickey@gmail.com";
 
   const subject = "Your Hickey is on the Way!";
 
