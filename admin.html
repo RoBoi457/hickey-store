@@ -14,12 +14,86 @@
     .chart-card{padding:22px 24px;margin-bottom:16px}.chart-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline}.chart-head strong{font:20px Georgia,serif}.chart-head span{color:var(--muted);font-size:12px}.chart{height:118px;display:flex;align-items:end;gap:6px;padding-top:17px}.bar-slot{flex:1;min-width:3px;height:100%;display:flex;align-items:end;position:relative}.bar{width:100%;min-height:2px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#4caeea,#ed5571);opacity:.84}.bar-slot:hover:after{content:attr(data-tip);position:absolute;bottom:calc(var(--bar-height) + 5px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#192238;color:white;padding:5px 8px;border-radius:8px;font-size:10px;z-index:2}.chart-labels{display:flex;justify-content:space-between;color:#9aa4b4;font-size:10px;margin-top:8px}
     .orders{overflow:hidden}.toolbar{padding:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line)}.toolbar .search{flex:1;min-width:210px}.toolbar select,.toolbar input{min-height:42px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:960px}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a95a6;background:rgba(255,255,255,.22);position:sticky;top:0}td{font-size:13px}td small{display:block;color:var(--muted);margin-top:4px;max-width:250px;overflow-wrap:anywhere}.ref{font-weight:800;white-space:nowrap}.status{display:inline-block;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:#f1f3f7;color:#6e7888}.status.paid{background:#def6ea;color:#14784b}.status.pending{background:#fff3d8;color:#8b5d00}.status.cancelled,.status.expired{background:#fce5e9;color:#9a3448}.pager{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;color:var(--muted);font-size:12px}.empty{text-align:center;padding:55px 15px;color:var(--muted)}.hidden{display:none!important}.loading{opacity:.55;pointer-events:none}
     @media(max-width:760px){.shell{width:min(100% - 24px,600px);padding-top:24px}.top{align-items:flex-start}.top-right{flex-direction:column;align-items:stretch}.stats{grid-template-columns:repeat(2,1fr);gap:9px}.stat{padding:15px}.stat-value{font-size:26px}.chart-card{padding:17px}.toolbar{padding:12px}.toolbar .search{flex-basis:100%}.login-row{flex-direction:column}.login-row .button{min-height:45px}}
+  
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #f0f4fc;
+      --muted: #9aa5b9;
+      --red: #ff4767;
+      --line: rgba(255,255,255,.09);
+      --glass: rgba(18,26,43,.75);
+    }
+    :root[data-theme="dark"] body {
+      background: radial-gradient(ellipse at 5% 0%, #0d1e38 0, transparent 40%), radial-gradient(ellipse at 100% 22%, #38101e 0, transparent 40%), #0b111d;
+      color: #f0f4fc;
+    }
+    :root[data-theme="dark"] .glass {
+      border: 1px solid rgba(255,255,255,.11);
+      background: linear-gradient(135deg, rgba(20,29,46,.82), rgba(15,22,36,.65));
+      box-shadow: 0 22px 70px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.1);
+    }
+    :root[data-theme="dark"] .button {
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.07);
+      color: #f0f4fc;
+      box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    }
+    :root[data-theme="dark"] .button.primary {
+      background: var(--red);
+      color: white;
+    }
+    :root[data-theme="dark"] .input {
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(14,20,33,.8);
+      color: #f0f4fc;
+    }
+    :root[data-theme="dark"] .input:focus {
+      border-color: #5bb3ff;
+      box-shadow: 0 0 0 3px rgba(91,179,255,.18);
+    }
+    :root[data-theme="dark"] th {
+      color: #8b97ab;
+      background: rgba(14,21,34,.92);
+    }
+    :root[data-theme="dark"] table td {
+      border-bottom-color: rgba(255,255,255,.08);
+    }
+    :root[data-theme="dark"] .status {
+      background: rgba(255,255,255,.1);
+      color: #cbd5e1;
+    }
+    :root[data-theme="dark"] .status.paid {
+      background: rgba(20,120,75,.25);
+      color: #4ee09b;
+    }
+    :root[data-theme="dark"] .status.pending {
+      background: rgba(255,180,40,.18);
+      color: #ffd166;
+    }
+    :root[data-theme="dark"] .status.cancelled,
+    :root[data-theme="dark"] .status.expired {
+      background: rgba(243,38,73,.2);
+      color: #ff6b85;
+    }
+    :root[data-theme="dark"] #email-modal .glass {
+      background: #141c2c !important;
+      color: #f0f4fc !important;
+      border: 1px solid rgba(255,255,255,.14) !important;
+    }
+    :root[data-theme="dark"] #modal-email-content {
+      background: #0f1624 !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255,255,255,.1) !important;
+    }
+    :root[data-theme="dark"] #close-email-modal {
+      color: #e2e8f0;
+    }
   </style>
 </head>
 <body>
   <main class="shell">
     <section id="login" class="login glass">
-      <p class="kicker">Hickey order desk</p>
+      <div style="display:flex; justify-content:space-between; align-items:center;"><p class="kicker" style="margin:0;">Hickey order desk</p><button type="button" class="button theme-toggle-btn" style="padding:4px 10px; font-size:11px;">🌙 Mode</button></div>
       <h1 class="brand">Your shop, <span>at a glance.</span></h1>
       <p>Enter the private dashboard token configured in Cloudflare. It is kept in this tab only.</p>
       <form id="login-form" class="login-row">
@@ -31,7 +105,7 @@
     <section id="app" class="hidden">
       <header class="top">
         <div><p class="kicker">The small business command center</p><div class="brand">Hickey <span>order desk</span></div><p class="sub">Orders, payments and shipping details in one place.</p></div>
-        <div class="top-right"><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
+        <div class="top-right"><button id="theme-toggle" class="button" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙 Dark</button><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
       </header>
       <div class="stats" style="grid-template-columns: repeat(5, 1fr);">
         <article class="stat glass"><div class="stat-label">Gross paid</div><div id="revenue" class="stat-value">—</div><div class="stat-note">Captured UPI orders</div></article>
@@ -270,6 +344,26 @@
     }
     $("close-email-modal")?.addEventListener("click", () => $("email-modal").classList.add("hidden"));
     $("email-modal")?.addEventListener("click", (e) => { if (e.target === $("email-modal")) $("email-modal").classList.add("hidden"); });
+
+    
+    function initTheme() {
+      const savedTheme = localStorage.getItem("hickey-admin-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      setTheme(savedTheme);
+    }
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("hickey-admin-theme", theme);
+      const isDark = theme === "dark";
+      document.querySelectorAll("#theme-toggle, .theme-toggle-btn").forEach(btn => {
+        btn.textContent = isDark ? "☀️ Light" : "🌙 Dark";
+      });
+    }
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      setTheme(current === "dark" ? "light" : "dark");
+    }
+    document.querySelectorAll("#theme-toggle, .theme-toggle-btn").forEach(btn => btn.addEventListener("click", toggleTheme));
+    initTheme();
 
     const saved=sessionStorage.getItem("hickey-admin-token");if(saved)unlock(saved);
   </script>
