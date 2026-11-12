@@ -5,7 +5,7 @@ import {
 
 export async function onRequestPost({ request, env }) {
   if (!sameOriginRequest(request)) return jsonResponse({ error: "Request origin could not be verified." }, 403);
-  if (!env.DB) return jsonResponse({ error: "Account storage is not connected in Cloudflare D1." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected in Cloudflare D1." }, 503);
 
   let body;
   try {
@@ -26,7 +26,7 @@ export async function onRequestPost({ request, env }) {
 
   try {
     await ensureAuthSchema(env);
-    const existing = await env.DB.prepare("SELECT id, password_hash FROM users WHERE email = ?").bind(email).first();
+    const existing = await env.DB_STAGING.prepare("SELECT id, password_hash FROM users WHERE email = ?").bind(email).first();
     if (existing) {
       return jsonResponse({ error: "That email already has an account. Try signing in instead." }, 409);
     }
@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env }) {
     const id = crypto.randomUUID();
     const salt = randomHex(16);
     const passwordHash = await hashPassword(password, salt, PASSWORD_ITERATIONS);
-    await env.DB.prepare(
+    await env.DB_STAGING.prepare(
       "INSERT INTO users (id, name, email, password_hash, password_salt, password_iterations) VALUES (?, ?, ?, ?, ?, ?)"
     ).bind(id, name, email, passwordHash, salt, PASSWORD_ITERATIONS).run();
 

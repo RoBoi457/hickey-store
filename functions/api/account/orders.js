@@ -15,7 +15,7 @@ function parseItems(itemsJson) {
 }
 
 async function reconcilePendingOrders(user, env) {
-  const pending = await env.DB.prepare(
+  const pending = await env.DB_STAGING.prepare(
     "SELECT id, order_ref, amount_rupees, razorpay_order_id, created_at FROM orders " +
     "WHERE (user_id = ? OR LOWER(customer_email) = LOWER(?)) AND status = 'pending' ORDER BY created_at DESC LIMIT 10"
   ).bind(user.id, user.email).all();
@@ -38,7 +38,7 @@ async function reconcilePendingOrders(user, env) {
           const expectedPaise = Number(row.amount_rupees) * 100;
           const captured = payments.find((p) => p?.status === "captured" && Number(p?.amount) === expectedPaise);
           if (captured) {
-            await env.DB.prepare(
+            await env.DB_STAGING.prepare(
               "UPDATE orders SET status = 'paid', payment_method = 'razorpay', razorpay_payment_id = ? WHERE id = ?"
             ).bind(String(captured.id || ""), row.id).run();
             continue;
@@ -47,7 +47,7 @@ async function reconcilePendingOrders(user, env) {
           const createdMs = Date.parse(String(row.created_at || "").replace(" ", "T") + "Z");
           const ageMinutes = Number.isFinite(createdMs) ? (Date.now() - createdMs) / 60000 : 0;
           if (hasFailed || ageMinutes > 15) {
-            await env.DB.prepare("UPDATE orders SET status = 'failed' WHERE id = ? AND status = 'pending'").bind(row.id).run();
+            await env.DB_STAGING.prepare("UPDATE orders SET status = 'failed' WHERE id = ? AND status = 'pending'").bind(row.id).run();
           }
         }
       } catch {}
@@ -56,7 +56,7 @@ async function reconcilePendingOrders(user, env) {
 }
 
 export async function onRequestGet({ request, env }) {
-  if (!env.DB) return jsonResponse({ error: "Order storage is not connected." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Order storage is not connected." }, 503);
   let user;
   try {
     user = await getAuthenticatedUser(request, env);
@@ -68,11 +68,11 @@ export async function onRequestGet({ request, env }) {
   try {
     await reconcilePendingOrders(user, env);
     const [paidResult, failedResult] = await Promise.all([
-      env.DB.prepare(
+      env.DB_STAGING.prepare(
         "SELECT order_ref, items_json, amount_rupees, status, created_at FROM orders " +
         "WHERE (user_id = ? OR LOWER(customer_email) = LOWER(?)) AND status = 'paid' ORDER BY created_at DESC LIMIT 50"
       ).bind(user.id, user.email).all(),
-      env.DB.prepare(
+      env.DB_STAGING.prepare(
         "SELECT order_ref, items_json, amount_rupees, status, created_at FROM orders " +
         "WHERE (user_id = ? OR LOWER(customer_email) = LOWER(?)) AND status IN ('failed', 'cancelled', 'expired') ORDER BY created_at DESC LIMIT 5"
       ).bind(user.id, user.email).all()
@@ -99,7 +99,7 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPut({ request, env }) {
   if (!sameOriginRequest(request)) return jsonResponse({ error: "Request origin could not be verified." }, 403);
-  if (!env.DB) return jsonResponse({ error: "Account storage is not connected." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected." }, 503);
   const user = await getAuthenticatedUser(request, env).catch(() => null);
   if (!user) return jsonResponse({ error: "Sign in required." }, 401);
 
@@ -120,18 +120,18 @@ export async function onRequestPut({ request, env }) {
   }
 
   try {
-    const conflict = await env.DB.prepare("SELECT id FROM users WHERE email = ? AND id != ?").bind(email, user.id).first();
+    const conflict = await env.DB_STAGING.prepare("SELECT id FROM users WHERE email = ? AND id != ?").bind(email, user.id).first();
     if (conflict) return jsonResponse({ error: "That email ID is already used by another account." }, 409);
 
-    await env.DB.prepare(
+    await env.DB_STAGING.prepare(
       "UPDATE users SET name = ?, email = ?, phone = ?, delivery_address = ? WHERE id = ?"
     ).bind(name, email, phone, address, user.id).run();
 
-    await env.DB.prepare(
+    await env.DB_STAGING.prepare(
       "UPDATE orders SET customer_name = ?, customer_email = ? WHERE user_id = ?"
     ).bind(name, email, user.id).run();
     if (phone && address) {
-      await env.DB.prepare(
+      await env.DB_STAGING.prepare(
         "UPDATE orders SET phone = ?, delivery_address = ? WHERE user_id = ?"
       ).bind(phone, address, user.id).run();
     }

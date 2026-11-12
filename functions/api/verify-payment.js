@@ -21,7 +21,7 @@ function sameHex(a, b) {
 
 export async function onRequestPost({ request, env }) {
   if (!sameOriginRequest(request)) return json({ verified: false, error: "Request origin could not be verified." }, 403);
-  if (!env.DB) return json({ verified: false, error: "Order storage is not connected." }, 503);
+  if (!env.DB_STAGING) return json({ verified: false, error: "Order storage is not connected." }, 503);
   let user;
   try { user = await getAuthenticatedUser(request, env); }
   catch { return json({ verified: false, error: "Account storage is not ready. Apply migration 0004_customer_accounts.sql." }, 503); }
@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    const storedOrder = await env.DB.prepare("SELECT order_ref, amount_rupees, status, razorpay_order_id, razorpay_payment_id, user_id FROM orders WHERE razorpay_order_id = ?")
+    const storedOrder = await env.DB_STAGING.prepare("SELECT order_ref, amount_rupees, status, razorpay_order_id, razorpay_payment_id, user_id FROM orders WHERE razorpay_order_id = ?")
       .bind(orderId)
       .first();
     if (!storedOrder) return json({ verified: false, error: "This payment does not match a Hickey order." }, 400);
@@ -100,15 +100,15 @@ export async function onRequestPost({ request, env }) {
     }
 
     try {
-      await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run();
-      await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run();
-      await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run();
+      await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run();
+      await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run();
+      await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run();
     } catch (_) {}
 
-    await env.DB.prepare("UPDATE orders SET status = 'paid', payment_method = ?, razorpay_payment_id = ? WHERE razorpay_order_id = ? AND status = 'pending'")
+    await env.DB_STAGING.prepare("UPDATE orders SET status = 'paid', payment_method = ?, razorpay_payment_id = ? WHERE razorpay_order_id = ? AND status = 'pending'")
       .bind(payment.method || "unknown", payment.id, order.id)
       .run();
-    const confirmed = await env.DB.prepare("SELECT id, order_ref, status, customer_name, customer_email, razorpay_payment_id FROM orders WHERE razorpay_order_id = ?")
+    const confirmed = await env.DB_STAGING.prepare("SELECT id, order_ref, status, customer_name, customer_email, razorpay_payment_id FROM orders WHERE razorpay_order_id = ?")
       .bind(order.id)
       .first();
 
@@ -116,7 +116,7 @@ export async function onRequestPost({ request, env }) {
     try {
       const emailResult = await sendOrderEmail(env, confirmed);
       if (emailResult.sent) {
-        await env.DB.prepare("UPDATE orders SET email_sent = 1, email_sent_at = ?, email_body = ? WHERE id = ?")
+        await env.DB_STAGING.prepare("UPDATE orders SET email_sent = 1, email_sent_at = ?, email_body = ? WHERE id = ?")
           .bind(emailResult.sent_at || new Date().toISOString(), emailResult.body || "", confirmed.id)
           .run();
       }

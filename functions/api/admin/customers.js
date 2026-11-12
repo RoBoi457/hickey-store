@@ -25,9 +25,9 @@ function isAuthorized(request, env) {
 
 export async function onRequestGet({ request, env }) {
   if (!isAuthorized(request, env)) return json({ error: "Admin access required." }, 401);
-  if (!env.DB) return json({ error: "The account database is not connected." }, 503);
+  if (!env.DB_STAGING) return json({ error: "The account database is not connected." }, 503);
   try {
-    const result = await env.DB.prepare(
+    const result = await env.DB_STAGING.prepare(
       "SELECT users.id, users.email, users.created_at, " +
       "(SELECT COUNT(*) FROM orders WHERE orders.user_id = users.id) AS order_count " +
       "FROM users ORDER BY users.created_at DESC LIMIT 5000"

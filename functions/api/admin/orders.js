@@ -69,7 +69,7 @@ function itemSummary(itemsJson) {
 
 export async function onRequestGet({ request, env }) {
   if (!isAuthorized(request, env)) return json({ error: "Admin access required." }, 401);
-  if (!env.DB) return json({ error: "The orders database is not connected." }, 503);
+  if (!env.DB_STAGING) return json({ error: "The orders database is not connected." }, 503);
 
   let filters;
   try { filters = parseFilters(new URL(request.url)); }
@@ -79,7 +79,7 @@ export async function onRequestGet({ request, env }) {
   const { sql: where, bindings } = whereClause(filters);
   const format = url.searchParams.get("format");
   try {
-    await env.DB.prepare(
+    await env.DB_STAGING.prepare(
       "CREATE TABLE IF NOT EXISTS orders (" +
       "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
       "order_ref TEXT NOT NULL UNIQUE, " +
@@ -99,22 +99,22 @@ export async function onRequestGet({ request, env }) {
       "email_sent_at TEXT, " +
       "email_body TEXT)"
     ).run();
-    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run(); } catch (_) {}
-    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run(); } catch (_) {}
-    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run(); } catch (_) {}
-    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run(); } catch (_) {}
+    try { await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run(); } catch (_) {}
+    try { await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run(); } catch (_) {}
+    try { await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run(); } catch (_) {}
+    try { await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run(); } catch (_) {}
     try {
-      await env.DB.prepare("DELETE FROM orders WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
+      await env.DB_STAGING.prepare("DELETE FROM orders WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
     } catch (_) {}
     try {
-      await env.DB.prepare(
+      await env.DB_STAGING.prepare(
         "DELETE FROM orders WHERE LOWER(customer_name) LIKE '%chaitanya%' OR LOWER(customer_email) LIKE '%chaitanya%' " +
         "OR LOWER(customer_name) LIKE '%prabhu%' OR LOWER(customer_email) LIKE '%prabhu%' " +
         "OR REPLACE(phone, ' ', '') LIKE '%8707312125%' OR REPLACE(phone, ' ', '') LIKE '%8956442297%'"
       ).run();
     } catch (_) {}
     try {
-      await env.DB.prepare(
+      await env.DB_STAGING.prepare(
         "DELETE FROM orders WHERE LOWER(customer_name) LIKE '%chaitanya%' OR LOWER(customer_email) LIKE '%chaitanya%' " +
         "OR LOWER(customer_name) LIKE '%prabhu%' OR LOWER(customer_email) LIKE '%prabhu%' " +
         "OR REPLACE(phone, ' ', '') LIKE '%8707312125%' OR REPLACE(phone, ' ', '') LIKE '%8956442297%'"
@@ -122,7 +122,7 @@ export async function onRequestGet({ request, env }) {
     } catch (_) {}
 
     if (format === "csv") {
-      const result = await env.DB.prepare(
+      const result = await env.DB_STAGING.prepare(
         "SELECT order_ref, created_at, customer_name, customer_email, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id, email_sent, email_sent_at, email_body FROM orders" +
         where + " ORDER BY created_at DESC LIMIT 5000"
       ).bind(...bindings).all();
@@ -147,19 +147,19 @@ export async function onRequestGet({ request, env }) {
     const pageSize = 100;
     const offset = (page - 1) * pageSize;
     const [countResult, listResult, summary, daily] = await Promise.all([
-      env.DB.prepare("SELECT COUNT(*) AS total FROM orders" + where).bind(...bindings).first(),
-      env.DB.prepare(
+      env.DB_STAGING.prepare("SELECT COUNT(*) AS total FROM orders" + where).bind(...bindings).first(),
+      env.DB_STAGING.prepare(
         "SELECT order_ref, created_at, customer_name, customer_email, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id, email_sent, email_sent_at, email_body FROM orders" +
         where + " ORDER BY created_at DESC LIMIT ? OFFSET ?"
       ).bind(...bindings, pageSize, offset).all(),
-      env.DB.prepare(
+      env.DB_STAGING.prepare(
         "SELECT COUNT(*) AS total, " +
         "SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_count, " +
         "SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_count, " +
         "SUM(CASE WHEN status = 'paid' THEN amount_rupees ELSE 0 END) AS paid_rupees " +
         "FROM orders WHERE datetime(created_at) >= '2026-11-11 17:30:00'"
       ).first(),
-      env.DB.prepare(
+      env.DB_STAGING.prepare(
         "SELECT date(created_at) AS day, SUM(CASE WHEN status = 'paid' THEN amount_rupees ELSE 0 END) AS revenue, " +
         "SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_orders " +
         "FROM orders WHERE datetime(created_at) >= '2026-11-11 17:30:00' GROUP BY date(created_at) ORDER BY day"

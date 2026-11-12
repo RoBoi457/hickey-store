@@ -7,7 +7,7 @@ const DUMMY_SALT = "1a2b3c4d5e6f708192a3b4c5d6e7f809";
 
 export async function onRequestPost({ request, env }) {
   if (!sameOriginRequest(request)) return jsonResponse({ error: "Request origin could not be verified." }, 403);
-  if (!env.DB) return jsonResponse({ error: "Account storage is not connected in Cloudflare D1." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected in Cloudflare D1." }, 503);
 
   let body;
   try {
@@ -25,7 +25,7 @@ export async function onRequestPost({ request, env }) {
 
   try {
     await ensureAuthSchema(env);
-    const account = await env.DB.prepare(
+    const account = await env.DB_STAGING.prepare(
       "SELECT id, name, email, password_hash, password_salt, password_iterations FROM users " +
       "WHERE email = ? OR LOWER(TRIM(name)) = ? LIMIT 1"
     ).bind(identifier, identifier).first();

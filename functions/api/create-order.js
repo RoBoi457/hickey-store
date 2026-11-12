@@ -26,7 +26,7 @@ function json(data, status = 200) {
 
 export async function onRequestPost({ request, env }) {
   if (!sameOriginRequest(request)) return json({ error: "Request origin could not be verified." }, 403);
-  if (!env.DB) {
+  if (!env.DB_STAGING) {
     return json({ error: "Order storage is not connected yet. Bind the Cloudflare D1 database before enabling checkout." }, 503);
   }
   let user;
@@ -120,7 +120,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    await env.DB.prepare(
+    await env.DB_STAGING.prepare(
       "INSERT INTO orders (order_ref, items_json, amount_rupees, customer_name, customer_email, user_id, delivery_address, phone, payment_method, status, razorpay_order_id) " +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)"
     ).bind(

@@ -7,11 +7,11 @@ const validProductIds = new Set([
 ]);
 
 export async function onRequestGet({ request, env }) {
-  if (!env.DB) return jsonResponse({ error: "Account storage is not connected. Apply the account migration to D1." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected. Apply the account migration to D1." }, 503);
   try {
     const user = await getAuthenticatedUser(request, env);
     if (!user) return jsonResponse({ error: "Sign in to view your basket." }, 401);
-    const result = await env.DB.prepare(
+    const result = await env.DB_STAGING.prepare(
       "SELECT product_id, quantity FROM cart_items WHERE user_id = ? ORDER BY product_id"
     ).bind(user.id).all();
     const items = Object.create(null);
@@ -24,7 +24,7 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPut({ request, env }) {
   if (!sameOriginRequest(request)) return jsonResponse({ error: "Request origin could not be verified." }, 403);
-  if (!env.DB) return jsonResponse({ error: "Account storage is not connected. Apply the account migration to D1." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected. Apply the account migration to D1." }, 503);
   let body;
   try {
     if (Number(request.headers.get("Content-Length") || 0) > 12000) return jsonResponse({ error: "Request is too large." }, 413);
@@ -50,13 +50,13 @@ export async function onRequestPut({ request, env }) {
     const user = await getAuthenticatedUser(request, env);
     if (!user) return jsonResponse({ error: "Sign in to save your basket." }, 401);
     const statements = [
-      env.DB.prepare("DELETE FROM cart_items WHERE user_id = ?").bind(user.id),
-      ...validItems.map(([productId, quantity]) => env.DB.prepare(
+      env.DB_STAGING.prepare("DELETE FROM cart_items WHERE user_id = ?").bind(user.id),
+      ...validItems.map(([productId, quantity]) => env.DB_STAGING.prepare(
         "INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?) " +
         "ON CONFLICT(user_id, product_id) DO UPDATE SET quantity = excluded.quantity, updated_at = CURRENT_TIMESTAMP"
       ).bind(user.id, productId, quantity))
     ];
-    await env.DB.batch(statements);
+    await env.DB_STAGING.batch(statements);
     return jsonResponse({ ok: true });
   } catch {
     return jsonResponse({ error: "Your basket could not be saved. Apply migration 0004_customer_accounts.sql and try again." }, 503);

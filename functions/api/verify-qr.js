@@ -6,7 +6,7 @@ function json(data, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET || !env.DB) {
+  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET || !env.DB_STAGING) {
     return json({ verified: false, error: "Payment verification is not configured." }, 503);
   }
 
@@ -36,7 +36,7 @@ export async function onRequestPost({ request, env }) {
     if (typeof orderRef !== "string" || !orderRef.startsWith("HK-")) {
       return json({ verified: false, error: "This QR is not attached to a Hickey order." }, 400);
     }
-    const storedOrder = await env.DB.prepare("SELECT order_ref, amount_rupees, status FROM orders WHERE order_ref = ? AND payment_method = 'upi'")
+    const storedOrder = await env.DB_STAGING.prepare("SELECT order_ref, amount_rupees, status FROM orders WHERE order_ref = ? AND payment_method = 'upi'")
       .bind(orderRef)
       .first();
     if (!storedOrder || storedOrder.amount_rupees * 100 !== qr.payment_amount) {
@@ -55,10 +55,10 @@ export async function onRequestPost({ request, env }) {
     );
     if (!capturedPayment) return json({ verified: false, pending: true });
 
-    await env.DB.prepare("UPDATE orders SET status = 'paid', razorpay_payment_id = ? WHERE order_ref = ? AND status = 'pending'")
+    await env.DB_STAGING.prepare("UPDATE orders SET status = 'paid', razorpay_payment_id = ? WHERE order_ref = ? AND status = 'pending'")
       .bind(capturedPayment.id, storedOrder.order_ref)
       .run();
-    const confirmed = await env.DB.prepare("SELECT order_ref, status FROM orders WHERE order_ref = ?")
+    const confirmed = await env.DB_STAGING.prepare("SELECT order_ref, status FROM orders WHERE order_ref = ?")
       .bind(storedOrder.order_ref)
       .first();
     if (confirmed?.status !== "paid") return json({ verified: false, error: "We couldn't save the payment confirmation. Please contact Hickey." }, 500);

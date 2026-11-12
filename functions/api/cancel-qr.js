@@ -6,7 +6,7 @@ function json(data, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET || !env.DB) {
+  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET || !env.DB_STAGING) {
     return json({ cancelled: false, error: "Payment services are not configured." }, 503);
   }
   let body;
@@ -22,7 +22,7 @@ export async function onRequestPost({ request, env }) {
     const qr = await qrResponse.json();
     const orderRef = qr.notes?.order_ref;
     if (!qrResponse.ok || qr?.type !== "upi_qr" || typeof orderRef !== "string") return json({ cancelled: false, error: "We couldn't identify this payment QR." }, 400);
-    const storedOrder = await env.DB.prepare("SELECT order_ref, status FROM orders WHERE order_ref = ? AND payment_method = 'upi'")
+    const storedOrder = await env.DB_STAGING.prepare("SELECT order_ref, status FROM orders WHERE order_ref = ? AND payment_method = 'upi'")
       .bind(orderRef)
       .first();
     if (!storedOrder) return json({ cancelled: false, error: "This QR is not attached to a Hickey order." }, 404);
@@ -36,7 +36,7 @@ export async function onRequestPost({ request, env }) {
       payment.amount === qr.payment_amount && payment.amount_refunded === 0
     );
     if (capturedPayment) {
-      await env.DB.prepare("UPDATE orders SET status = 'paid', razorpay_payment_id = ? WHERE order_ref = ? AND status = 'pending'")
+      await env.DB_STAGING.prepare("UPDATE orders SET status = 'paid', razorpay_payment_id = ? WHERE order_ref = ? AND status = 'pending'")
         .bind(capturedPayment.id, orderRef)
         .run();
       return json({ cancelled: false, paid: true, orderRef });
@@ -50,7 +50,7 @@ export async function onRequestPost({ request, env }) {
       });
       if (!closeResponse.ok) return json({ cancelled: false, error: "Razorpay couldn't close this QR. Please try again." }, 502);
     }
-    await env.DB.prepare("UPDATE orders SET status = 'cancelled' WHERE order_ref = ? AND status = 'pending'")
+    await env.DB_STAGING.prepare("UPDATE orders SET status = 'cancelled' WHERE order_ref = ? AND status = 'pending'")
       .bind(orderRef)
       .run();
     return json({ cancelled: true });

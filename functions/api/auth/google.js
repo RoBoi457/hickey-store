@@ -70,44 +70,44 @@ async function verifyGoogleCredential(credential, nonce, clientId) {
 
 async function findOrCreateGoogleUser(env, identity) {
   await ensureAuthSchema(env);
-  const byGoogle = await env.DB.prepare(
+  const byGoogle = await env.DB_STAGING.prepare(
     "SELECT id, name, email FROM users WHERE google_sub = ?"
   ).bind(identity.googleSub).first();
   if (byGoogle) {
     if (byGoogle.email !== identity.email) {
-      const conflict = await env.DB.prepare("SELECT id FROM users WHERE email = ? AND id != ?")
+      const conflict = await env.DB_STAGING.prepare("SELECT id FROM users WHERE email = ? AND id != ?")
         .bind(identity.email, byGoogle.id).first();
       if (conflict) throw new Error("That Google email is linked to a different account.");
-      await env.DB.prepare("UPDATE users SET email = ? WHERE id = ?").bind(identity.email, byGoogle.id).run();
+      await env.DB_STAGING.prepare("UPDATE users SET email = ? WHERE id = ?").bind(identity.email, byGoogle.id).run();
     }
     const name = byGoogle.name && byGoogle.name.trim() ? byGoogle.name.trim() : identity.name;
     if (!byGoogle.name && identity.name) {
-      await env.DB.prepare("UPDATE users SET name = ? WHERE id = ?").bind(identity.name, byGoogle.id).run();
+      await env.DB_STAGING.prepare("UPDATE users SET name = ? WHERE id = ?").bind(identity.name, byGoogle.id).run();
     }
     return { id: byGoogle.id, name, email: identity.email };
   }
 
-  const byEmail = await env.DB.prepare("SELECT id, name, email, google_sub FROM users WHERE email = ?")
+  const byEmail = await env.DB_STAGING.prepare("SELECT id, name, email, google_sub FROM users WHERE email = ?")
     .bind(identity.email).first();
   if (byEmail) {
     if (byEmail.google_sub && byEmail.google_sub !== identity.googleSub) {
       throw new Error("That email is linked to a different Google account.");
     }
     const name = byEmail.name && byEmail.name.trim() ? byEmail.name.trim() : identity.name;
-    await env.DB.prepare("UPDATE users SET google_sub = ?, name = ? WHERE id = ?")
+    await env.DB_STAGING.prepare("UPDATE users SET google_sub = ?, name = ? WHERE id = ?")
       .bind(identity.googleSub, name, byEmail.id).run();
     return { id: byEmail.id, name, email: byEmail.email };
   }
 
   const user = { id: crypto.randomUUID(), name: identity.name, email: identity.email };
-  await env.DB.prepare("INSERT INTO users (id, name, email, google_sub) VALUES (?, ?, ?, ?)")
+  await env.DB_STAGING.prepare("INSERT INTO users (id, name, email, google_sub) VALUES (?, ?, ?, ?)")
     .bind(user.id, user.name, user.email, identity.googleSub).run();
   return user;
 }
 
 export async function onRequestPost({ request, env }) {
   if (!sameOriginRequest(request)) return jsonResponse({ error: "Request origin could not be verified." }, 403);
-  if (!env.DB) return jsonResponse({ error: "Account storage is not connected in Cloudflare D1." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected in Cloudflare D1." }, 503);
   const clientId = typeof env.GOOGLE_CLIENT_ID === "string" ? env.GOOGLE_CLIENT_ID.trim() : "";
   if (!clientId) return jsonResponse({ error: "Google sign-in is not configured yet." }, 503);
 

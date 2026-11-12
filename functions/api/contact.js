@@ -2,7 +2,7 @@ import { ensureAuthSchema, getAuthenticatedUser, jsonResponse, normalizeEmail, s
 
 export async function onRequestPost({ request, env }) {
   if (!sameOriginRequest(request)) return jsonResponse({ error: "Request origin could not be verified." }, 403);
-  if (!env.DB) return jsonResponse({ error: "Feedback storage is not connected." }, 503);
+  if (!env.DB_STAGING) return jsonResponse({ error: "Feedback storage is not connected." }, 503);
 
   let body;
   try {
@@ -29,7 +29,7 @@ export async function onRequestPost({ request, env }) {
   try {
     await ensureAuthSchema(env);
     const id = "msg_" + crypto.randomUUID();
-    await env.DB.prepare(
+    await env.DB_STAGING.prepare(
       "INSERT INTO customer_messages (id, user_id, name, email, type, message, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)"
     ).bind(id, user?.id || null, name, email, type, message, quantity).run();
 

@@ -25,10 +25,10 @@ function isAuthorized(request, env) {
 
 export async function onRequestGet({ request, env }) {
   if (!isAuthorized(request, env)) return json({ error: "Admin access required." }, 401);
-  if (!env.DB) return json({ error: "Database not connected." }, 503);
+  if (!env.DB_STAGING) return json({ error: "Database not connected." }, 503);
 
   try {
-    await env.DB.prepare(
+    await env.DB_STAGING.prepare(
       "CREATE TABLE IF NOT EXISTS customer_messages (" +
       "id TEXT PRIMARY KEY, " +
       "user_id TEXT, " +
@@ -41,10 +41,10 @@ export async function onRequestGet({ request, env }) {
     ).run();
 
     try {
-      await env.DB.prepare("DELETE FROM customer_messages WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
+      await env.DB_STAGING.prepare("DELETE FROM customer_messages WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
     } catch (_) {}
 
-    const result = await env.DB.prepare(
+    const result = await env.DB_STAGING.prepare(
       "SELECT id, user_id, name, email, type, message, quantity, created_at FROM customer_messages " +
       "WHERE datetime(created_at) >= '2026-11-11 17:30:00' " +
       "ORDER BY created_at DESC LIMIT 200"

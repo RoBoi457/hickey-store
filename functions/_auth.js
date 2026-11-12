@@ -6,10 +6,10 @@ export const PASSWORD_ITERATIONS = 100000;
 let schemaReadyPromise = null;
 
 export async function ensureAuthSchema(env) {
-  if (!env?.DB) return;
+  if (!env?.DB_STAGING) return;
   if (!schemaReadyPromise) {
     schemaReadyPromise = (async () => {
-      await env.DB.prepare(
+      await env.DB_STAGING.prepare(
         "CREATE TABLE IF NOT EXISTS users (" +
         "id TEXT PRIMARY KEY, " +
         "name TEXT NOT NULL DEFAULT '', " +
@@ -21,26 +21,26 @@ export async function ensureAuthSchema(env) {
         "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
       ).run();
       try {
-        await env.DB.prepare("ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''").run();
+        await env.DB_STAGING.prepare("ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''").run();
       } catch {}
       try {
-        await env.DB.prepare("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''").run();
+        await env.DB_STAGING.prepare("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''").run();
       } catch {}
       try {
-        await env.DB.prepare("ALTER TABLE users ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''").run();
+        await env.DB_STAGING.prepare("ALTER TABLE users ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''").run();
       } catch {}
 
       
-      await env.DB.prepare(
+      await env.DB_STAGING.prepare(
         "CREATE TABLE IF NOT EXISTS sessions (" +
         "token_hash TEXT PRIMARY KEY, " +
         "user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, " +
         "expires_at TEXT NOT NULL, " +
         "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
       ).run();
-      await env.DB.prepare("CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions (user_id)").run();
-      await env.DB.prepare("CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expires_at)").run();
-      await env.DB.prepare(
+      await env.DB_STAGING.prepare("CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions (user_id)").run();
+      await env.DB_STAGING.prepare("CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expires_at)").run();
+      await env.DB_STAGING.prepare(
         "CREATE TABLE IF NOT EXISTS cart_items (" +
         "user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, " +
         "product_id TEXT NOT NULL, " +
@@ -48,7 +48,7 @@ export async function ensureAuthSchema(env) {
         "updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
         "PRIMARY KEY (user_id, product_id))"
       ).run();
-      await env.DB.prepare(
+      await env.DB_STAGING.prepare(
         "CREATE TABLE IF NOT EXISTS orders (" +
         "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
         "order_ref TEXT NOT NULL UNIQUE, " +
@@ -69,22 +69,22 @@ export async function ensureAuthSchema(env) {
         "email_body TEXT)"
       ).run();
       try {
-        await env.DB.prepare("CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders (created_at DESC)").run();
+        await env.DB_STAGING.prepare("CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders (created_at DESC)").run();
       } catch {}
       try {
-        await env.DB.prepare("CREATE INDEX IF NOT EXISTS orders_status_idx ON orders (status)").run();
+        await env.DB_STAGING.prepare("CREATE INDEX IF NOT EXISTS orders_status_idx ON orders (status)").run();
       } catch {}
       try {
-        await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
+        await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run();
       } catch {}
       try {
-        await env.DB.prepare("ALTER TABLE orders ADD COLUMN user_id TEXT").run();
+        await env.DB_STAGING.prepare("ALTER TABLE orders ADD COLUMN user_id TEXT").run();
       } catch {}
       try {
-        await env.DB.prepare("CREATE INDEX IF NOT EXISTS orders_user_created_idx ON orders (user_id, created_at DESC)").run();
+        await env.DB_STAGING.prepare("CREATE INDEX IF NOT EXISTS orders_user_created_idx ON orders (user_id, created_at DESC)").run();
       } catch {}
       try {
-        await env.DB.prepare(
+        await env.DB_STAGING.prepare(
           "CREATE TABLE IF NOT EXISTS customer_messages (" +
           "id TEXT PRIMARY KEY, " +
           "user_id TEXT, " +
@@ -186,13 +186,13 @@ export function requestSessionToken(request) {
 }
 
 export async function getAuthenticatedUser(request, env) {
-  if (!env.DB) return null;
+  if (!env.DB_STAGING) return null;
   await ensureAuthSchema(env);
   const token = requestSessionToken(request);
   if (!token) return null;
   const tokenHash = await sha256Hex(token);
   const now = new Date().toISOString();
-  const row = await env.DB.prepare(
+  const row = await env.DB_STAGING.prepare(
     "SELECT users.id, users.name, users.email, users.phone, users.delivery_address FROM sessions JOIN users ON users.id = sessions.user_id " +
     "WHERE sessions.token_hash = ? AND sessions.expires_at > ?"
   ).bind(tokenHash, now).first();
@@ -206,7 +206,7 @@ export async function issueSession(user, env) {
   const token = randomHex(32);
   const tokenHash = await sha256Hex(token);
   const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString();
-  await env.DB.prepare("INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)")
+  await env.DB_STAGING.prepare("INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)")
     .bind(tokenHash, user.id, expiresAt).run();
   return SESSION_COOKIE + "=" + token + "; Max-Age=" + SESSION_TTL_SECONDS +
     "; Path=/; HttpOnly; Secure; SameSite=Lax";
