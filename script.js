@@ -646,8 +646,13 @@ window.addEventListener("scroll", () => {
   scrollTicking = true;
   requestAnimationFrame(() => {
     const current = window.scrollY;
-    if (current < 40 || current < lastScrollY - 6) nav.classList.remove("nav-away");
-    else if (current > lastScrollY + 8 && current > 150) nav.classList.add("nav-away");
+    if (current < 40 || current < lastScrollY - 6) {
+      nav.classList.remove("nav-away");
+      themeToggle?.classList.remove("nav-away");
+    } else if (current > lastScrollY + 8 && current > 150) {
+      nav.classList.add("nav-away");
+      themeToggle?.classList.add("nav-away");
+    }
     lastScrollY = current;
     updateCloudParallax();
     updateMarquee();
@@ -726,3 +731,23 @@ window.HickeyAuth?.init({
     saveBasket();
   }
 });
+
+// Theme slider toggle with persistence
+const themeToggle = document.getElementById("theme-toggle");
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+  if (themeToggle) themeToggle.setAttribute("aria-checked", String(isDark));
+  if (themeMeta) themeMeta.setAttribute("content", isDark ? "#080d18" : "#f3f6ff");
+  try { localStorage.setItem("hickey-theme", isDark ? "dark" : "light"); } catch (_) {}
+}
+if (themeToggle) {
+  let initialTheme = "light";
+  try { initialTheme = localStorage.getItem("hickey-theme") || "light"; } catch (_) {}
+  applyTheme(initialTheme);
+  themeToggle.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    applyTheme(current === "dark" ? "light" : "dark");
+  });
+}
