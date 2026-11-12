@@ -404,6 +404,13 @@ document.getElementById("product-grid").addEventListener("click", (event) => {
     }
     return;
   }
+  const customTrigger = event.target.closest('[data-contact-type="custom"]');
+  if (customTrigger) {
+    event.preventDefault();
+    event.stopPropagation();
+    openContact("custom", customTrigger);
+    return;
+  }
   const button = event.target.closest("[data-add]");
   if (button) {
     addToBasket(button.dataset.add);
@@ -417,7 +424,8 @@ document.getElementById("product-grid").addEventListener("keydown", (event) => {
   const card = event.target.closest(".product-card");
   if (!card || event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
   event.preventDefault();
-  openProductPreview(card);
+  if (card.dataset.contactType === "custom") openContact("custom", card);
+  else openProductPreview(card);
 });
 document.querySelectorAll(".product-card").forEach((card) => {
   card.tabIndex = 0;
