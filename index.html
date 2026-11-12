@@ -13,15 +13,32 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1794426196">
+    <link rel="stylesheet" href="styles.css?v=1794468040">
+    <script>
+      try {
+        if (localStorage.getItem("hickey-theme") === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      } catch (_) {}
+    </script>
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="auth-client.js?v=1794426196" defer></script>
-    <script src="script.js?v=1794426196" defer></script>
+    <script src="auth-client.js?v=1794468040" defer></script>
+    <script src="script.js?v=1794468040" defer></script>
   </head>
   <body>
     <div class="page-glow" aria-hidden="true"></div>
     <div class="grain" aria-hidden="true"></div>
+
+    <button class="theme-slider" id="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <span class="theme-slider-icon theme-sun" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg>
+      </span>
+      <span class="theme-slider-icon theme-moon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20.2 14.8A8.5 8.5 0 0 1 9.2 3.8a8.5 8.5 0 1 0 11 11Z"/></svg>
+      </span>
+      <span class="theme-slider-thumb" aria-hidden="true"></span>
+    </button>
 
     <nav class="float-nav" id="float-nav" aria-label="Main navigation">
       <a class="nav-item" href="#home" aria-label="Home" title="Home">
