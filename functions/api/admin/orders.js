@@ -86,6 +86,20 @@ export async function onRequestGet({ request, env }) {
     try {
       await env.DB.prepare("DELETE FROM orders WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
     } catch (_) {}
+    try {
+      await env.DB.prepare(
+        "DELETE FROM orders WHERE LOWER(customer_name) LIKE '%chaitanya%' OR LOWER(customer_email) LIKE '%chaitanya%' " +
+        "OR LOWER(customer_name) LIKE '%prabhu%' OR LOWER(customer_email) LIKE '%prabhu%' " +
+        "OR REPLACE(phone, ' ', '') LIKE '%8707312125%' OR REPLACE(phone, ' ', '') LIKE '%8956442297%'"
+      ).run();
+    } catch (_) {}
+    try {
+      await env.DB.prepare(
+        "DELETE FROM orders WHERE LOWER(customer_name) LIKE '%chaitanya%' OR LOWER(customer_email) LIKE '%chaitanya%' " +
+        "OR LOWER(customer_name) LIKE '%prabhu%' OR LOWER(customer_email) LIKE '%prabhu%' " +
+        "OR REPLACE(phone, ' ', '') LIKE '%8707312125%' OR REPLACE(phone, ' ', '') LIKE '%8956442297%'"
+      ).run();
+    } catch (_) {}
 
     if (format === "csv") {
       const result = await env.DB.prepare(
