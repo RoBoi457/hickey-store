@@ -79,6 +79,26 @@ export async function onRequestGet({ request, env }) {
   const { sql: where, bindings } = whereClause(filters);
   const format = url.searchParams.get("format");
   try {
+    await env.DB.prepare(
+      "CREATE TABLE IF NOT EXISTS orders (" +
+      "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+      "order_ref TEXT NOT NULL UNIQUE, " +
+      "items_json TEXT NOT NULL, " +
+      "amount_rupees INTEGER NOT NULL, " +
+      "delivery_address TEXT NOT NULL, " +
+      "phone TEXT NOT NULL, " +
+      "payment_method TEXT NOT NULL, " +
+      "status TEXT NOT NULL, " +
+      "razorpay_order_id TEXT UNIQUE, " +
+      "razorpay_payment_id TEXT UNIQUE, " +
+      "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+      "customer_name TEXT NOT NULL DEFAULT '', " +
+      "customer_email TEXT NOT NULL DEFAULT '', " +
+      "user_id TEXT, " +
+      "email_sent INTEGER NOT NULL DEFAULT 0, " +
+      "email_sent_at TEXT, " +
+      "email_body TEXT)"
+    ).run();
     try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_email TEXT NOT NULL DEFAULT ''").run(); } catch (_) {}
     try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run(); } catch (_) {}
     try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run(); } catch (_) {}
