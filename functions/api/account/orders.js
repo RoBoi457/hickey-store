@@ -22,8 +22,8 @@ async function reconcilePendingOrders(user, env) {
   const rows = pending.results || [];
   if (!rows.length) return;
 
-  const keyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
-  const keySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
+  const keyId = typeof env.RAZORPAY_TEST_KEY_ID === "string" ? env.RAZORPAY_TEST_KEY_ID.trim() : "";
+  const keySecret = typeof env.RAZORPAY_TEST_KEY_SECRET === "string" ? env.RAZORPAY_TEST_KEY_SECRET.trim() : "";
   const auth = keyId && keySecret ? "Basic " + btoa(keyId + ":" + keySecret) : "";
 
   for (const row of rows) {

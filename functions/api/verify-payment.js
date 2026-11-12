@@ -27,8 +27,8 @@ export async function onRequestPost({ request, env }) {
   catch { return json({ verified: false, error: "Account storage is not ready. Apply migration 0004_customer_accounts.sql." }, 503); }
   if (!user) return json({ verified: false, error: "Sign in to confirm this payment." }, 401);
 
-  const razorpayKeyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
-  const razorpayKeySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
+  const razorpayKeyId = typeof env.RAZORPAY_TEST_KEY_ID === "string" ? env.RAZORPAY_TEST_KEY_ID.trim() : "";
+  const razorpayKeySecret = typeof env.RAZORPAY_TEST_KEY_SECRET === "string" ? env.RAZORPAY_TEST_KEY_SECRET.trim() : "";
   if (!razorpayKeyId || !razorpayKeySecret) {
     return json({ verified: false, error: "Razorpay keys are not configured." }, 503);
   }

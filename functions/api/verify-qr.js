@@ -6,7 +6,7 @@ function json(data, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET || !env.DB_STAGING) {
+  if (!env.RAZORPAY_TEST_KEY_ID || !env.RAZORPAY_TEST_KEY_SECRET || !env.DB_STAGING) {
     return json({ verified: false, error: "Payment verification is not configured." }, 503);
   }
 
@@ -21,7 +21,7 @@ export async function onRequestPost({ request, env }) {
     return json({ verified: false, error: "This payment QR is invalid." }, 400);
   }
 
-  const authorization = "Basic " + btoa(env.RAZORPAY_KEY_ID + ":" + env.RAZORPAY_KEY_SECRET);
+  const authorization = "Basic " + btoa(env.RAZORPAY_TEST_KEY_ID + ":" + env.RAZORPAY_TEST_KEY_SECRET);
   try {
     const [qrResponse, paymentsResponse] = await Promise.all([
       fetch("https://api.razorpay.com/v1/payments/qr_codes/" + encodeURIComponent(qrCodeId), { headers: { Authorization: authorization } }),

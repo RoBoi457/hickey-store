@@ -34,8 +34,8 @@ export async function onRequestPost({ request, env }) {
   catch { return json({ error: "Account storage is not ready. Apply migration 0004_customer_accounts.sql." }, 503); }
   if (!user) return json({ error: "Sign in before placing an order." }, 401);
 
-  const razorpayKeyId = typeof env.RAZORPAY_KEY_ID === "string" ? env.RAZORPAY_KEY_ID.trim() : "";
-  const razorpayKeySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
+  const razorpayKeyId = typeof env.RAZORPAY_TEST_KEY_ID === "string" ? env.RAZORPAY_TEST_KEY_ID.trim() : "";
+  const razorpayKeySecret = typeof env.RAZORPAY_TEST_KEY_SECRET === "string" ? env.RAZORPAY_TEST_KEY_SECRET.trim() : "";
   if (!razorpayKeyId || !razorpayKeySecret) {
     return json({ error: "Razorpay is not configured. Add a Key ID and encrypted Key Secret for this Cloudflare environment." }, 503);
   }
@@ -108,7 +108,7 @@ export async function onRequestPost({ request, env }) {
       : "";
     if (razorpayResponse.status === 401 || razorpayResponse.status === 403) {
       return json({
-        error: "Razorpay rejected the API credentials. Ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET match and come from the same Razorpay account and mode.",
+        error: "Razorpay rejected the API credentials. Ensure RAZORPAY_TEST_KEY_ID and RAZORPAY_TEST_KEY_SECRET match and come from the same Razorpay account and mode.",
         gateway_status: razorpayResponse.status,
         gateway_code: gatewayCode || null
       }, 401);
