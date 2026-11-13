@@ -68,6 +68,7 @@ export async function onRequestPost({ request, env }) {
   try {
     await ensureAuthSchema(env);
     try { await env.DB.prepare("ALTER TABLE users ADD COLUMN last_nudged_at TEXT").run(); } catch (_) {}
+    try { await env.DB.prepare("ALTER TABLE users ADD COLUMN last_nudge_type TEXT").run(); } catch (_) {}
     const users = await env.DB.prepare(
       "SELECT u.id, u.email, EXISTS(SELECT 1 FROM cart_items c WHERE c.user_id = u.id) AS has_cart " +
       "FROM users u WHERE u.email LIKE '%@%' " +
@@ -81,7 +82,7 @@ export async function onRequestPost({ request, env }) {
     for (const user of users.results || []) {
       try {
         await sendNudge(env, user.email, buildNudgeEmail(Boolean(user.has_cart)));
-        await env.DB.prepare("UPDATE users SET last_nudged_at = CURRENT_TIMESTAMP WHERE id = ?").bind(user.id).run();
+        await env.DB.prepare("UPDATE users SET last_nudged_at = CURRENT_TIMESTAMP, last_nudge_type = ? WHERE id = ?").bind(user.has_cart ? "basket" : "browse", user.id).run();
         if (user.has_cart) cartNudges += 1;
         else browseNudges += 1;
       } catch (error) {
