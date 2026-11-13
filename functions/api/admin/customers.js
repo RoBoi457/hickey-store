@@ -1,3 +1,5 @@
+import { ensureAuthSchema } from "../../_auth.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -27,8 +29,9 @@ export async function onRequestGet({ request, env }) {
   if (!isAuthorized(request, env)) return json({ error: "Admin access required." }, 401);
   if (!env.DB) return json({ error: "The account database is not connected." }, 503);
   try {
+    await ensureAuthSchema(env);
     const result = await env.DB.prepare(
-      "SELECT users.id, users.email, users.created_at, " +
+      "SELECT users.id, users.email, users.created_at, users.last_nudged_at, users.last_nudge_type, " +
       "(SELECT COUNT(*) FROM orders WHERE orders.user_id = users.id) AS order_count " +
       "FROM users ORDER BY users.created_at DESC LIMIT 5000"
     ).all();
