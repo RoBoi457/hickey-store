@@ -1,0 +1,16 @@
+name: Weekly Customer Nudge
+
+on:
+  schedule:
+    - cron: "30 6 * * 5"
+  workflow_dispatch:
+
+jobs:
+  send-nudge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger weekly nudge emails
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 60 \
+            -X POST "https://gethickey.in/api/admin/nudge" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}"
