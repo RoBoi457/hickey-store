@@ -29,6 +29,12 @@ export async function ensureAuthSchema(env) {
       try {
         await env.DB.prepare("ALTER TABLE users ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''").run();
       } catch {}
+      try {
+        await env.DB.prepare("ALTER TABLE users ADD COLUMN last_nudged_at TEXT").run();
+      } catch {}
+      try {
+        await env.DB.prepare("ALTER TABLE users ADD COLUMN last_nudge_type TEXT").run();
+      } catch {}
 
       
       await env.DB.prepare(
