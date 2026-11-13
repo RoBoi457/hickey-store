@@ -105,7 +105,7 @@
     <section id="app" class="hidden">
       <header class="top">
         <div><p class="kicker">The small business command center</p><div class="brand">Hickey <span>order desk</span></div><p class="sub">Orders, payments and shipping details in one place.</p></div>
-        <div class="top-right"><button id="theme-toggle" class="button" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙 Dark</button><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
+        <div class="top-right"><button id="theme-toggle" class="button" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙 Dark</button><button id="send-nudge" class="button">✉ Send nudge</button><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
       </header>
       <div class="stats" style="grid-template-columns: repeat(5, 1fr);">
         <article class="stat glass"><div class="stat-label">Gross paid</div><div id="revenue" class="stat-value">—</div><div class="stat-note">Captured UPI orders</div></article>
@@ -192,8 +192,8 @@
     const money = (n) => new Intl.NumberFormat("en-IN", {style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(n)||0);
     function cell(tag, text, className) { const el=document.createElement(tag); el.textContent=text||""; if(className) el.className=className; return el; }
     function queryString(filters, extra={}) { const params=new URLSearchParams({...filters,...extra}); return params.toString(); }
-    async function request(path) {
-      const response=await fetch(path,{headers:{Authorization:"Bearer "+token},cache:"no-store"});
+    async function request(path, options={}) {
+      const response=await fetch(path,{...options,headers:{...options.headers,Authorization:"Bearer "+token},cache:"no-store"});
       const data=await response.json().catch(()=>({error:"Unexpected response from the order service."}));
       if(!response.ok) throw new Error(data.error||"Could not load orders.");
       return {response,data};
@@ -317,7 +317,7 @@
     function lock(){token="";sessionStorage.removeItem("hickey-admin-token");$("app").classList.add("hidden");$("login").classList.remove("hidden");$("token").value="";}
     $("login-form").addEventListener("submit",async e=>{e.preventDefault();const value=$("token").value.trim();token=value;try{await request("/api/admin/orders?page=1");sessionStorage.setItem("hickey-admin-token",token);$("login").classList.add("hidden");$("app").classList.remove("hidden");load();}catch(error){token="";$("login-error").textContent=error.message;}});
     $("apply").addEventListener("click",applyFilters);$("search").addEventListener("keydown",e=>{if(e.key==="Enter")applyFilters();});
-    $("refresh").addEventListener("click",load);$("logout").addEventListener("click",lock);
+    $("send-nudge")?.addEventListener("click",async()=>{if(!confirm("Send nudge emails to all eligible customers now?"))return;const b=$("send-nudge");b.disabled=true;b.textContent="Sending…";try{const {data}=await request("/api/admin/nudge",{method:"POST"});alert(`Sent ${data.sentCount} emails (${data.cartNudges} with baskets, ${data.browseNudges} without baskets).`+(data.errors?.length?` ${data.errors.length} could not be sent.`:""));}catch(error){$("app-error").textContent=error.message;}finally{b.disabled=false;b.textContent="✉ Send nudge";}});$("refresh").addEventListener("click",load);$("logout").addEventListener("click",lock);
     $("prev").addEventListener("click",()=>{if(page>1){page--;load();}});$("next").addEventListener("click",()=>{page++;load();});
     $("export").addEventListener("click",async()=>{try{const {response}=await request("/api/admin/orders?"+queryString(activeFilters,{format:"csv"}));const blob=await response.blob();const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="hickey-orders.csv";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);}catch(error){$("app-error").textContent=error.message;}});
     
