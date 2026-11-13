@@ -125,7 +125,7 @@
           <strong>Customer accounts</strong><span id="customer-count" style="color:var(--muted);font-size:12px"></span>
         </div>
         <p id="customer-error" class="error" style="padding:0 18px"></p>
-        <div class="table-wrap"><table style="min-width:560px"><thead><tr><th>Email</th><th>Account created</th><th>Orders</th></tr></thead><tbody id="customer-rows"></tbody></table><div id="customers-empty" class="empty hidden">No customer accounts yet.</div></div>
+        <div class="table-wrap"><table style="min-width:690px"><thead><tr><th>Email</th><th>Account created</th><th>Orders</th><th>Last nudge</th></tr></thead><tbody id="customer-rows"></tbody></table><div id="customers-empty" class="empty hidden">No customer accounts yet.</div></div>
       </section>
             <!-- Customer messages & feedback inbox -->
       <section class="chart-card glass" style="margin-bottom: 24px;">
@@ -246,7 +246,11 @@
         const email = cell("td", customer.email, "ref");
         const created = cell("td", new Date(customer.created_at + "Z").toLocaleString("en-IN"));
         const orders = cell("td", Number(customer.order_count || 0).toLocaleString("en-IN"));
-        for (const value of [email, created, orders]) tr.append(value);
+        const kind = customer.last_nudge_type === "basket" ? "Basket" : "Browse";
+        const nudge = cell("td", customer.last_nudged_at ? kind + " · " + new Date(customer.last_nudged_at + "Z").toLocaleString("en-IN") : "—");
+        nudge.style.color = customer.last_nudged_at ? "var(--muted)" : "var(--muted)";
+        nudge.style.fontSize = "12px";
+        for (const value of [email, created, orders, nudge]) tr.append(value);
         rows.append(tr);
       }
     }
