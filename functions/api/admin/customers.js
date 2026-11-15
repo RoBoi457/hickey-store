@@ -30,13 +30,15 @@ export async function onRequestGet({ request, env }) {
   if (!env.DB) return json({ error: "The account database is not connected." }, 503);
   try {
     await ensureAuthSchema(env);
+    try { await env.DB.prepare("ALTER TABLE users ADD COLUMN last_nudged_at TEXT").run(); } catch {}
+    try { await env.DB.prepare("ALTER TABLE users ADD COLUMN last_nudge_type TEXT").run(); } catch {}
     const result = await env.DB.prepare(
       "SELECT users.id, users.email, users.created_at, users.last_nudged_at, users.last_nudge_type, " +
       "(SELECT COUNT(*) FROM orders WHERE orders.user_id = users.id) AS order_count " +
       "FROM users ORDER BY users.created_at DESC LIMIT 5000"
     ).all();
     return json({ customers: result.results || [] });
-  } catch {
-    return json({ error: "Customer accounts are not ready. Apply migration 0004_customer_accounts.sql." }, 503);
+  } catch (err) {
+    return json({ error: (err && err.message) ? err.message : "Could not load customer accounts." }, 503);
   }
 }
