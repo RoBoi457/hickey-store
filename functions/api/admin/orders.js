@@ -126,7 +126,7 @@ export async function onRequestGet({ request, env }) {
     const page = Math.max(1, Math.min(100000, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1));
     const pageSize = 100;
     const offset = (page - 1) * pageSize;
-    const [countResult, listResult, summary, daily] = await Promise.all([
+    const [countResult, listResult, summary, daily, paidItemsResult] = await Promise.all([
       env.DB.prepare("SELECT COUNT(*) AS total FROM orders" + where).bind(...bindings).first(),
       env.DB.prepare(
         "SELECT order_ref, created_at, customer_name, customer_email, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id, email_sent, email_sent_at, email_body FROM orders" +
@@ -143,8 +143,59 @@ export async function onRequestGet({ request, env }) {
         "SELECT date(created_at) AS day, SUM(CASE WHEN status = 'paid' THEN amount_rupees ELSE 0 END) AS revenue, " +
         "SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_orders " +
         "FROM orders WHERE datetime(created_at) >= '2026-11-11 17:30:00' GROUP BY date(created_at) ORDER BY day"
+      ).all(),
+      env.DB.prepare(
+        "SELECT order_ref, customer_name, customer_email, items_json FROM orders " +
+        "WHERE status = 'paid' AND datetime(created_at) >= '2026-11-11 17:30:00' ORDER BY created_at DESC"
       ).all()
     ]);
+
+    const catalogNames = {
+      "kathor-clock": "The Rohtak Clock",
+      "pda": "PDA Tree",
+      "submit-mode": "Spiderman",
+      "clock-it": "Clock It",
+      "coke-paglu": "Diet Coke Paglu",
+      "cooks": "Cooked",
+      "proxy-pass": "Claudey Proxy Mat Laga",
+      "baddie": "The Baddie Club",
+      "kathor-land": "Kathor Land",
+      "nonchalant": "Non Chalant",
+      "two-friends": "Couple Design",
+      "campus-cat-nap": "CAT Whore",
+      "clinger-cat-club": "Gingerrrrr",
+      "same-old-day": "CAT checklist"
+    };
+    const designMap = new Map(
+      Object.entries(catalogNames).map(([id, name]) => [id, { id, name, unitsOrdered: 0, buyersMap: new Map() }])
+    );
+    for (const row of paidItemsResult.results || []) {
+      let parsed = [];
+      try { parsed = JSON.parse(row.items_json || "[]"); } catch { parsed = []; }
+      if (!Array.isArray(parsed)) continue;
+      const buyerName = (row.customer_name || "").trim() || (row.customer_email || "").trim() || "Customer";
+      for (const item of parsed) {
+        if (!item) continue;
+        const id = item.id || item.name || "unknown";
+        const name = catalogNames[id] || item.name || id;
+        const qty = Math.max(1, Number(item.quantity) || 1);
+        if (!designMap.has(id)) {
+          designMap.set(id, { id, name, unitsOrdered: 0, buyersMap: new Map() });
+        }
+        const entry = designMap.get(id);
+        entry.unitsOrdered += qty;
+        entry.buyersMap.set(buyerName, (entry.buyersMap.get(buyerName) || 0) + qty);
+      }
+    }
+    const designBreakdown = Array.from(designMap.values())
+      .map((entry) => ({
+        id: entry.id,
+        name: entry.name,
+        unitsOrdered: entry.unitsOrdered,
+        buyers: Array.from(entry.buyersMap.entries()).map(([name, quantity]) => ({ name, quantity }))
+      }))
+      .sort((a, b) => b.unitsOrdered - a.unitsOrdered || a.name.localeCompare(b.name));
+
     const orders = (listResult.results || []).map((order) => ({
       ...order,
       items: itemSummary(order.items_json)
@@ -160,7 +211,8 @@ export async function onRequestGet({ request, env }) {
         pending: summary?.pending_count || 0,
         revenueRupees: summary?.paid_rupees || 0
       },
-      daily: daily.results || []
+      daily: daily.results || [],
+      designBreakdown
     });
   } catch (err) {
     return json({ error: (err && err.message) ? err.message : "Could not load orders." }, 500);

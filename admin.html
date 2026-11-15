@@ -120,6 +120,29 @@
         <div id="chart-labels" class="chart-labels"></div>
       </section>
 
+      <section class="chart-card glass" style="margin-bottom: 16px;">
+        <div class="chart-head" style="margin-bottom: 14px;">
+          <div>
+            <strong style="font-size: 20px;">Units Ordered by Design</strong>
+            <p style="margin: 4px 0 0; color: var(--muted); font-size: 12px;">Confirmed paid pieces per keychain design and who ordered them.</p>
+          </div>
+          <span id="design-total-units" style="font-weight: 700; color: var(--red);">0 units ordered</span>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width: 560px;">
+            <thead>
+              <tr>
+                <th style="width: 240px;">Design</th>
+                <th style="width: 140px;">Units Ordered</th>
+                <th>Buyers</th>
+              </tr>
+            </thead>
+            <tbody id="design-rows"></tbody>
+          </table>
+          <div id="designs-empty" class="empty hidden">No paid design orders yet.</div>
+        </div>
+      </section>
+
       <section class="customers glass" style="margin-bottom:16px">
         <div class="toolbar" style="justify-content:space-between">
           <strong>Customer accounts</strong><span id="customer-count" style="color:var(--muted);font-size:12px"></span>
@@ -192,11 +215,12 @@
     const money = (n) => new Intl.NumberFormat("en-IN", {style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(n)||0);
     function cell(tag, text, className) { const el=document.createElement(tag); el.textContent=text||""; if(className) el.className=className; return el; }
     function queryString(filters, extra={}) { const params=new URLSearchParams({...filters,...extra}); return params.toString(); }
-    async function request(path, options={}) {
-      const response=await fetch(path,{...options,headers:{...options.headers,Authorization:"Bearer "+token},cache:"no-store"});
-      const data=await response.json().catch(()=>({error:"Unexpected response from the order service."}));
-      if(!response.ok) throw new Error(data.error||"Could not load orders.");
-      return {response,data};
+    async function request(path, options = {}) {
+      const headers = { ...(options.headers || {}), Authorization: "Bearer " + token };
+      const response = await fetch(path, { ...options, headers, cache: "no-store" });
+      const data = await response.json().catch(() => ({ error: "Unexpected response from the order service." }));
+      if (!response.ok) throw new Error(data.error || "Could not load orders.");
+      return { response, data };
     }
     function drawChart(days) {
       const chart=$("chart"), labels=$("chart-labels"); chart.replaceChildren(); labels.replaceChildren();
@@ -251,6 +275,32 @@
         nudge.style.color = customer.last_nudged_at ? "var(--muted)" : "var(--muted)";
         nudge.style.fontSize = "12px";
         for (const value of [email, created, orders, nudge]) tr.append(value);
+        rows.append(tr);
+      }
+    }
+    function drawDesigns(designs) {
+      const rows = $("design-rows");
+      if (!rows) return;
+      rows.replaceChildren();
+      const list = Array.isArray(designs) ? designs : [];
+      $("designs-empty").classList.toggle("hidden", list.length > 0);
+      const totalUnits = list.reduce((sum, item) => sum + (Number(item.unitsOrdered) || 0), 0);
+      if ($("design-total-units")) $("design-total-units").textContent = totalUnits.toLocaleString("en-IN") + " units ordered";
+      for (const item of list) {
+        const tr = document.createElement("tr");
+        const nameCell = cell("td", item.name, "ref");
+        const qtyCell = cell("td", "", "");
+        const qtyBadge = cell("span", String(item.unitsOrdered || 0) + " pcs", "status" + (item.unitsOrdered > 0 ? " paid" : ""));
+        qtyCell.append(qtyBadge);
+        const buyersCell = cell("td", "", "");
+        if (Array.isArray(item.buyers) && item.buyers.length > 0) {
+          buyersCell.textContent = item.buyers.map((b) => b.name + " (×" + b.quantity + ")").join(", ");
+          buyersCell.style.lineHeight = "1.5";
+        } else {
+          buyersCell.textContent = "—";
+          buyersCell.style.color = "var(--muted)";
+        }
+        tr.append(nameCell, qtyCell, buyersCell);
         rows.append(tr);
       }
     }
@@ -312,7 +362,7 @@
         const {data}=await request("/api/admin/orders?"+queryString(activeFilters,{page}));
         $("revenue").textContent=money(data.summary.revenueRupees);$("paid").textContent=data.summary.paid;
         $("pending").textContent=data.summary.pending;$("total").textContent=data.summary.total;
-        drawChart(data.daily);drawOrders(data.orders,data.totalFiltered);await Promise.all([loadCustomers(), loadMessages()]);
+        drawChart(data.daily);drawDesigns(data.designBreakdown);drawOrders(data.orders,data.totalFiltered);await Promise.all([loadCustomers(), loadMessages()]);
       }catch(error){$("app-error").textContent=error.message;if(error.message==="Admin access required.")lock();}
       finally{$("app").classList.remove("loading");}
     }
