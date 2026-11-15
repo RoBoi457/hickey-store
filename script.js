@@ -1,11 +1,11 @@
 const PRODUCTS = {
-  "kathor-clock": { name: "The Rohtak Clock", price: 69, image: "assets/keychain-products/01-rohtak-standard-time.png" },
+  "kathor-clock": { name: "The Rohtak Clock", price: 69, image: "assets/keychain-products/01-rohtak-standard-time.png", soldOut: true },
   pda: { name: "PDA Tree", price: 69, image: "assets/keychain-products/02-pda-campus.png" },
   "submit-mode": { name: "Spiderman", price: 69, image: "assets/keychain-products/03-atp-submit.png" },
   "clock-it": { name: "Clock It", price: 69, image: "assets/keychain-products/04-clock-it.png" },
   "coke-paglu": { name: "Diet Coke Paglu", price: 69, image: "assets/keychain-products/05-diet-coke-paglu.png" },
-  cooks: { name: "Cooked", price: 69, image: "assets/keychain-products/06-cooks.png" },
-  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69, image: "assets/keychain-products/07-proxy-mat-laga.png" },
+  cooks: { name: "Cooked", price: 69, image: "assets/keychain-products/06-cooks.png", soldOut: true },
+  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69, image: "assets/keychain-products/07-proxy-mat-laga.png", soldOut: true },
   baddie: { name: "The Baddie Club", price: 69, image: "assets/keychain-products/08-baddie.png" },
   "kathor-land": { name: "Kathor Land", price: 69, image: "assets/keychain-products/09-kathor-land.png" },
   nonchalant: { name: "Non Chalant", price: 69, image: "assets/keychain-products/11-nonchalant.png" },
@@ -243,7 +243,7 @@ function showSuccess(orderNumber) {
 }
 
 function addToBasket(id) {
-  if (!PRODUCTS[id]) return;
+  if (!PRODUCTS[id] || PRODUCTS[id].soldOut) return;
   if (!window.HickeyAuth?.user) {
     window.HickeyAuth?.request({ type: "add", id });
     return;
@@ -269,7 +269,7 @@ function changeQuantity(id, difference) {
 function openProductPreview(card) {
   const id = card.dataset.productId;
   const product = PRODUCTS[id];
-  if (!product) return;
+  if (!product || product.soldOut) return;
   previewProductId = id;
   previewReturnFocus = card;
   const image = card.querySelector(".product-photo img");
