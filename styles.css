@@ -1217,3 +1217,12 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 :root[data-theme="dark"] .account-orders,
 :root[data-theme="dark"] .account-details-section,
 :root[data-theme="dark"] .contact-team { border-color: rgba(255,255,255,.1); }
+
+
+/* Sold-out product treatment. */
+.product-card.is-sold-out { cursor: default; }
+.product-card.is-sold-out:hover { transform: none; }
+.product-card.is-sold-out .product-photo img { filter: grayscale(1) brightness(.82); }
+.product-card.is-sold-out:hover .product-photo img { transform: none; }
+.sold-out-badge { position: absolute; z-index: 3; top: 18px; left: 18px; padding: 7px 11px; border-radius: 999px; background: rgba(18,26,43,.9); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+@media (max-width: 760px) { .sold-out-badge { top: 10px; left: 10px; padding: 5px 8px; font-size: 9px; } }
