@@ -1,9 +1,8 @@
 import { getAuthenticatedUser, jsonResponse, sameOriginRequest } from "../_auth.js";
 
 const validProductIds = new Set([
-  "kathor-clock", "pda", "submit-mode", "clock-it", "coke-paglu", "cooks",
-  "proxy-pass", "baddie", "kathor-land", "nonchalant", "two-friends",
-  "campus-cat-nap", "clinger-cat-club", "same-old-day"
+  "pda", "submit-mode", "clock-it", "coke-paglu", "baddie", "kathor-land",
+  "nonchalant", "two-friends", "campus-cat-nap", "clinger-cat-club", "same-old-day"
 ]);
 
 export async function onRequestGet({ request, env }) {
