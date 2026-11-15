@@ -17,6 +17,8 @@ const catalog = {
   "same-old-day": { name: "CAT checklist", price: 69 }
 };
 
+const soldOutProductIds = new Set(["kathor-clock", "cooks", "proxy-pass"]);
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -65,7 +67,7 @@ export async function onRequestPost({ request, env }) {
   for (const item of body.items) {
     const product = catalog[item?.id];
     const quantity = Number(item?.quantity);
-    if (!product || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+    if (!product || soldOutProductIds.has(item?.id) || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
       return json({ error: "One of the items in your basket is invalid." }, 400);
     }
     totalRupees += product.price * quantity;
