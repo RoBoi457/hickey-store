@@ -83,6 +83,8 @@ export async function onRequestGet({ request, env }) {
     try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0").run(); } catch (_) {}
     try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_sent_at TEXT").run(); } catch (_) {}
     try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN email_body TEXT").run(); } catch (_) {}
+    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN pending_followup_sent INTEGER NOT NULL DEFAULT 0").run(); } catch (_) {}
+    try { await env.DB.prepare("ALTER TABLE orders ADD COLUMN pending_followup_sent_at TEXT").run(); } catch (_) {}
     try {
       await env.DB.prepare("DELETE FROM orders WHERE datetime(created_at) < '2026-11-11 17:30:00'").run();
     } catch (_) {}
@@ -129,7 +131,7 @@ export async function onRequestGet({ request, env }) {
     const [countResult, listResult, summary, daily, paidItemsResult] = await Promise.all([
       env.DB.prepare("SELECT COUNT(*) AS total FROM orders" + where).bind(...bindings).first(),
       env.DB.prepare(
-        "SELECT order_ref, created_at, customer_name, customer_email, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id, email_sent, email_sent_at, email_body FROM orders" +
+        "SELECT order_ref, created_at, customer_name, customer_email, phone, delivery_address, items_json, amount_rupees, status, razorpay_payment_id, email_sent, email_sent_at, email_body, pending_followup_sent, pending_followup_sent_at FROM orders" +
         where + " ORDER BY created_at DESC LIMIT ? OFFSET ?"
       ).bind(...bindings, pageSize, offset).all(),
       env.DB.prepare(

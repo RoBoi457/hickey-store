@@ -242,7 +242,7 @@
         const state=cell("td","","");state.append(cell("span",order.status,"status "+order.status));
 
         const emailCol=cell("td","","");
-        if(order.email_sent){
+        if((order.status==="paid" && order.email_sent) || (order.status==="pending" && order.pending_followup_sent)){
           const tag=cell("span","✓ Sent","status");
           tag.style.background="#def6ea";tag.style.color="#14784b";tag.style.fontWeight="700";
           const viewBtn=document.createElement("button");
@@ -262,6 +262,21 @@
             sendBtn.disabled=true;sendBtn.textContent="Sending…";
             try{
               await request("/api/admin/resend-order-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderRef:order.order_ref})});
+              await load();
+            }catch(err){alert(err.message);sendBtn.disabled=false;sendBtn.textContent="Send mail ✉";}
+          };
+          emailCol.append(tag,sendBtn);
+        } else if(order.status==="pending") {
+          const tag=cell("span","Not sent","status");
+          tag.style.background="#fff3d8";tag.style.color="#8b5d00";
+          const sendBtn=document.createElement("button");
+          sendBtn.textContent="Send mail ✉";
+          sendBtn.className="button";
+          sendBtn.style.padding="4px 9px";sendBtn.style.fontSize="11px";sendBtn.style.marginLeft="8px";sendBtn.style.borderRadius="8px";
+          sendBtn.onclick=async()=>{
+            sendBtn.disabled=true;sendBtn.textContent="Sending…";
+            try{
+              await request("/api/admin/pending-followup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderRef:order.order_ref})});
               await load();
             }catch(err){alert(err.message);sendBtn.disabled=false;sendBtn.textContent="Send mail ✉";}
           };
@@ -408,6 +423,24 @@
     function showEmailModal(order) {
       $("modal-email-title").textContent = "Email sent for " + order.order_ref;
       $("modal-email-recipient").textContent = (order.customer_name ? order.customer_name + " <" : "") + (order.customer_email || "No email") + (order.customer_name ? ">" : "");
+      if (order.status === "pending" && order.pending_followup_sent) {
+        $("modal-email-time").textContent = order.pending_followup_sent_at ? new Date(order.pending_followup_sent_at.replace(" ", "T") + "Z").toLocaleString("en-IN") : "Sent";
+        $("modal-email-content").textContent = [
+          "Subject: Your Hickey order is still waiting!\n",
+          "Hey " + (order.customer_name || "there") + ",\n",
+          "Looks like you left a little Hickey behind!\n",
+          "You recently started placing an order on Hickey, but it seems your payment didn't go through or wasn't completed.\n",
+          "No worries, it happens! Whether you got distracted or ran into a payment hiccup, your order is still waiting for you.\n",
+          "Still thinking about it? Your Hickey picks are just one step away!\n",
+          "[Complete Your Order] (https://gethickey.in/)\n",
+          "If you've already completed the payment, you can safely ignore this email.\n",
+          "Need a hand? We're just an email away at support@gethickey.in.\n",
+          "Happy shopping!\n",
+          "Team Hickey\ngethickey.in"
+        ].join("\n");
+        $("email-modal").classList.remove("hidden");
+        return;
+      }
       $("modal-email-time").textContent = order.email_sent_at ? new Date(order.email_sent_at).toLocaleString("en-IN") : "Recorded upon capture";
       
       const body = order.email_body || [

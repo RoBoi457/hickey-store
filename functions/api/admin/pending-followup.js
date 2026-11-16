@@ -109,22 +109,29 @@ export async function onRequestPost({ request, env }) {
   const keySecret = typeof env.RAZORPAY_KEY_SECRET === "string" ? env.RAZORPAY_KEY_SECRET.trim() : "";
   const rzpAuth = keyId && keySecret ? "Basic " + btoa(keyId + ":" + keySecret) : "";
 
-  const pendingRes = await env.DB.prepare(
-    "SELECT id, order_ref, customer_name, customer_email, amount_rupees, razorpay_order_id, created_at " +
-    "FROM orders " +
-    "WHERE status = 'pending' " +
-    "AND COALESCE(pending_followup_sent, 0) = 0 " +
-    "AND customer_email LIKE '%@%' " +
-    "AND datetime(created_at) >= '2026-11-11 17:30:00' " +
-    "AND datetime(created_at) <= datetime('now', '-1 day') " +
-    "AND NOT EXISTS (" +
-    "  SELECT 1 FROM orders p " +
-    "  WHERE LOWER(p.customer_email) = LOWER(orders.customer_email) " +
-    "  AND p.status = 'paid' " +
-    "  AND datetime(p.created_at) >= datetime(orders.created_at)" +
-    ") " +
-    "ORDER BY created_at ASC LIMIT 200"
-  ).all();
+  const targetOrderRef = typeof body?.orderRef === "string" ? body.orderRef.trim() : "";
+
+  const pendingRes = targetOrderRef
+    ? await env.DB.prepare(
+        "SELECT id, order_ref, customer_name, customer_email, amount_rupees, razorpay_order_id, created_at " +
+        "FROM orders WHERE order_ref = ? AND status = 'pending' AND customer_email LIKE '%@%'"
+      ).bind(targetOrderRef).all()
+    : await env.DB.prepare(
+        "SELECT id, order_ref, customer_name, customer_email, amount_rupees, razorpay_order_id, created_at " +
+        "FROM orders " +
+        "WHERE status = 'pending' " +
+        "AND COALESCE(pending_followup_sent, 0) = 0 " +
+        "AND customer_email LIKE '%@%' " +
+        "AND datetime(created_at) >= '2026-11-11 17:30:00' " +
+        "AND datetime(created_at) <= datetime('now', '-1 day') " +
+        "AND NOT EXISTS (" +
+        "  SELECT 1 FROM orders p " +
+        "  WHERE LOWER(p.customer_email) = LOWER(orders.customer_email) " +
+        "  AND p.status = 'paid' " +
+        "  AND datetime(p.created_at) >= datetime(orders.created_at)" +
+        ") " +
+        "ORDER BY created_at ASC LIMIT 200"
+      ).all();
 
   let sentCount = 0;
   let reconciledPaid = 0;
