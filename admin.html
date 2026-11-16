@@ -121,20 +121,28 @@
         <div id="chart-labels" class="chart-labels"></div>
       </section>
 
+      <section id="low-stock-alert" class="glass hidden" style="margin-bottom: 16px; padding: 16px 22px; border: 1px solid rgba(243,38,73,.35); background: rgba(243,38,73,.09); border-radius: 20px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <strong style="color: var(--red); font-size: 14px;">⚠️ Low Stock Alert (≤ 5 left):</strong>
+          <span id="low-stock-list" style="font-size: 13px; font-weight: 600;"></span>
+        </div>
+      </section>
+
       <section class="chart-card glass" style="margin-bottom: 16px;">
         <div class="chart-head" style="margin-bottom: 14px;">
           <div>
             <strong style="font-size: 20px;">Units Ordered by Design</strong>
-            <p style="margin: 4px 0 0; color: var(--muted); font-size: 12px;">Confirmed paid pieces per keychain design and who ordered them.</p>
+            <p style="margin: 4px 0 0; color: var(--muted); font-size: 12px;">Confirmed paid pieces per keychain design (10 units/design) and who ordered them.</p>
           </div>
           <span id="design-total-units" style="font-weight: 700; color: var(--red);">0 units ordered</span>
         </div>
         <div class="table-wrap">
-          <table style="min-width: 560px;">
+          <table style="min-width: 640px;">
             <thead>
               <tr>
-                <th style="width: 240px;">Design</th>
-                <th style="width: 140px;">Units Ordered</th>
+                <th style="width: 220px;">Design</th>
+                <th style="width: 130px;">Units Ordered</th>
+                <th style="width: 130px;">Left in Stock</th>
                 <th>Buyers</th>
               </tr>
             </thead>

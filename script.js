@@ -751,3 +751,43 @@ if (themeToggle) {
     applyTheme(current === "dark" ? "light" : "dark");
   });
 }
+
+// Live stock badges ("Selling Out Soon!" when <= 5 pieces left out of 10)
+async function refreshStockBadges() {
+  try {
+    const res = await fetch("/api/stock", { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json().catch(() => null);
+    const stock = data?.stock;
+    if (!stock) return;
+    document.querySelectorAll(".product-card[data-product-id]").forEach((card) => {
+      const id = card.dataset.productId;
+      const info = stock[id];
+      const photo = card.querySelector(".product-photo");
+      if (!info || !photo) return;
+
+      photo.querySelector(".badge-selling-soon")?.remove();
+      if (card.classList.contains("is-sold-out")) return;
+
+      if (info.soldOut) {
+        if (PRODUCTS[id]) PRODUCTS[id].soldOut = true;
+        card.classList.add("is-sold-out");
+        photo.querySelector(".add-button")?.remove();
+        photo.querySelector(".product-quantity")?.remove();
+        if (!photo.querySelector(".sold-out-badge")) {
+          const badge = document.createElement("span");
+          badge.className = "sold-out-badge";
+          badge.textContent = "Sold out";
+          photo.prepend(badge);
+        }
+      } else if (info.lowStock) {
+        const hasOtherBadge = Boolean(photo.querySelector(".badge"));
+        const badge = document.createElement("span");
+        badge.className = "badge badge-selling-soon" + (hasOtherBadge ? " badge-stacked" : "");
+        badge.textContent = "Selling Out Soon!";
+        photo.prepend(badge);
+      }
+    });
+  } catch (_) {}
+}
+refreshStockBadges();

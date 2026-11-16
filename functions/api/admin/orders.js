@@ -189,13 +189,22 @@ export async function onRequestGet({ request, env }) {
         entry.buyersMap.set(buyerName, (entry.buyersMap.get(buyerName) || 0) + qty);
       }
     }
+    const manuallySoldOut = new Set(["kathor-clock", "cooks", "proxy-pass"]);
     const designBreakdown = Array.from(designMap.values())
-      .map((entry) => ({
-        id: entry.id,
-        name: entry.name,
-        unitsOrdered: entry.unitsOrdered,
-        buyers: Array.from(entry.buyersMap.entries()).map(([name, quantity]) => ({ name, quantity }))
-      }))
+      .map((entry) => {
+        const isSoldOut = manuallySoldOut.has(entry.id);
+        const remaining = isSoldOut ? 0 : Math.max(0, 10 - entry.unitsOrdered);
+        return {
+          id: entry.id,
+          name: entry.name,
+          unitsOrdered: entry.unitsOrdered,
+          initialStock: 10,
+          remaining,
+          lowStock: !isSoldOut && remaining > 0 && remaining <= 5,
+          soldOut: remaining === 0,
+          buyers: Array.from(entry.buyersMap.entries()).map(([name, quantity]) => ({ name, quantity }))
+        };
+      })
       .sort((a, b) => b.unitsOrdered - a.unitsOrdered || a.name.localeCompare(b.name));
 
     const orders = (listResult.results || []).map((order) => ({

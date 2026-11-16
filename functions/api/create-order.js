@@ -1,4 +1,5 @@
 import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
+import { computeInventory } from "../_inventory.js";
 
 const catalog = {
   "kathor-clock": { name: "The Rohtak Clock", price: 69 },
@@ -62,6 +63,7 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Your basket is empty or has too many line items." }, 400);
   }
 
+  const { byId: stockById } = await computeInventory(env.DB);
   const savedItems = [];
   let totalRupees = 0;
   for (const item of body.items) {
@@ -69,6 +71,13 @@ export async function onRequestPost({ request, env }) {
     const quantity = Number(item?.quantity);
     if (!product || soldOutProductIds.has(item?.id) || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
       return json({ error: "One of the items in your basket is invalid." }, 400);
+    }
+    const available = stockById[item.id]?.remaining ?? 10;
+    if (available <= 0) {
+      return json({ error: "Sorry, " + product.name + " is sold out." }, 409);
+    }
+    if (quantity > available) {
+      return json({ error: "Only " + available + " piece(s) of " + product.name + " left in stock." }, 409);
     }
     totalRupees += product.price * quantity;
     savedItems.push({ id: item.id, name: product.name, quantity, unitPrice: product.price });
