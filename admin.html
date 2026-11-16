@@ -107,8 +107,9 @@
         <div><p class="kicker">The small business command center</p><div class="brand">Hickey <span>order desk</span></div><p class="sub">Orders, payments and shipping details in one place.</p></div>
         <div class="top-right"><button id="theme-toggle" class="button" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙 Dark</button><button id="send-nudge" class="button">✉ Send nudge</button><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
       </header>
-      <div class="stats" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="stats" style="grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));">
         <article class="stat glass"><div class="stat-label">Gross paid</div><div id="revenue" class="stat-value">—</div><div class="stat-note">Captured UPI orders</div></article>
+        <article class="stat glass"><div class="stat-label">Keychains sold</div><div id="units-sold" class="stat-value">—</div><div class="stat-note">Paid pieces total</div></article>
         <article class="stat glass"><div class="stat-label">Paid orders</div><div id="paid" class="stat-value">—</div><div class="stat-note">Ready to fulfil</div></article>
         <article class="stat glass"><div class="stat-label">Awaiting payment</div><div id="pending" class="stat-value">—</div><div class="stat-note">Pending checkout</div></article>
         <article class="stat glass"><div class="stat-label">All orders</div><div id="total" class="stat-value">—</div><div class="stat-note">Across all statuses</div></article>
@@ -301,6 +302,7 @@
       $("designs-empty").classList.toggle("hidden", list.length > 0);
       const totalUnits = list.reduce((sum, item) => sum + (Number(item.unitsOrdered) || 0), 0);
       if ($("design-total-units")) $("design-total-units").textContent = totalUnits.toLocaleString("en-IN") + " units ordered";
+      if ($("units-sold")) $("units-sold").textContent = totalUnits.toLocaleString("en-IN");
       for (const item of list) {
         const tr = document.createElement("tr");
         const nameCell = cell("td", item.name, "ref");
