@@ -326,12 +326,27 @@
       const totalUnits = list.reduce((sum, item) => sum + (Number(item.unitsOrdered) || 0), 0);
       if ($("design-total-units")) $("design-total-units").textContent = totalUnits.toLocaleString("en-IN") + " units ordered";
       if ($("units-sold")) $("units-sold").textContent = totalUnits.toLocaleString("en-IN");
+
+      const lowItems = list.filter((item) => item.lowStock);
+      const alertBox = $("low-stock-alert");
+      const alertList = $("low-stock-list");
+      if (alertBox && alertList) {
+        alertBox.classList.toggle("hidden", lowItems.length === 0);
+        alertList.textContent = lowItems.map((i) => i.name + " (" + i.remaining + " left)").join(" · ");
+      }
+
       for (const item of list) {
         const tr = document.createElement("tr");
         const nameCell = cell("td", item.name, "ref");
         const qtyCell = cell("td", "", "");
         const qtyBadge = cell("span", String(item.unitsOrdered || 0) + " pcs", "status" + (item.unitsOrdered > 0 ? " paid" : ""));
         qtyCell.append(qtyBadge);
+
+        const stockCell = cell("td", "", "");
+        const rem = Number.isFinite(item.remaining) ? item.remaining : Math.max(0, 10 - (Number(item.unitsOrdered) || 0));
+        const stockBadge = cell("span", item.soldOut ? "Sold out (0/10)" : rem + " / 10 left", "status" + (item.soldOut ? " cancelled" : item.lowStock ? " pending" : " paid"));
+        stockCell.append(stockBadge);
+
         const buyersCell = cell("td", "", "");
         if (Array.isArray(item.buyers) && item.buyers.length > 0) {
           buyersCell.textContent = item.buyers.map((b) => b.name + " (×" + b.quantity + ")").join(", ");
@@ -340,7 +355,7 @@
           buyersCell.textContent = "—";
           buyersCell.style.color = "var(--muted)";
         }
-        tr.append(nameCell, qtyCell, buyersCell);
+        tr.append(nameCell, qtyCell, stockCell, buyersCell);
         rows.append(tr);
       }
     }
