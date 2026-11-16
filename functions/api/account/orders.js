@@ -1,3 +1,4 @@
+import { sendOrderEmail } from "../../_email.js";
 import { getAuthenticatedUser, jsonResponse, normalizeEmail, sameOriginRequest, validEmail } from "../../_auth.js";
 
 function parseItems(itemsJson) {
@@ -41,6 +42,19 @@ async function reconcilePendingOrders(user, env) {
             await env.DB.prepare(
               "UPDATE orders SET status = 'paid', payment_method = 'razorpay', razorpay_payment_id = ? WHERE id = ?"
             ).bind(String(captured.id || ""), row.id).run();
+            try {
+              const orderRow = await env.DB.prepare(
+                "SELECT id, order_ref, customer_name, customer_email, email_sent FROM orders WHERE id = ?"
+              ).bind(row.id).first();
+              if (orderRow && !orderRow.email_sent) {
+                const emailResult = await sendOrderEmail(env, orderRow);
+                if (emailResult.sent) {
+                  await env.DB.prepare("UPDATE orders SET email_sent = 1, email_sent_at = ?, email_body = ? WHERE id = ?")
+                    .bind(emailResult.sent_at || new Date().toISOString(), emailResult.body || "", orderRow.id)
+                    .run();
+                }
+              }
+            } catch (_) {}
             continue;
           }
           const hasFailed = payments.length > 0 && payments.every((p) => p?.status === "failed");

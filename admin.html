@@ -250,6 +250,21 @@
           viewBtn.style.padding="4px 9px";viewBtn.style.fontSize="11px";viewBtn.style.marginLeft="8px";viewBtn.style.borderRadius="8px";
           viewBtn.onclick=()=>showEmailModal(order);
           emailCol.append(tag,viewBtn);
+        } else if(order.status==="paid") {
+          const tag=cell("span","Not sent","status");
+          tag.style.background="#fff3d8";tag.style.color="#8b5d00";
+          const sendBtn=document.createElement("button");
+          sendBtn.textContent="Send mail ✉";
+          sendBtn.className="button";
+          sendBtn.style.padding="4px 9px";sendBtn.style.fontSize="11px";sendBtn.style.marginLeft="8px";sendBtn.style.borderRadius="8px";
+          sendBtn.onclick=async()=>{
+            sendBtn.disabled=true;sendBtn.textContent="Sending…";
+            try{
+              await request("/api/admin/resend-order-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderRef:order.order_ref})});
+              await load();
+            }catch(err){alert(err.message);sendBtn.disabled=false;sendBtn.textContent="Send mail ✉";}
+          };
+          emailCol.append(tag,sendBtn);
         } else {
           const tag=cell("span","—","");tag.style.color="var(--muted)";
           emailCol.append(tag);
