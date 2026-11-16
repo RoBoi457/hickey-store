@@ -105,7 +105,7 @@
     <section id="app" class="hidden">
       <header class="top">
         <div><p class="kicker">The small business command center</p><div class="brand">Hickey <span>order desk</span></div><p class="sub">Orders, payments and shipping details in one place.</p></div>
-        <div class="top-right"><button id="theme-toggle" class="button" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙 Dark</button><button id="send-nudge" class="button">✉ Send nudge</button><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
+        <div class="top-right"><button id="theme-toggle" class="button" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙 Dark</button><button id="send-pending-followup" class="button">⏳ Pending reminders</button><button id="send-nudge" class="button">✉ Send nudge</button><button id="refresh" class="button">↻ Refresh</button><button id="logout" class="button">Lock desk</button></div>
       </header>
       <div class="stats" style="grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));">
         <article class="stat glass"><div class="stat-label">Gross paid</div><div id="revenue" class="stat-value">—</div><div class="stat-note">Captured UPI orders</div></article>
@@ -374,6 +374,7 @@
       }
     }
     async function load() {
+      checkAutoPendingFollowup();
       $("app").classList.add("loading");$("app-error").textContent="";
       try{
         const {data}=await request("/api/admin/orders?"+queryString(activeFilters,{page}));
@@ -388,7 +389,19 @@
     function lock(){token="";sessionStorage.removeItem("hickey-admin-token");$("app").classList.add("hidden");$("login").classList.remove("hidden");$("token").value="";}
     $("login-form").addEventListener("submit",async e=>{e.preventDefault();const value=$("token").value.trim();token=value;try{await request("/api/admin/orders?page=1");sessionStorage.setItem("hickey-admin-token",token);$("login").classList.add("hidden");$("app").classList.remove("hidden");load();}catch(error){token="";$("login-error").textContent=error.message;}});
     $("apply").addEventListener("click",applyFilters);$("search").addEventListener("keydown",e=>{if(e.key==="Enter")applyFilters();});
-    $("send-nudge")?.addEventListener("click",async()=>{if(!confirm("Send nudge emails to all eligible customers now?"))return;const b=$("send-nudge");b.disabled=true;b.textContent="Sending…";try{const {data}=await request("/api/admin/nudge",{method:"POST"});alert(`Sent ${data.sentCount} emails (${data.cartNudges} with baskets, ${data.browseNudges} without baskets).`+(data.errors?.length?` ${data.errors.length} could not be sent.`:""));}catch(error){$("app-error").textContent=error.message;}finally{b.disabled=false;b.textContent="✉ Send nudge";}});$("refresh").addEventListener("click",load);$("logout").addEventListener("click",lock);
+    let autoPendingChecked = false;
+    async function checkAutoPendingFollowup() {
+      if (autoPendingChecked) return;
+      autoPendingChecked = true;
+      try {
+        await request("/api/admin/pending-followup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ auto: true })
+        });
+      } catch (_) {}
+    }
+    $("send-pending-followup")?.addEventListener("click",async()=>{if(!confirm("Send reminder emails to customers with orders pending for more than 24 hours?"))return;const b=$("send-pending-followup");b.disabled=true;b.textContent="Sending…";try{const {data}=await request("/api/admin/pending-followup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({auto:false})});alert(`Sent ${data.sentCount} pending order reminder(s)`+(data.reconciledPaid?` and confirmed ${data.reconciledPaid} paid order(s)`:``)+"."+(data.errors?.length?` ${data.errors.length} could not be sent.`:""));await load();}catch(error){$("app-error").textContent=error.message;}finally{b.disabled=false;b.textContent="⏳ Pending reminders";}});$("send-nudge")?.addEventListener("click",async()=>{if(!confirm("Send nudge emails to all eligible customers now?"))return;const b=$("send-nudge");b.disabled=true;b.textContent="Sending…";try{const {data}=await request("/api/admin/nudge",{method:"POST"});alert(`Sent ${data.sentCount} emails (${data.cartNudges} with baskets, ${data.browseNudges} without baskets).`+(data.errors?.length?` ${data.errors.length} could not be sent.`:""));}catch(error){$("app-error").textContent=error.message;}finally{b.disabled=false;b.textContent="✉ Send nudge";}});$("refresh").addEventListener("click",load);$("logout").addEventListener("click",lock);
     $("prev").addEventListener("click",()=>{if(page>1){page--;load();}});$("next").addEventListener("click",()=>{page++;load();});
     $("export").addEventListener("click",async()=>{try{const {response}=await request("/api/admin/orders?"+queryString(activeFilters,{format:"csv"}));const blob=await response.blob();const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="hickey-orders.csv";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);}catch(error){$("app-error").textContent=error.message;}});
     
