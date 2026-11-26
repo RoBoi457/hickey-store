@@ -35,25 +35,43 @@ body {
 
 /* Crisp navigation & theme slider */
 .float-nav {
-  padding: 6px;
+  padding: 6px 7px;
   gap: 4px;
   border: 1px solid var(--hairline);
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.84);
   box-shadow: 0 8px 28px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 .nav-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 44px;
   height: 44px;
   color: #334155;
 }
+.nav-item svg {
+  width: 20px;
+  height: 20px;
+}
 .nav-pill-link {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   width: auto;
   height: 44px;
-  padding: 0 15px;
+  gap: 7px;
+  padding: 0 14px;
   font-size: 13.5px;
   letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.nav-pill-link svg {
+  width: 17px;
+  height: 17px;
 }
 .nav-item:hover,
 .nav-item:focus-visible {
@@ -278,35 +296,57 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Sticker cards refinement */
+/* Sticker cards: strong transparent liquid glass storefront */
 .sticker-card {
-  border-radius: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.42), rgba(235, 244, 255, 0.2) 55%, rgba(255, 255, 255, 0.34));
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.075), inset 0 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(26px) saturate(190%);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+}
+.sticker-card:hover {
+  border-color: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.56), rgba(235, 244, 255, 0.28) 55%, rgba(255, 255, 255, 0.44));
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.11), inset 0 1.5px 0 rgba(255, 255, 255, 1);
+}
+.sticker-stage {
+  background:
+    radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(150deg, rgba(255, 255, 255, 0.34), rgba(226, 239, 255, 0.12));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
 }
 .sticker-info {
-  padding: 14px 16px 16px;
+  padding: 13px 15px 15px;
 }
 .sticker-info h3 {
-  font-size: 0.98rem;
+  font-size: 0.96rem;
 }
 .sticker-info p {
-  font-size: 12.5px;
+  font-size: 12.2px;
   min-height: 34px;
 }
 .sticker-info .product-price {
   margin-top: 8px;
   padding-top: 8px;
+  border-top-color: rgba(15, 23, 42, 0.07);
 }
 .sticker-info .product-price strong {
   font-size: 16px;
 }
 .pack-pill {
-  background: var(--surface);
-  border-color: var(--hairline);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.52), rgba(238, 245, 255, 0.26));
+  border-color: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
 }
 .sticker-search-wrap input {
-  background: var(--surface);
-  border-color: var(--hairline-strong);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(238, 245, 255, 0.28));
+  border-color: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
 }
 
 /* FAQ, Join CTA & Modals refinement */
@@ -413,6 +453,29 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 :root[data-theme="dark"] .product-photo {
   background: linear-gradient(180deg, #131c2e, #0f172a);
   border-bottom-color: var(--hairline);
+}
+:root[data-theme="dark"] .sticker-card {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: linear-gradient(145deg, rgba(24, 37, 64, 0.44), rgba(12, 19, 34, 0.24) 55%, rgba(20, 31, 54, 0.34));
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), inset 0 1.5px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(26px) saturate(185%);
+  -webkit-backdrop-filter: blur(26px) saturate(185%);
+}
+:root[data-theme="dark"] .sticker-card:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: linear-gradient(145deg, rgba(30, 46, 78, 0.56), rgba(16, 25, 44, 0.32) 55%, rgba(26, 40, 68, 0.44));
+}
+:root[data-theme="dark"] .sticker-stage {
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(150deg, rgba(255, 255, 255, 0.07), rgba(12, 19, 34, 0.16));
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+:root[data-theme="dark"] .pack-pill,
+:root[data-theme="dark"] .sticker-search-wrap input {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: linear-gradient(145deg, rgba(22, 34, 58, 0.5), rgba(12, 19, 34, 0.3));
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 :root[data-theme="dark"] .add-button,
 :root[data-theme="dark"] .product-quantity {

@@ -442,13 +442,10 @@ function bindProductGridEvents(gridElement) {
 bindProductGridEvents(document.getElementById("product-grid"));
 bindProductGridEvents(document.getElementById("sticker-grid"));
 
-// --- Collection Switcher & 60-Sticker Storefront ---
-const STICKERS_PER_PAGE = 12;
+// --- Collection Switcher & 60-Sticker Storefront (Single Continuous Scroll) ---
 let activeCollection = "keychains";
 let activeStickerPack = "All";
 let stickerSearchQuery = "";
-let stickerPage = 1;
-let showAllStickers = false;
 
 function setActiveCollection(nextCollection, options = {}) {
   const valid = ["keychains", "stickers", "all"];
@@ -491,7 +488,6 @@ function renderStickers() {
   const grid = document.getElementById("sticker-grid");
   const emptyEl = document.getElementById("sticker-empty");
   const countEl = document.getElementById("sticker-count-label");
-  const paginationEl = document.getElementById("sticker-pagination");
   const allItems = window.HickeyStickers?.items || [];
   if (!grid || !allItems.length) return;
 
@@ -502,19 +498,12 @@ function renderStickers() {
     return item.title.toLowerCase().includes(q) || item.description.toLowerCase().includes(q) || item.pack.toLowerCase().includes(q);
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / STICKERS_PER_PAGE));
-  if (stickerPage > totalPages) stickerPage = totalPages;
-  const start = showAllStickers ? 0 : (stickerPage - 1) * STICKERS_PER_PAGE;
-  const visible = showAllStickers ? filtered : filtered.slice(start, start + STICKERS_PER_PAGE);
-
   if (emptyEl) emptyEl.hidden = filtered.length > 0;
   if (countEl) {
-    if (filtered.length === 0) countEl.textContent = "0 stickers";
-    else if (showAllStickers) countEl.textContent = "Showing all " + filtered.length + " stickers";
-    else countEl.textContent = "Showing " + (start + 1) + "–" + (start + visible.length) + " of " + filtered.length;
+    countEl.textContent = filtered.length === 1 ? "1 sticker" : filtered.length + " stickers";
   }
 
-  grid.innerHTML = visible.map((item) => {
+  grid.innerHTML = filtered.map((item) => {
     const badgeHtml = item.badge ? '<span class="badge sticker-badge">' + item.badge + '</span>' : '';
     return '<article class="product-card sticker-card" data-product-id="' + item.id + '" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View ' + item.title + ' sticker details">' +
       '<div class="product-photo sticker-stage">' + badgeHtml +
@@ -524,24 +513,6 @@ function renderStickers() {
       '</article>';
   }).join("");
 
-  if (paginationEl) {
-    if (filtered.length <= STICKERS_PER_PAGE) {
-      paginationEl.innerHTML = "";
-      paginationEl.hidden = true;
-    } else {
-      paginationEl.hidden = false;
-      let pagesHtml = "";
-      if (!showAllStickers) {
-        pagesHtml += '<button class="page-btn" type="button" data-sticker-page="' + Math.max(1, stickerPage - 1) + '"' + (stickerPage === 1 ? ' disabled' : '') + '>← Prev</button>';
-        for (let p = 1; p <= totalPages; p += 1) {
-          pagesHtml += '<button class="page-btn page-num' + (p === stickerPage ? ' is-active' : '') + '" type="button" data-sticker-page="' + p + '" aria-current="' + (p === stickerPage ? 'page' : 'false') + '">' + p + '</button>';
-        }
-        pagesHtml += '<button class="page-btn" type="button" data-sticker-page="' + Math.min(totalPages, stickerPage + 1) + '"' + (stickerPage === totalPages ? ' disabled' : '') + '>Next →</button>';
-      }
-      pagesHtml += '<button class="page-toggle-btn" type="button" id="toggle-all-stickers">' + (showAllStickers ? 'Show 12 per page' : 'View all ' + filtered.length) + '</button>';
-      paginationEl.innerHTML = pagesHtml;
-    }
-  }
   renderProductControls();
 }
 
@@ -557,28 +528,13 @@ document.addEventListener("click", (event) => {
   const packBtn = event.target.closest("[data-pack]");
   if (packBtn) {
     activeStickerPack = packBtn.dataset.pack;
-    stickerPage = 1;
     renderStickerPackFilters();
-    renderStickers();
-    return;
-  }
-  const pageBtn = event.target.closest("[data-sticker-page]");
-  if (pageBtn && !pageBtn.disabled) {
-    stickerPage = Number(pageBtn.dataset.stickerPage) || 1;
-    renderStickers();
-    document.getElementById("panel-stickers")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    return;
-  }
-  if (event.target.closest("#toggle-all-stickers")) {
-    showAllStickers = !showAllStickers;
-    stickerPage = 1;
     renderStickers();
   }
 });
 
 document.getElementById("sticker-search")?.addEventListener("input", (event) => {
   stickerSearchQuery = event.target.value || "";
-  stickerPage = 1;
   renderStickers();
 });
 
