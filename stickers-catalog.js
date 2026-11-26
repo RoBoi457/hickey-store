@@ -135,16 +135,14 @@
     const titleY1 = line2 ? 154 : 165;
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
       <defs>
-        <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#121a2b" flood-opacity="0.16"/>
-        </filter>
         <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#ffffff" stop-opacity="${isHolo ? "0.28" : "0.14"}"/>
           <stop offset="50%" stop-color="#45baf0" stop-opacity="${isHolo ? "0.14" : "0.02"}"/>
           <stop offset="100%" stop-color="#ed2442" stop-opacity="${isHolo ? "0.18" : "0"}"/>
         </linearGradient>
       </defs>
-      <g transform="rotate(${rot} 150 150)" filter="url(#s)">
+      <g transform="rotate(${rot} 150 150)">
+        <g transform="translate(0 7)" opacity="0.12">${outerShape.replaceAll("#ffffff", "#121a2b")}</g>
         ${outerShape}
         ${innerShape}
         <text x="150" y="106" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="13" font-weight="800" letter-spacing="2.8" fill="${accent}">✦ HICKEY · #${num}</text>

@@ -1595,3 +1595,54 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 :root[data-theme="dark"] .sticker-stage::before {
   background: linear-gradient(130deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.02) 40%, transparent 65%);
 }
+
+/* --- Scroll & Paint Performance Optimizations (60/120fps) --- */
+/* Disable full-screen SVG feTurbulence overlay that forces repaint on every scroll frame */
+.grain { display: none !important; }
+/* Pause offscreen hero firefly animations when scrolled away */
+.hero:not(.is-active) .firefly,
+.hero:not(.is-active) .hero-spark { animation-play-state: paused !important; }
+/* Replace per-card GPU backdrop-filter blur (74+ layers!) with zero-cost translucent liquid glass */
+.product-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.74), rgba(238,246,255,.52) 55%, rgba(255,255,255,.64));
+  box-shadow: 0 16px 38px rgba(32,50,88,.075), inset 0 1.5px 0 rgba(255,255,255,.95);
+}
+.sticker-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.56), rgba(236,245,255,.32) 52%, rgba(255,255,255,.46));
+  box-shadow: 0 14px 34px rgba(32,50,88,.07), inset 0 1.5px 0 rgba(255,255,255,.96), inset 0 -1px 0 rgba(255,255,255,.42);
+}
+.sticker-stage img { filter: none !important; }
+.add-button, .product-quantity {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(255,255,255,.82);
+}
+:root[data-theme="dark"] .product-card {
+  background: linear-gradient(145deg, rgba(22,33,56,.86), rgba(14,22,38,.72));
+}
+:root[data-theme="dark"] .sticker-card {
+  background: linear-gradient(145deg, rgba(26,40,68,.62), rgba(14,22,40,.42) 55%, rgba(22,34,58,.54));
+}
+:root[data-theme="dark"] .add-button,
+:root[data-theme="dark"] .product-quantity {
+  background: rgba(15,23,42,.82);
+}
+/* Release permanent GPU layers once revealed & skip painting offscreen categories */
+.snap-tile.is-snapped,
+.sticker-category-group.is-revealed .sticker-cat-head,
+.sticker-category-group.is-revealed .sticker-cat-line,
+.sticker-category-group.is-revealed .sticker-card {
+  will-change: auto;
+}
+.sticker-category-group {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 460px;
+}
+.faq-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 720px;
+}

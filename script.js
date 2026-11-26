@@ -1,18 +1,18 @@
 const PRODUCTS = {
-  "kathor-clock": { name: "The Rohtak Clock", price: 69, category: "keychain", image: "assets/keychain-products/01-rohtak-standard-time.png" },
-  pda: { name: "PDA Tree", price: 69, category: "keychain", image: "assets/keychain-products/02-pda-campus.png" },
-  "submit-mode": { name: "Spiderman", price: 69, category: "keychain", image: "assets/keychain-products/03-atp-submit.png" },
-  "clock-it": { name: "Clock It", price: 69, category: "keychain", image: "assets/keychain-products/04-clock-it.png" },
-  "coke-paglu": { name: "Diet Coke Paglu", price: 69, category: "keychain", image: "assets/keychain-products/05-diet-coke-paglu.png" },
-  cooks: { name: "Cooked", price: 69, category: "keychain", image: "assets/keychain-products/06-cooks.png" },
-  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69, category: "keychain", image: "assets/keychain-products/07-proxy-mat-laga.png" },
-  baddie: { name: "The Baddie Club", price: 69, category: "keychain", image: "assets/keychain-products/08-baddie.png" },
-  "kathor-land": { name: "Kathor Land", price: 69, category: "keychain", image: "assets/keychain-products/09-kathor-land.png" },
-  nonchalant: { name: "Non Chalant", price: 69, category: "keychain", image: "assets/keychain-products/11-nonchalant.png" },
-  "two-friends": { name: "Couple Design", price: 99, category: "keychain", image: "assets/keychain-products/12-two-friends.png" },
-  "campus-cat-nap": { name: "CAT Whore", price: 69, category: "keychain", image: "assets/keychain-products/13-cat-whore-campus-nap.png" },
-  "clinger-cat-club": { name: "Gingerrrrr", price: 69, category: "keychain", image: "assets/keychain-products/14-clinger-cat-club.png" },
-  "same-old-day": { name: "CAT checklist", price: 69, category: "keychain", image: "assets/keychain-products/15-same-old-day.png" }
+  "kathor-clock": { name: "The Rohtak Clock", price: 69, category: "keychain", image: "assets/keychain-products-opt/01-rohtak-standard-time.jpg" },
+  pda: { name: "PDA Tree", price: 69, category: "keychain", image: "assets/keychain-products-opt/02-pda-campus.jpg" },
+  "submit-mode": { name: "Spiderman", price: 69, category: "keychain", image: "assets/keychain-products-opt/03-atp-submit.jpg" },
+  "clock-it": { name: "Clock It", price: 69, category: "keychain", image: "assets/keychain-products-opt/04-clock-it.jpg" },
+  "coke-paglu": { name: "Diet Coke Paglu", price: 69, category: "keychain", image: "assets/keychain-products-opt/05-diet-coke-paglu.jpg" },
+  cooks: { name: "Cooked", price: 69, category: "keychain", image: "assets/keychain-products-opt/06-cooks.jpg" },
+  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69, category: "keychain", image: "assets/keychain-products-opt/07-proxy-mat-laga.jpg" },
+  baddie: { name: "The Baddie Club", price: 69, category: "keychain", image: "assets/keychain-products-opt/08-baddie.jpg" },
+  "kathor-land": { name: "Kathor Land", price: 69, category: "keychain", image: "assets/keychain-products-opt/09-kathor-land.jpg" },
+  nonchalant: { name: "Non Chalant", price: 69, category: "keychain", image: "assets/keychain-products-opt/11-nonchalant.jpg" },
+  "two-friends": { name: "Couple Design", price: 99, category: "keychain", image: "assets/keychain-products-opt/12-two-friends.jpg" },
+  "campus-cat-nap": { name: "CAT Whore", price: 69, category: "keychain", image: "assets/keychain-products-opt/13-cat-whore-campus-nap.jpg" },
+  "clinger-cat-club": { name: "Gingerrrrr", price: 69, category: "keychain", image: "assets/keychain-products-opt/14-clinger-cat-club.jpg" },
+  "same-old-day": { name: "CAT checklist", price: 69, category: "keychain", image: "assets/keychain-products-opt/15-same-old-day.jpg" }
 };
 
 if (window.HickeyStickers && Array.isArray(window.HickeyStickers.items)) {
@@ -824,50 +824,61 @@ document.addEventListener("keydown", (event) => {
 let scrollTicking = false;
 const cloudTransitions = [...document.querySelectorAll("[data-cloud-scroll]")];
 
+const cloudNodes = cloudTransitions.map((transition) => ({
+  el: transition,
+  left: transition.querySelector(".cloud-form-left"),
+  right: transition.querySelector(".cloud-form-right"),
+  particles: Array.from(transition.querySelectorAll(".cloud-particle"))
+}));
+
 function updateCloudParallax() {
   const viewportHeight = window.innerHeight || 1;
   const travel = Math.min((window.innerWidth || 1) * 0.32, 420);
 
-  cloudTransitions.forEach((transition) => {
-    const rect = transition.getBoundingClientRect();
+  for (const node of cloudNodes) {
+    const rect = node.el.getBoundingClientRect();
+    if (rect.top > viewportHeight * 1.15 || rect.top < -viewportHeight * 0.45) continue;
     const progress = Math.min(1, Math.max(0, (viewportHeight * 0.82 - rect.top) / (viewportHeight + 1)));
     const presence = Math.sin(progress * Math.PI);
     const drift = (progress - 0.5) * travel;
-    const left = transition.querySelector(".cloud-form-left");
-    const right = transition.querySelector(".cloud-form-right");
-    const particles = transition.querySelectorAll(".cloud-particle");
 
-    if (left) {
-      left.style.transform = `translate3d(${drift - presence * 135}px, ${-presence * 38}px, 0) scale(${0.72 + presence * 0.72})`;
-      left.style.opacity = String(0.12 + presence * 0.9);
+    if (node.left) {
+      node.left.style.transform = `translate3d(${drift - presence * 135}px, ${-presence * 38}px, 0) scale(${0.72 + presence * 0.72})`;
+      node.left.style.opacity = String(0.12 + presence * 0.9);
     }
-    if (right) {
-      right.style.transform = `translate3d(${-drift + presence * 125}px, ${presence * 34}px, 0) scale(${0.68 + presence * 0.76})`;
-      right.style.opacity = String(0.1 + presence * 0.94);
+    if (node.right) {
+      node.right.style.transform = `translate3d(${-drift + presence * 125}px, ${presence * 34}px, 0) scale(${0.68 + presence * 0.76})`;
+      node.right.style.opacity = String(0.1 + presence * 0.94);
     }
-    particles.forEach((particle, index) => {
+    node.particles.forEach((particle, index) => {
       const direction = index % 2 ? 1 : -1;
-      const spread = (1 - presence) * (index % 2 ? 1 : -1) * (90 + index * 50);
+      const spread = (1 - presence) * direction * (90 + index * 50);
       particle.style.transform = `translate3d(${drift * direction * (0.35 + index * 0.1) + spread}px, ${Math.cos(progress * Math.PI * 2 + index) * 28}px) scale(${0.45 + presence * 1.4})`;
       particle.style.opacity = String(presence * (index ? 0.82 : 1));
     });
-  });
+  }
 }
 
 let marqueeInView = false;
 let marqueeOffset = 0;
 let marqueeLastScrollY = window.scrollY;
+const marqueeTrackEl = document.getElementById("marquee-track");
+let cachedMarqueeLoopWidth = marqueeTrackEl?.querySelector(".marquee-flow")?.offsetWidth || 1;
 
 function updateMarquee(trackScroll = true) {
-  const track = document.getElementById("marquee-track");
-  if (!track) return;
-  const flow = track.querySelector(".marquee-flow");
-  const loopWidth = flow?.getBoundingClientRect().width || 1;
+  if (!marqueeTrackEl) return;
+  if (!trackScroll) {
+    cachedMarqueeLoopWidth = marqueeTrackEl.querySelector(".marquee-flow")?.offsetWidth || 1;
+  }
   const currentScrollY = window.scrollY;
+  if (trackScroll && !marqueeInView) {
+    marqueeLastScrollY = currentScrollY;
+    return;
+  }
   if (trackScroll && marqueeInView) marqueeOffset -= (currentScrollY - marqueeLastScrollY) * 0.82;
   marqueeLastScrollY = currentScrollY;
-  const offset = marqueeOffset % loopWidth;
-  track.style.setProperty("--scroll-marquee-offset", `${offset}px`);
+  const offset = marqueeOffset % (cachedMarqueeLoopWidth || 1);
+  marqueeTrackEl.style.setProperty("--scroll-marquee-offset", `${offset}px`);
 }
 
 const fireflyLayer = document.getElementById("firefly-layer");
