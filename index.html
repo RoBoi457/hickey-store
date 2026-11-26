@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1794468110">
+    <link rel="stylesheet" href="styles.css?v=1794468120">
     <script>
       try {
         if (localStorage.getItem("hickey-theme") === "dark") {
@@ -23,9 +23,9 @@
     </script>
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="stickers-catalog.js?v=1794468105" defer></script>
-    <script src="auth-client.js?v=1794468105" defer></script>
-    <script src="script.js?v=1794468105" defer></script>
+    <script src="stickers-catalog.js?v=1794468120" defer></script>
+    <script src="auth-client.js?v=1794468120" defer></script>
+    <script src="script.js?v=1794468120" defer></script>
   </head>
   <body>
     <div class="page-glow" aria-hidden="true"></div>
@@ -45,13 +45,8 @@
       <a class="nav-item" href="#home" aria-label="Home" title="Home">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10 8.5-7 8.5 7v10.5a1 1 0 0 1-1 1h-5v-7h-5v7h-5a1 1 0 0 1-1-1z"/></svg>
       </a>
-      <a class="nav-item nav-pill-link" href="#treasury" data-switch-collection="keychains" aria-label="Shop Keychains" title="Keychains">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="14" r="4.5"/><path d="M12.3 10.7 19 4m-2.5 2.5 2 2M14.5 8.5l2 2"/></svg>
-        <span class="nav-pill-text">Keychains</span>
-      </a>
-      <a class="nav-item nav-pill-link" href="#stickers" data-switch-collection="stickers" aria-label="Shop Stickers" title="Stickers">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 3.5H7a3.5 3.5 0 0 0-3.5 3.5v10A3.5 3.5 0 0 0 7 20.5h7.2a2 2 0 0 0 1.4-.6l4.3-4.3a2 2 0 0 0 .6-1.4V7A3.5 3.5 0 0 0 17 3.5h-1.5Z"/><path d="M14.5 20.3V16a1.5 1.5 0 0 1 1.5-1.5h4.3"/></svg>
-        <span class="nav-pill-text">Stickers</span>
+      <a class="nav-item" href="#treasury" aria-label="Shop the treasury" title="Shop">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8h15l1.2 12a1 1 0 0 1-1 1.1H4.3a1 1 0 0 1-1-1.1zM8 8V6a4 4 0 0 1 8 0v2"/><path d="M9 12v.2M15 12v.2"/></svg>
       </a>
       <a class="nav-item" href="#faq" aria-label="Frequently asked questions" title="FAQs">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.35 2.35 0 1 1 3.55 2.03c-.8.46-1.25.96-1.25 1.97M12 16.5v.1"/></svg>
@@ -186,18 +181,13 @@
           </div>
 
           <div class="stickers-toolbar">
-            <div class="sticker-pack-filters" id="sticker-pack-filters" role="group" aria-label="Filter stickers by vibe"></div>
+            <div class="sticker-pack-filters" id="sticker-pack-filters" role="tablist" aria-label="Filter stickers by category"></div>
             <div class="stickers-toolbar-right">
-              <label class="sticker-search-wrap">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input id="sticker-search" type="search" placeholder="Search 60 stickers…" autocomplete="off" aria-label="Search stickers">
-              </label>
-              <span class="sticker-count-label" id="sticker-count-label">60 stickers</span>
+              <span class="sticker-count-label" id="sticker-count-label">60 stickers · 5 categories</span>
             </div>
           </div>
 
-          <div class="sticker-grid" id="sticker-grid"></div>
-          <p class="sticker-empty" id="sticker-empty" hidden>No stickers match that search. Try another keyword or switch packs.</p>
+          <div class="sticker-showcase" id="sticker-showcase"></div>
         </div>
       </section>
 

@@ -440,15 +440,76 @@ function bindProductGridEvents(gridElement) {
 }
 
 bindProductGridEvents(document.getElementById("product-grid"));
-bindProductGridEvents(document.getElementById("sticker-grid"));
+bindProductGridEvents(document.getElementById("sticker-showcase"));
 
-// --- Collection Switcher & 60-Sticker Storefront (Single Continuous Scroll) ---
+// --- Collection Switcher & 60-Sticker Categorized Showcase (Randomized + High-FPS Motion) ---
+const STICKER_PACK_META = {
+  "Campus & Hostel": { subtitle: "Attendance math, dorm life, and 2 AM Maggi runs.", accent: "#45baf0" },
+  "Internet & Slang": { subtitle: "Chronically online phrases made peel-and-stick.", accent: "#ed2442" },
+  "Caffeine & Survival": { subtitle: "Diet Coke, cutting chai, and zero-sleep energy.", accent: "#f59e0b" },
+  "Cats & Chaos": { subtitle: "Orange braincell lore and campus feline royalty.", accent: "#a855f7" },
+  "Aesthetic & Badges": { subtitle: "Signature Hickey seals and clean vinyl stamps.", accent: "#10b981" }
+};
+
 let activeCollection = "keychains";
 let activeStickerPack = "All";
-let stickerSearchQuery = "";
+let shuffledPackOrder = [];
+let shuffledByPack = new Map();
+let stickerCategoryObserver = null;
+
+function shuffleArray(items) {
+  const arr = items.slice();
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function randomizeStickerOrder() {
+  const allItems = window.HickeyStickers?.items || [];
+  const packs = (window.HickeyStickers?.packs || []).filter((p) => p !== "All");
+  shuffledPackOrder = shuffleArray(packs);
+  shuffledByPack = new Map();
+  for (const pack of shuffledPackOrder) {
+    const inPack = allItems.filter((item) => item.pack === pack);
+    shuffledByPack.set(pack, shuffleArray(inPack));
+  }
+}
+
+function positionPackIndicator(animate = true) {
+  const wrap = document.getElementById("sticker-pack-filters");
+  if (!wrap) return;
+  let indicator = wrap.querySelector(".pack-pill-indicator");
+  const activeBtn = wrap.querySelector(".pack-pill.is-active");
+  if (!activeBtn) return;
+  if (!indicator) {
+    indicator = document.createElement("span");
+    indicator.className = "pack-pill-indicator";
+    indicator.setAttribute("aria-hidden", "true");
+    wrap.prepend(indicator);
+  }
+  if (!animate) indicator.style.transition = "none";
+  const x = activeBtn.offsetLeft;
+  const y = activeBtn.offsetTop;
+  const w = activeBtn.offsetWidth;
+  const h = activeBtn.offsetHeight;
+  indicator.style.width = w + "px";
+  indicator.style.height = h + "px";
+  indicator.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  if (!animate) {
+    indicator.offsetHeight;
+    indicator.style.transition = "";
+  }
+}
+
+function getOrderedFilterPacks() {
+  return ["All", ...shuffledPackOrder];
+}
 
 function setActiveCollection(nextCollection, options = {}) {
   const valid = ["keychains", "stickers", "all"];
+  const previous = activeCollection;
   activeCollection = valid.includes(nextCollection) ? nextCollection : "keychains";
   const keychainsPanel = document.getElementById("panel-keychains");
   const stickersPanel = document.getElementById("panel-stickers");
@@ -460,12 +521,14 @@ function setActiveCollection(nextCollection, options = {}) {
     tab.classList.toggle("is-active", isActive);
     tab.setAttribute("aria-selected", String(isActive));
   });
-  document.querySelectorAll(".nav-pill-link[data-switch-collection]").forEach((link) => {
-    link.classList.toggle("is-current", link.dataset.switchCollection === activeCollection);
-  });
 
   if (activeCollection === "stickers" || activeCollection === "all") {
-    renderStickers();
+    if (previous !== activeCollection || !shuffledPackOrder.length) {
+      randomizeStickerOrder();
+      renderStickerPackFilters();
+    }
+    renderStickers({ direction: "up" });
+    requestAnimationFrame(() => positionPackIndicator(false));
   }
   if (options.scroll) {
     document.getElementById("treasury")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -474,46 +537,96 @@ function setActiveCollection(nextCollection, options = {}) {
 
 function renderStickerPackFilters() {
   const wrap = document.getElementById("sticker-pack-filters");
-  const packs = window.HickeyStickers?.packs || [];
   const allItems = window.HickeyStickers?.items || [];
+  const packs = getOrderedFilterPacks();
   if (!wrap || !packs.length) return;
-  wrap.innerHTML = packs.map((pack) => {
-    const count = pack === "All" ? allItems.length : allItems.filter((s) => s.pack === pack).length;
+  wrap.innerHTML = '<span class="pack-pill-indicator" aria-hidden="true"></span>' + packs.map((pack) => {
+    const count = pack === "All" ? allItems.length : (shuffledByPack.get(pack)?.length || 0);
     const isActive = pack === activeStickerPack;
-    return '<button class="pack-pill' + (isActive ? ' is-active' : '') + '" type="button" data-pack="' + pack + '" aria-pressed="' + isActive + '">' + pack + ' <span>' + count + '</span></button>';
+    return '<button class="pack-pill' + (isActive ? ' is-active' : '') + '" type="button" role="tab" data-pack="' + pack + '" aria-selected="' + isActive + '">' + pack + ' <span>' + count + '</span></button>';
   }).join("");
+  requestAnimationFrame(() => positionPackIndicator(false));
 }
 
-function renderStickers() {
-  const grid = document.getElementById("sticker-grid");
-  const emptyEl = document.getElementById("sticker-empty");
-  const countEl = document.getElementById("sticker-count-label");
-  const allItems = window.HickeyStickers?.items || [];
-  if (!grid || !allItems.length) return;
+function renderStickerCardMarkup(item, index) {
+  const badgeHtml = item.badge ? '<span class="badge sticker-badge">' + item.badge + '</span>' : "";
+  const staggerIndex = Math.min(index, 14);
+  return '<article class="product-card sticker-card" style="--card-i:' + staggerIndex + '" data-product-id="' + item.id + '" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View ' + item.title + ' sticker details">' +
+    '<div class="product-photo sticker-stage">' + badgeHtml +
+    '<img src="' + item.image + '" alt="' + item.title + ' die-cut vinyl sticker" loading="lazy">' +
+    '<button class="add-button" data-add="' + item.id + '" aria-label="Add ' + item.name + ' to your basket">+</button></div>' +
+    '<div class="product-info sticker-info"><span class="sticker-pack-tag">' + item.pack + '</span><h3>' + item.title + '</h3><p>' + item.description + '</p><div class="product-price"><strong>' + rupees.format(item.price) + '</strong></div></div>' +
+    '</article>';
+}
 
-  const q = stickerSearchQuery.trim().toLowerCase();
-  const filtered = allItems.filter((item) => {
-    if (activeStickerPack !== "All" && item.pack !== activeStickerPack) return false;
-    if (!q) return true;
-    return item.title.toLowerCase().includes(q) || item.description.toLowerCase().includes(q) || item.pack.toLowerCase().includes(q);
-  });
+function observeStickerCategories(showcase) {
+  if (stickerCategoryObserver) {
+    stickerCategoryObserver.disconnect();
+    stickerCategoryObserver = null;
+  }
+  const groups = Array.from(showcase.querySelectorAll(".sticker-category-group"));
+  if (!groups.length) return;
 
-  if (emptyEl) emptyEl.hidden = filtered.length > 0;
-  if (countEl) {
-    countEl.textContent = filtered.length === 1 ? "1 sticker" : filtered.length + " stickers";
+  if (!("IntersectionObserver" in window)) {
+    groups.forEach((group) => group.classList.add("is-revealed"));
+    return;
   }
 
-  grid.innerHTML = filtered.map((item) => {
-    const badgeHtml = item.badge ? '<span class="badge sticker-badge">' + item.badge + '</span>' : '';
-    return '<article class="product-card sticker-card" data-product-id="' + item.id + '" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View ' + item.title + ' sticker details">' +
-      '<div class="product-photo sticker-stage">' + badgeHtml +
-      '<img src="' + item.image + '" alt="' + item.title + ' die-cut vinyl sticker" loading="lazy">' +
-      '<button class="add-button" data-add="' + item.id + '" aria-label="Add ' + item.name + ' to your basket">+</button></div>' +
-      '<div class="product-info sticker-info"><span class="sticker-pack-tag">' + item.pack + '</span><h3>' + item.title + '</h3><p>' + item.description + '</p><div class="product-price"><strong>' + rupees.format(item.price) + '</strong></div></div>' +
-      '</article>';
+  stickerCategoryObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-revealed");
+        stickerCategoryObserver?.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.04, rootMargin: "80px 0px -30px 0px" });
+
+  groups.forEach((group, idx) => {
+    if (idx === 0) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => group.classList.add("is-revealed"));
+      });
+    } else {
+      stickerCategoryObserver.observe(group);
+    }
+  });
+}
+
+function renderStickers(options = {}) {
+  const showcase = document.getElementById("sticker-showcase");
+  const countEl = document.getElementById("sticker-count-label");
+  if (!showcase || !shuffledPackOrder.length) return;
+
+  const direction = options.direction || "up";
+  const packsToShow = activeStickerPack === "All" ? shuffledPackOrder : [activeStickerPack];
+  const totalShown = packsToShow.reduce((sum, pack) => sum + (shuffledByPack.get(pack)?.length || 0), 0);
+
+  if (countEl) {
+    countEl.textContent = activeStickerPack === "All"
+      ? totalShown + " stickers · " + packsToShow.length + " categories"
+      : totalShown + " stickers in " + activeStickerPack;
+  }
+
+  showcase.dataset.slideDir = direction;
+  showcase.innerHTML = packsToShow.map((pack, groupIndex) => {
+    const items = shuffledByPack.get(pack) || [];
+    const meta = STICKER_PACK_META[pack] || { subtitle: "Die-cut waterproof vinyl drops.", accent: "#ed2442" };
+    const num = String(groupIndex + 1).padStart(2, "0");
+    return '<section class="sticker-category-group" style="--cat-accent:' + meta.accent + '" data-category-group="' + pack + '">' +
+      '<header class="sticker-cat-head">' +
+        '<div class="sticker-cat-title-wrap">' +
+          '<span class="sticker-cat-num">' + num + '</span>' +
+          '<div><h4>' + pack + '</h4><p>' + meta.subtitle + '</p></div>' +
+        '</div>' +
+        '<span class="sticker-cat-count">' + items.length + ' stickers</span>' +
+      '</header>' +
+      '<div class="sticker-cat-line" aria-hidden="true"></div>' +
+      '<div class="sticker-grid">' + items.map((item, idx) => renderStickerCardMarkup(item, idx)).join("") + '</div>' +
+    '</section>';
   }).join("");
 
   renderProductControls();
+  observeStickerCategories(showcase);
 }
 
 document.addEventListener("click", (event) => {
@@ -527,17 +640,27 @@ document.addEventListener("click", (event) => {
   }
   const packBtn = event.target.closest("[data-pack]");
   if (packBtn) {
-    activeStickerPack = packBtn.dataset.pack;
-    renderStickerPackFilters();
-    renderStickers();
+    const nextPack = packBtn.dataset.pack;
+    if (nextPack === activeStickerPack) return;
+    const ordered = getOrderedFilterPacks();
+    const prevIdx = ordered.indexOf(activeStickerPack);
+    const nextIdx = ordered.indexOf(nextPack);
+    const direction = nextIdx > prevIdx ? "right" : "left";
+    activeStickerPack = nextPack;
+
+    document.querySelectorAll("#sticker-pack-filters .pack-pill").forEach((btn) => {
+      const isAct = btn.dataset.pack === activeStickerPack;
+      btn.classList.toggle("is-active", isAct);
+      btn.setAttribute("aria-selected", String(isAct));
+    });
+    positionPackIndicator(true);
+    renderStickers({ direction });
   }
 });
 
-document.getElementById("sticker-search")?.addEventListener("input", (event) => {
-  stickerSearchQuery = event.target.value || "";
-  renderStickers();
-});
+window.addEventListener("resize", () => positionPackIndicator(false), { passive: true });
 
+randomizeStickerOrder();
 renderStickerPackFilters();
 if (window.location.hash === "#stickers") setActiveCollection("stickers");
 else setActiveCollection("keychains");
