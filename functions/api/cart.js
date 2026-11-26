@@ -1,10 +1,7 @@
 import { getAuthenticatedUser, jsonResponse, sameOriginRequest } from "../_auth.js";
+import { CATALOG } from "../_catalog.js";
 
-const validProductIds = new Set([
-  "kathor-clock", "pda", "submit-mode", "clock-it", "coke-paglu", "cooks",
-  "proxy-pass", "baddie", "kathor-land", "nonchalant", "two-friends",
-  "campus-cat-nap", "clinger-cat-club", "same-old-day"
-]);
+const validProductIds = new Set(Object.keys(CATALOG));
 
 export async function onRequestGet({ request, env }) {
   if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected. Apply the account migration to D1." }, 503);
@@ -27,7 +24,7 @@ export async function onRequestPut({ request, env }) {
   if (!env.DB_STAGING) return jsonResponse({ error: "Account storage is not connected. Apply the account migration to D1." }, 503);
   let body;
   try {
-    if (Number(request.headers.get("Content-Length") || 0) > 12000) return jsonResponse({ error: "Request is too large." }, 413);
+    if (Number(request.headers.get("Content-Length") || 0) > 32000) return jsonResponse({ error: "Request is too large." }, 413);
     body = await request.json();
   } catch {
     return jsonResponse({ error: "Invalid basket data." }, 400);
@@ -37,7 +34,7 @@ export async function onRequestPut({ request, env }) {
   }
 
   const entries = Object.entries(body.items);
-  if (entries.length > 20) return jsonResponse({ error: "Your basket has too many products." }, 400);
+  if (entries.length > 80) return jsonResponse({ error: "Your basket has too many products." }, 400);
   const validItems = [];
   for (const [productId, quantity] of entries) {
     if (!validProductIds.has(productId) || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {

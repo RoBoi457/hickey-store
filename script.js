@@ -1,19 +1,25 @@
 const PRODUCTS = {
-  "kathor-clock": { name: "The Rohtak Clock", price: 69, image: "assets/keychain-products/01-rohtak-standard-time.png" },
-  pda: { name: "PDA Tree", price: 69, image: "assets/keychain-products/02-pda-campus.png" },
-  "submit-mode": { name: "Spiderman", price: 69, image: "assets/keychain-products/03-atp-submit.png" },
-  "clock-it": { name: "Clock It", price: 69, image: "assets/keychain-products/04-clock-it.png" },
-  "coke-paglu": { name: "Diet Coke Paglu", price: 69, image: "assets/keychain-products/05-diet-coke-paglu.png" },
-  cooks: { name: "Cooked", price: 69, image: "assets/keychain-products/06-cooks.png" },
-  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69, image: "assets/keychain-products/07-proxy-mat-laga.png" },
-  baddie: { name: "The Baddie Club", price: 69, image: "assets/keychain-products/08-baddie.png" },
-  "kathor-land": { name: "Kathor Land", price: 69, image: "assets/keychain-products/09-kathor-land.png" },
-  nonchalant: { name: "Non Chalant", price: 69, image: "assets/keychain-products/11-nonchalant.png" },
-  "two-friends": { name: "Couple Design", price: 99, image: "assets/keychain-products/12-two-friends.png" },
-  "campus-cat-nap": { name: "CAT Whore", price: 69, image: "assets/keychain-products/13-cat-whore-campus-nap.png" },
-  "clinger-cat-club": { name: "Gingerrrrr", price: 69, image: "assets/keychain-products/14-clinger-cat-club.png" },
-  "same-old-day": { name: "CAT checklist", price: 69, image: "assets/keychain-products/15-same-old-day.png" }
+  "kathor-clock": { name: "The Rohtak Clock", price: 69, category: "keychain", image: "assets/keychain-products/01-rohtak-standard-time.png" },
+  pda: { name: "PDA Tree", price: 69, category: "keychain", image: "assets/keychain-products/02-pda-campus.png" },
+  "submit-mode": { name: "Spiderman", price: 69, category: "keychain", image: "assets/keychain-products/03-atp-submit.png" },
+  "clock-it": { name: "Clock It", price: 69, category: "keychain", image: "assets/keychain-products/04-clock-it.png" },
+  "coke-paglu": { name: "Diet Coke Paglu", price: 69, category: "keychain", image: "assets/keychain-products/05-diet-coke-paglu.png" },
+  cooks: { name: "Cooked", price: 69, category: "keychain", image: "assets/keychain-products/06-cooks.png" },
+  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69, category: "keychain", image: "assets/keychain-products/07-proxy-mat-laga.png" },
+  baddie: { name: "The Baddie Club", price: 69, category: "keychain", image: "assets/keychain-products/08-baddie.png" },
+  "kathor-land": { name: "Kathor Land", price: 69, category: "keychain", image: "assets/keychain-products/09-kathor-land.png" },
+  nonchalant: { name: "Non Chalant", price: 69, category: "keychain", image: "assets/keychain-products/11-nonchalant.png" },
+  "two-friends": { name: "Couple Design", price: 99, category: "keychain", image: "assets/keychain-products/12-two-friends.png" },
+  "campus-cat-nap": { name: "CAT Whore", price: 69, category: "keychain", image: "assets/keychain-products/13-cat-whore-campus-nap.png" },
+  "clinger-cat-club": { name: "Gingerrrrr", price: 69, category: "keychain", image: "assets/keychain-products/14-clinger-cat-club.png" },
+  "same-old-day": { name: "CAT checklist", price: 69, category: "keychain", image: "assets/keychain-products/15-same-old-day.png" }
 };
+
+if (window.HickeyStickers && Array.isArray(window.HickeyStickers.items)) {
+  for (const sticker of window.HickeyStickers.items) {
+    PRODUCTS[sticker.id] = sticker;
+  }
+}
 
 document.documentElement.classList.add("motion-ready");
 
@@ -272,11 +278,20 @@ function openProductPreview(card) {
   if (!product) return;
   previewProductId = id;
   previewReturnFocus = card;
+  const isSticker = product.category === "sticker";
   const image = card.querySelector(".product-photo img");
   document.getElementById("preview-image").src = product.image;
   document.getElementById("preview-image").alt = image?.alt || product.name;
-  document.getElementById("preview-title").textContent = product.name;
-  document.getElementById("preview-description").textContent = card.querySelector(".product-info p")?.textContent || "";
+  const eyebrowEl = document.getElementById("preview-eyebrow");
+  if (eyebrowEl) eyebrowEl.textContent = isSticker ? ("DIE-CUT VINYL · " + (product.pack || "STICKER").toUpperCase()) : "A LITTLE CAMPUS LEGEND";
+  document.getElementById("preview-title").textContent = isSticker ? (product.title || product.name) : product.name;
+  document.getElementById("preview-description").textContent = product.description || card.querySelector(".product-info p")?.textContent || "";
+  const sizeEl = document.getElementById("preview-spec-size");
+  const matEl = document.getElementById("preview-spec-material");
+  const noteEl = document.getElementById("preview-note");
+  if (sizeEl) sizeEl.textContent = isSticker ? "3 × 3 in (Die-Cut)" : "2.25cm radius";
+  if (matEl) matEl.textContent = isSticker ? (product.badge === "Holo" ? "Holographic Vinyl" : "Waterproof Matte Vinyl") : "Acrylic";
+  if (noteEl) noteEl.textContent = isSticker ? "Peel-and-stick waterproof vinyl for laptops, bottles, notebooks, and dorm doors." : "A small keepsake for your keys, bag, or favourite person.";
   document.getElementById("preview-price").textContent = rupees.format(product.price);
   renderPreviewQuantity();
   productPreviewLayer.classList.add("is-open");
@@ -392,33 +407,184 @@ const customerName = formData.customerName || window.HickeyAuth?.user?.name || "
   }
 }
 
-document.getElementById("product-grid").addEventListener("click", (event) => {
-  const quantityButton = event.target.closest("[data-product-action]");
-  if (quantityButton) {
-    event.preventDefault();
-    event.stopPropagation();
-    const id = quantityButton.closest(".product-card")?.dataset.productId;
-    if (id) {
-      if (quantityButton.dataset.productAction === "increase") addToBasket(id);
-      else changeQuantity(id, -1);
+function bindProductGridEvents(gridElement) {
+  if (!gridElement) return;
+  gridElement.addEventListener("click", (event) => {
+    const quantityButton = event.target.closest("[data-product-action]");
+    if (quantityButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = quantityButton.closest(".product-card")?.dataset.productId;
+      if (id) {
+        if (quantityButton.dataset.productAction === "increase") addToBasket(id);
+        else changeQuantity(id, -1);
+      }
+      return;
     }
+    const button = event.target.closest("[data-add]");
+    if (button) {
+      event.stopPropagation();
+      addToBasket(button.dataset.add);
+      return;
+    }
+    const card = event.target.closest(".product-card");
+    if (card) openProductPreview(card);
+  });
+
+  gridElement.addEventListener("keydown", (event) => {
+    const card = event.target.closest(".product-card");
+    if (!card || event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
+    event.preventDefault();
+    openProductPreview(card);
+  });
+}
+
+bindProductGridEvents(document.getElementById("product-grid"));
+bindProductGridEvents(document.getElementById("sticker-grid"));
+
+// --- Collection Switcher & 60-Sticker Storefront ---
+const STICKERS_PER_PAGE = 12;
+let activeCollection = "keychains";
+let activeStickerPack = "All";
+let stickerSearchQuery = "";
+let stickerPage = 1;
+let showAllStickers = false;
+
+function setActiveCollection(nextCollection, options = {}) {
+  const valid = ["keychains", "stickers", "all"];
+  activeCollection = valid.includes(nextCollection) ? nextCollection : "keychains";
+  const keychainsPanel = document.getElementById("panel-keychains");
+  const stickersPanel = document.getElementById("panel-stickers");
+  if (keychainsPanel) keychainsPanel.hidden = activeCollection === "stickers";
+  if (stickersPanel) stickersPanel.hidden = activeCollection === "keychains";
+
+  document.querySelectorAll("[data-collection-tab]").forEach((tab) => {
+    const isActive = tab.dataset.collectionTab === activeCollection;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
+  document.querySelectorAll(".nav-pill-link[data-switch-collection]").forEach((link) => {
+    link.classList.toggle("is-current", link.dataset.switchCollection === activeCollection);
+  });
+
+  if (activeCollection === "stickers" || activeCollection === "all") {
+    renderStickers();
+  }
+  if (options.scroll) {
+    document.getElementById("treasury")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function renderStickerPackFilters() {
+  const wrap = document.getElementById("sticker-pack-filters");
+  const packs = window.HickeyStickers?.packs || [];
+  const allItems = window.HickeyStickers?.items || [];
+  if (!wrap || !packs.length) return;
+  wrap.innerHTML = packs.map((pack) => {
+    const count = pack === "All" ? allItems.length : allItems.filter((s) => s.pack === pack).length;
+    const isActive = pack === activeStickerPack;
+    return '<button class="pack-pill' + (isActive ? ' is-active' : '') + '" type="button" data-pack="' + pack + '" aria-pressed="' + isActive + '">' + pack + ' <span>' + count + '</span></button>';
+  }).join("");
+}
+
+function renderStickers() {
+  const grid = document.getElementById("sticker-grid");
+  const emptyEl = document.getElementById("sticker-empty");
+  const countEl = document.getElementById("sticker-count-label");
+  const paginationEl = document.getElementById("sticker-pagination");
+  const allItems = window.HickeyStickers?.items || [];
+  if (!grid || !allItems.length) return;
+
+  const q = stickerSearchQuery.trim().toLowerCase();
+  const filtered = allItems.filter((item) => {
+    if (activeStickerPack !== "All" && item.pack !== activeStickerPack) return false;
+    if (!q) return true;
+    return item.title.toLowerCase().includes(q) || item.description.toLowerCase().includes(q) || item.pack.toLowerCase().includes(q);
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / STICKERS_PER_PAGE));
+  if (stickerPage > totalPages) stickerPage = totalPages;
+  const start = showAllStickers ? 0 : (stickerPage - 1) * STICKERS_PER_PAGE;
+  const visible = showAllStickers ? filtered : filtered.slice(start, start + STICKERS_PER_PAGE);
+
+  if (emptyEl) emptyEl.hidden = filtered.length > 0;
+  if (countEl) {
+    if (filtered.length === 0) countEl.textContent = "0 stickers";
+    else if (showAllStickers) countEl.textContent = "Showing all " + filtered.length + " stickers";
+    else countEl.textContent = "Showing " + (start + 1) + "–" + (start + visible.length) + " of " + filtered.length;
+  }
+
+  grid.innerHTML = visible.map((item) => {
+    const badgeHtml = item.badge ? '<span class="badge sticker-badge">' + item.badge + '</span>' : '';
+    return '<article class="product-card sticker-card" data-product-id="' + item.id + '" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View ' + item.title + ' sticker details">' +
+      '<div class="product-photo sticker-stage">' + badgeHtml +
+      '<img src="' + item.image + '" alt="' + item.title + ' die-cut vinyl sticker" loading="lazy">' +
+      '<button class="add-button" data-add="' + item.id + '" aria-label="Add ' + item.name + ' to your basket">+</button></div>' +
+      '<div class="product-info sticker-info"><span class="sticker-pack-tag">' + item.pack + '</span><h3>' + item.title + '</h3><p>' + item.description + '</p><div class="product-price"><strong>' + rupees.format(item.price) + '</strong></div></div>' +
+      '</article>';
+  }).join("");
+
+  if (paginationEl) {
+    if (filtered.length <= STICKERS_PER_PAGE) {
+      paginationEl.innerHTML = "";
+      paginationEl.hidden = true;
+    } else {
+      paginationEl.hidden = false;
+      let pagesHtml = "";
+      if (!showAllStickers) {
+        pagesHtml += '<button class="page-btn" type="button" data-sticker-page="' + Math.max(1, stickerPage - 1) + '"' + (stickerPage === 1 ? ' disabled' : '') + '>← Prev</button>';
+        for (let p = 1; p <= totalPages; p += 1) {
+          pagesHtml += '<button class="page-btn page-num' + (p === stickerPage ? ' is-active' : '') + '" type="button" data-sticker-page="' + p + '" aria-current="' + (p === stickerPage ? 'page' : 'false') + '">' + p + '</button>';
+        }
+        pagesHtml += '<button class="page-btn" type="button" data-sticker-page="' + Math.min(totalPages, stickerPage + 1) + '"' + (stickerPage === totalPages ? ' disabled' : '') + '>Next →</button>';
+      }
+      pagesHtml += '<button class="page-toggle-btn" type="button" id="toggle-all-stickers">' + (showAllStickers ? 'Show 12 per page' : 'View all ' + filtered.length) + '</button>';
+      paginationEl.innerHTML = pagesHtml;
+    }
+  }
+  renderProductControls();
+}
+
+document.addEventListener("click", (event) => {
+  const switcher = event.target.closest("[data-switch-collection]");
+  if (switcher) {
+    const next = switcher.dataset.switchCollection;
+    const isAnchor = switcher.tagName === "A";
+    if (isAnchor) event.preventDefault();
+    setActiveCollection(next, { scroll: isAnchor });
     return;
   }
-  const button = event.target.closest("[data-add]");
-  if (button) {
-    addToBasket(button.dataset.add);
+  const packBtn = event.target.closest("[data-pack]");
+  if (packBtn) {
+    activeStickerPack = packBtn.dataset.pack;
+    stickerPage = 1;
+    renderStickerPackFilters();
+    renderStickers();
     return;
   }
-  const card = event.target.closest(".product-card");
-  if (card) openProductPreview(card);
+  const pageBtn = event.target.closest("[data-sticker-page]");
+  if (pageBtn && !pageBtn.disabled) {
+    stickerPage = Number(pageBtn.dataset.stickerPage) || 1;
+    renderStickers();
+    document.getElementById("panel-stickers")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  if (event.target.closest("#toggle-all-stickers")) {
+    showAllStickers = !showAllStickers;
+    stickerPage = 1;
+    renderStickers();
+  }
 });
 
-document.getElementById("product-grid").addEventListener("keydown", (event) => {
-  const card = event.target.closest(".product-card");
-  if (!card || event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
-  event.preventDefault();
-  openProductPreview(card);
+document.getElementById("sticker-search")?.addEventListener("input", (event) => {
+  stickerSearchQuery = event.target.value || "";
+  stickerPage = 1;
+  renderStickers();
 });
+
+renderStickerPackFilters();
+if (window.location.hash === "#stickers") setActiveCollection("stickers");
+else setActiveCollection("keychains");
 document.querySelectorAll(".product-card").forEach((card) => {
   card.tabIndex = 0;
   card.setAttribute("role", "button");

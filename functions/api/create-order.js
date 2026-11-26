@@ -1,21 +1,5 @@
 import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
-
-const catalog = {
-  "kathor-clock": { name: "The Rohtak Clock", price: 69 },
-  pda: { name: "PDA Tree", price: 69 },
-  "submit-mode": { name: "Spiderman", price: 69 },
-  "clock-it": { name: "Clock It", price: 69 },
-  "coke-paglu": { name: "Diet Coke Paglu", price: 69 },
-  cooks: { name: "Cooked", price: 69 },
-  "proxy-pass": { name: "Claudey Proxy Mat Laga", price: 69 },
-  baddie: { name: "The Baddie Club", price: 69 },
-  "kathor-land": { name: "Kathor Land", price: 69 },
-  nonchalant: { name: "Non Chalant", price: 69 },
-  "two-friends": { name: "Couple Design", price: 99 },
-  "campus-cat-nap": { name: "CAT Whore", price: 69 },
-  "clinger-cat-club": { name: "Gingerrrrr", price: 69 },
-  "same-old-day": { name: "CAT checklist", price: 69 }
-};
+import { CATALOG as catalog } from "../_catalog.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -56,7 +40,7 @@ export async function onRequestPost({ request, env }) {
       phone.replace(/\D/g, "").length < 10 || phone.length > 16) {
     return json({ error: "Please enter your name, a valid delivery address, and phone number." }, 400);
   }
-  if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 20) {
+  if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 80) {
     return json({ error: "Your basket is empty or has too many line items." }, 400);
   }
 

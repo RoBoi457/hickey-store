@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1794468040">
+    <link rel="stylesheet" href="styles.css?v=1794468100">
     <script>
       try {
         if (localStorage.getItem("hickey-theme") === "dark") {
@@ -23,8 +23,9 @@
     </script>
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="auth-client.js?v=1794468040" defer></script>
-    <script src="script.js?v=1794468040" defer></script>
+    <script src="stickers-catalog.js?v=1794468100" defer></script>
+    <script src="auth-client.js?v=1794468100" defer></script>
+    <script src="script.js?v=1794468100" defer></script>
   </head>
   <body>
     <div class="page-glow" aria-hidden="true"></div>
@@ -44,8 +45,13 @@
       <a class="nav-item" href="#home" aria-label="Home" title="Home">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10 8.5-7 8.5 7v10.5a1 1 0 0 1-1 1h-5v-7h-5v7h-5a1 1 0 0 1-1-1z"/></svg>
       </a>
-      <a class="nav-item" href="#treasury" aria-label="Shop the treasury" title="Shop">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8h15l1.2 12a1 1 0 0 1-1 1.1H4.3a1 1 0 0 1-1-1.1zM8 8V6a4 4 0 0 1 8 0v2"/><path d="M9 12v.2M15 12v.2"/></svg>
+      <a class="nav-item nav-pill-link" href="#treasury" data-switch-collection="keychains" aria-label="Shop Keychains" title="Keychains">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="14" r="4.5"/><path d="M12.3 10.7 19 4m-2.5 2.5 2 2M14.5 8.5l2 2"/></svg>
+        <span class="nav-pill-text">Keychains</span>
+      </a>
+      <a class="nav-item nav-pill-link" href="#stickers" data-switch-collection="stickers" aria-label="Shop Stickers" title="Stickers">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 3.5H7a3.5 3.5 0 0 0-3.5 3.5v10A3.5 3.5 0 0 0 7 20.5h7.2a2 2 0 0 0 1.4-.6l4.3-4.3a2 2 0 0 0 .6-1.4V7A3.5 3.5 0 0 0 17 3.5h-1.5Z"/><path d="M14.5 20.3V16a1.5 1.5 0 0 1 1.5-1.5h4.3"/></svg>
+        <span class="nav-pill-text">Stickers</span>
       </a>
       <a class="nav-item" href="#faq" aria-label="Frequently asked questions" title="FAQs">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.35 2.35 0 1 1 3.55 2.03c-.8.46-1.25.96-1.25 1.97M12 16.5v.1"/></svg>
@@ -72,6 +78,10 @@
           <div class="brand-lockup"><img class="hickey-logo" src="assets/hickey-logo.png" width="2126" height="996" alt="Hickey"></div>
           <h1>Wear your humour.<br><em>Belong</em> out loud.</h1>
           <p class="hero-description">Hickey is a brand born of passionate college students, crafted for the jokes, little moments, and people that make campus feel like yours.</p>
+          <div class="hero-actions hero-shop-actions">
+            <a class="button button-dark" href="#treasury" data-switch-collection="keychains">Shop Keychains</a>
+            <a class="button button-light" href="#stickers" data-switch-collection="stickers">Explore Stickers <span class="hero-pill-badge">60 NEW</span></a>
+          </div>
           <a class="scroll-cue" href="#treasury"><span>SCROLL</span><span class="scroll-arrow" aria-hidden="true">↓</span></a>
         </div>
       </section>
@@ -87,6 +97,29 @@
           <h2><span>Little things.</span><br><em><span>Big inside jokes.</span></em></h2>
           <p class="treasury-description">We made your inside jokes and memes wearable! Carry them around with you to celebrate the moments and people that make your campus feel like yours.</p>
         </div>
+
+        <div class="collection-bar-wrap" id="collection-bar-wrap">
+          <div class="collection-bar" role="tablist" aria-label="Shop categories">
+            <button class="collection-tab is-active" type="button" role="tab" aria-selected="true" data-collection-tab="keychains" data-switch-collection="keychains">
+              <span>Keychains</span><em class="tab-count">14</em>
+            </button>
+            <button class="collection-tab" type="button" role="tab" aria-selected="false" data-collection-tab="stickers" data-switch-collection="stickers">
+              <span>Stickers</span><em class="tab-count">60</em><i class="tab-new-dot">NEW</i>
+            </button>
+            <button class="collection-tab" type="button" role="tab" aria-selected="false" data-collection-tab="all" data-switch-collection="all">
+              <span>All Drops</span><em class="tab-count">74</em>
+            </button>
+          </div>
+        </div>
+
+        <div class="collection-panel" id="panel-keychains" data-collection-panel="keychains">
+          <div class="collection-subhead">
+            <div>
+              <span class="collection-kicker">ACRYLIC KEYCHAINS</span>
+              <h3>Signature Keychains</h3>
+            </div>
+            <span class="collection-meta">14 designs · 2.25cm matte acrylic</span>
+          </div>
         <div class="product-grid" id="product-grid">
           <article class="product-card snap-tile" data-product-id="kathor-clock">
             <div class="product-photo"><img src="assets/keychain-products/01-rohtak-standard-time.png" alt="The Rohtak Clock keychain" loading="lazy"><button class="add-button" data-add="kathor-clock" aria-label="Add The Rohtak Clock to your basket">+</button></div>
@@ -144,6 +177,32 @@
             <div class="product-photo"><img src="assets/keychain-products/15-same-old-day.png" alt="CAT checklist keychain" loading="lazy"><button class="add-button" data-add="same-old-day" aria-label="Add CAT checklist to your basket">+</button></div>
             <div class="product-info"><h3>CAT checklist</h3><p>The study plan had an absolut plot twist.</p><div class="product-price"><strong>₹69</strong></div></div>
           </article>
+        </div>
+        </div>
+
+        <div class="collection-panel" id="panel-stickers" data-collection-panel="stickers" hidden>
+          <div class="collection-subhead" id="stickers">
+            <div>
+              <span class="collection-kicker">DIE-CUT VINYL DROPS</span>
+              <h3>Campus Stickers</h3>
+            </div>
+            <span class="collection-meta">60 waterproof vinyl stickers · From ₹29</span>
+          </div>
+
+          <div class="stickers-toolbar">
+            <div class="sticker-pack-filters" id="sticker-pack-filters" role="group" aria-label="Filter stickers by vibe"></div>
+            <div class="stickers-toolbar-right">
+              <label class="sticker-search-wrap">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="sticker-search" type="search" placeholder="Search 60 stickers…" autocomplete="off" aria-label="Search stickers">
+              </label>
+              <span class="sticker-count-label" id="sticker-count-label">Showing 12 of 60</span>
+            </div>
+          </div>
+
+          <div class="sticker-grid" id="sticker-grid"></div>
+          <p class="sticker-empty" id="sticker-empty" hidden>No stickers match that search. Try another keyword or switch packs.</p>
+          <div class="sticker-pagination" id="sticker-pagination" aria-label="Sticker pages"></div>
         </div>
       </section>
 
@@ -253,17 +312,17 @@
         <button class="icon-button preview-close" id="close-product-preview" aria-label="Close product preview">×</button>
         <div class="preview-photo"><img id="preview-image" src="" alt=""></div>
         <div class="preview-copy">
-          <span class="eyebrow">A LITTLE CAMPUS LEGEND</span>
+          <span class="eyebrow" id="preview-eyebrow">A LITTLE CAMPUS LEGEND</span>
           <h2 id="preview-title"></h2>
           <p id="preview-description"></p>
           <div class="preview-specs" aria-label="Product specifications">
-            <div class="spec-pill"><span>Size</span><strong>2.25cm radius</strong></div>
-            <div class="spec-pill"><span>Material</span><strong>Acrylic</strong></div>
+            <div class="spec-pill"><span>Size</span><strong id="preview-spec-size">2.25cm radius</strong></div>
+            <div class="spec-pill"><span>Material</span><strong id="preview-spec-material">Acrylic</strong></div>
           </div>
           <div class="preview-purchase"><strong id="preview-price"></strong><span>· UPI via Razorpay</span></div>
           <button class="button button-dark preview-add" id="preview-add" type="button">Add to basket <span aria-hidden="true">＋</span></button>
           <div class="preview-quantity" id="preview-quantity" aria-label="Product quantity" hidden><button type="button" id="preview-minus" aria-label="Remove one">−</button><span id="preview-quantity-count" aria-live="polite">1</span><button type="button" id="preview-plus" aria-label="Add one">+</button></div>
-          <p class="preview-note">A small keepsake for your keys, bag, or favourite person.</p>
+          <p class="preview-note" id="preview-note">A small keepsake for your keys, bag, or favourite person.</p>
         </div>
       </section>
     </div>
