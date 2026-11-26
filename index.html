@@ -10,19 +10,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1794468130">
+    <link rel="stylesheet" href="styles.css?v=1795703893">
     <script>
       try {
         if (localStorage.getItem("hickey-theme") === "dark") {
           document.documentElement.setAttribute("data-theme", "dark");
+          document.documentElement.dataset.logoTheme = "dark";
         }
       } catch (_) {}
     </script>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="stickers-catalog.js?v=1794468130" defer></script>
     <script src="auth-client.js?v=1794468130" defer></script>
-    <script src="script.js?v=1794468130" defer></script>
+    <script src="script.js?v=1795703893" defer></script>
   </head>
   <body>
     <div class="page-glow" aria-hidden="true"></div>
@@ -422,6 +424,17 @@
       </section>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script>
+      (function () {
+        var dark = document.documentElement.getAttribute("data-theme") === "dark";
+        var src = dark
+          ? "assets/hickey-logo-dark-opt.png?v=1795703893"
+          : "assets/hickey-logo-opt.png?v=1795703893";
+        document.querySelectorAll(".hickey-logo, .footer-logo img, .checkout-brand img").forEach(function (img) {
+          img.setAttribute("src", src);
+        });
+      })();
+    </script>
 
   </body>
 </html>

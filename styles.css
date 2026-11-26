@@ -1042,7 +1042,7 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 :root[data-theme="dark"] .scroll-arrow { color: #9eaac0; }
 :root[data-theme="dark"] .eyebrow { color: #8fa0bb; }
 :root[data-theme="dark"] .hickey-logo {
-  filter: drop-shadow(0 12px 28px rgba(0,0,0,.55)) contrast(1.04) saturate(1.06);
+  filter: drop-shadow(0 0 14px rgba(255,255,255,.18)) contrast(1.02) saturate(1.04);
 }
 :root[data-theme="dark"] .cloud-form {
   background: rgba(88,150,235,.16);
