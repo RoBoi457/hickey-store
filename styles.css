@@ -1041,9 +1041,6 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 :root[data-theme="dark"] .scroll-cue,
 :root[data-theme="dark"] .scroll-arrow { color: #9eaac0; }
 :root[data-theme="dark"] .eyebrow { color: #8fa0bb; }
-:root[data-theme="dark"] .hickey-logo {
-  filter: drop-shadow(0 0 14px rgba(255,255,255,.18)) contrast(1.02) saturate(1.04);
-}
 :root[data-theme="dark"] .cloud-form {
   background: rgba(88,150,235,.16);
 }
@@ -1141,9 +1138,6 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
   -webkit-text-stroke: 1px rgba(255,107,133,.58);
 }
 :root[data-theme="dark"] .site-footer { color: #828ea3; }
-:root[data-theme="dark"] .footer-logo img {
-  filter: drop-shadow(0 0 10px rgba(255,255,255,.2));
-}
 :root[data-theme="dark"] .product-preview,
 :root[data-theme="dark"] .basket-drawer,
 :root[data-theme="dark"] .checkout-card,

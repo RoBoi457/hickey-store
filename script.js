@@ -997,7 +997,6 @@ function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   if (themeToggle) themeToggle.setAttribute("aria-checked", String(isDark));
   if (themeMeta) themeMeta.setAttribute("content", isDark ? "#080d18" : "#f3f6ff");
-  window.hickeySyncLogo?.();
   try { localStorage.setItem("hickey-theme", isDark ? "dark" : "light"); } catch (_) {}
 }
 if (themeToggle) {
