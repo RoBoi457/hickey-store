@@ -991,21 +991,13 @@ window.HickeyAuth?.init({
 // Theme slider toggle with persistence
 const themeToggle = document.getElementById("theme-toggle");
 const themeMeta = document.querySelector('meta[name="theme-color"]');
-const LOGO_VERSION = "1795703893";
-function syncLogoTheme(isDark) {
-  const src = isDark
-    ? `assets/hickey-logo-dark-opt.png?v=${LOGO_VERSION}`
-    : `assets/hickey-logo-opt.png?v=${LOGO_VERSION}`;
-  document.querySelectorAll(".hickey-logo, .footer-logo img, .checkout-brand img").forEach((img) => {
-    if (img.getAttribute("src") !== src) img.setAttribute("src", src);
-  });
-}
+
 function applyTheme(theme) {
   const isDark = theme === "dark";
   document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   if (themeToggle) themeToggle.setAttribute("aria-checked", String(isDark));
   if (themeMeta) themeMeta.setAttribute("content", isDark ? "#080d18" : "#f3f6ff");
-  syncLogoTheme(isDark);
+  window.hickeySyncLogo?.();
   try { localStorage.setItem("hickey-theme", isDark ? "dark" : "light"); } catch (_) {}
 }
 if (themeToggle) {
