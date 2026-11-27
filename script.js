@@ -690,6 +690,8 @@ const STICKER_PACK_META = {
   "Aesthetic & Badges": { subtitle: "Signature Hickey seals and clean vinyl stamps.", accent: "#10b981" }
 };
 
+const CUSTOM_PACK_FILTER = "Custom Packs";
+
 let activeCollection = "keychains";
 let activeStickerPack = "All";
 let shuffledPackOrder = [];
@@ -743,19 +745,17 @@ function positionPackIndicator(animate = true) {
 }
 
 function getOrderedFilterPacks() {
-  return ["All", ...shuffledPackOrder];
+  return ["All", ...shuffledPackOrder, CUSTOM_PACK_FILTER];
 }
 
 function setActiveCollection(nextCollection, options = {}) {
-  const valid = ["keychains", "stickers", "custom", "all"];
+  const valid = ["keychains", "stickers", "all"];
   const previous = activeCollection;
   activeCollection = valid.includes(nextCollection) ? nextCollection : "keychains";
   const keychainsPanel = document.getElementById("panel-keychains");
   const stickersPanel = document.getElementById("panel-stickers");
-  const customPanel = document.getElementById("panel-custom");
-  if (keychainsPanel) keychainsPanel.hidden = activeCollection !== "keychains" && activeCollection !== "all";
-  if (stickersPanel) stickersPanel.hidden = activeCollection !== "stickers" && activeCollection !== "all";
-  if (customPanel) customPanel.hidden = activeCollection !== "custom" && activeCollection !== "all";
+  if (keychainsPanel) keychainsPanel.hidden = activeCollection === "stickers";
+  if (stickersPanel) stickersPanel.hidden = activeCollection === "keychains";
 
   document.querySelectorAll("[data-collection-tab]").forEach((tab) => {
     const isActive = tab.dataset.collectionTab === activeCollection;
@@ -782,9 +782,10 @@ function renderStickerPackFilters() {
   const packs = getOrderedFilterPacks();
   if (!wrap || !packs.length) return;
   wrap.innerHTML = '<span class="pack-pill-indicator" aria-hidden="true"></span>' + packs.map((pack) => {
-    const count = pack === "All" ? allItems.length : (shuffledByPack.get(pack)?.length || 0);
+    const count = pack === "All" ? allItems.length : (pack === CUSTOM_PACK_FILTER ? 5 : (shuffledByPack.get(pack)?.length || 0));
     const isActive = pack === activeStickerPack;
-    return '<button class="pack-pill' + (isActive ? ' is-active' : '') + '" type="button" role="tab" data-pack="' + pack + '" aria-selected="' + isActive + '">' + pack + ' <span>' + count + '</span></button>';
+    const pillClass = pack === CUSTOM_PACK_FILTER ? " pack-pill-custom" : "";
+    return '<button class="pack-pill' + pillClass + (isActive ? ' is-active' : '') + '" type="button" role="tab" data-pack="' + pack + '" aria-selected="' + isActive + '">' + pack + ' <span>' + count + '</span></button>';
   }).join("");
   requestAnimationFrame(() => positionPackIndicator(false));
 }
@@ -835,18 +836,16 @@ function observeStickerCategories(showcase) {
 
 function renderStickers(options = {}) {
   const showcase = document.getElementById("sticker-showcase");
-  const countEl = document.getElementById("sticker-count-label");
+  const packShowcase = document.getElementById("custom-pack-showcase");
   if (!showcase || !shuffledPackOrder.length) return;
+
+  const showingPacks = activeStickerPack === CUSTOM_PACK_FILTER;
+  if (packShowcase) packShowcase.hidden = !showingPacks;
+  showcase.hidden = showingPacks;
+  if (showingPacks) return;
 
   const direction = options.direction || "up";
   const packsToShow = activeStickerPack === "All" ? shuffledPackOrder : [activeStickerPack];
-  const totalShown = packsToShow.reduce((sum, pack) => sum + (shuffledByPack.get(pack)?.length || 0), 0);
-
-  if (countEl) {
-    countEl.textContent = activeStickerPack === "All"
-      ? totalShown + " stickers · " + packsToShow.length + " categories"
-      : totalShown + " stickers in " + activeStickerPack;
-  }
 
   showcase.dataset.slideDir = direction;
   showcase.innerHTML = packsToShow.map((pack, groupIndex) => {
@@ -907,9 +906,25 @@ document.addEventListener("click", (event) => {
     });
     positionPackIndicator(true);
     renderStickers({ direction });
-    document.querySelector("#sticker-showcase .sticker-category-group")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const scrollTarget = nextPack === CUSTOM_PACK_FILTER
+      ? document.getElementById("custom-pack-showcase")
+      : document.querySelector("#sticker-showcase .sticker-category-group");
+    scrollTarget?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+});
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-show-stickers]")) return;
+  activeStickerPack = "All";
+  document.querySelectorAll("#sticker-pack-filters .pack-pill").forEach((btn) => {
+    const isActive = btn.dataset.pack === "All";
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-selected", String(isActive));
+  });
+  positionPackIndicator(true);
+  renderStickers({ direction: "left" });
+  document.querySelector("#sticker-showcase .sticker-category-group")
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 window.addEventListener("resize", () => positionPackIndicator(false), { passive: true });
@@ -917,25 +932,35 @@ window.addEventListener("resize", () => positionPackIndicator(false), { passive:
 randomizeStickerOrder();
 renderStickerPackFilters();
 
-function collectionFromHash() {
-  const hash = window.location.hash.replace(/^#/, "");
-  const map = {
-    keychains: "keychains",
-    stickers: "stickers",
-    custom: "custom",
-    "custom-packs": "custom"
-  };
-  return map[hash] || null;
+function applyHashRoute() {
+  const hash = location.hash.replace(/^#/, "");
+  const wantsCustomPacks = hash === "custom-packs" || hash === "custom-pack-section";
+  const collection = hash === "keychains" ? "keychains" : (hash === "stickers" || wantsCustomPacks) ? "stickers" : null;
+  if (collection) setActiveCollection(collection, { scroll: false });
+  if (wantsCustomPacks) activeStickerPack = CUSTOM_PACK_FILTER;
+  else if (hash === "stickers") activeStickerPack = "All";
+  if (collection) {
+    document.querySelectorAll("#sticker-pack-filters .pack-pill").forEach((btn) => {
+      const isActive = btn.dataset.pack === activeStickerPack;
+      btn.classList.toggle("is-active", isActive);
+      btn.setAttribute("aria-selected", String(isActive));
+    });
+    renderStickers({ direction: "up" });
+    requestAnimationFrame(() => positionPackIndicator(false));
+  }
+  if (collection || wantsCustomPacks) {
+    document.getElementById("treasury")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  }
+  const target = hash ? document.getElementById(hash) : null;
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  }
+  return false;
 }
-const hashedCollection = collectionFromHash();
-setActiveCollection(hashedCollection || "keychains", { scroll: Boolean(hashedCollection) });
-window.addEventListener("hashchange", () => {
-  const next = collectionFromHash();
-  if (next) setActiveCollection(next, { scroll: true });
-  const hashId = location.hash.slice(1);
-  const target = hashId ? document.getElementById(hashId) : null;
-  if (target && !next) target.scrollIntoView({ behavior: "smooth", block: "start" });
-});
+applyHashRoute();
+window.addEventListener("hashchange", applyHashRoute);
 document.querySelectorAll(".product-card").forEach((card) => {
   card.tabIndex = 0;
   card.setAttribute("role", "button");

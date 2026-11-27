@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1795785600">
+    <link rel="stylesheet" href="styles.css?v=1795789200">
     <script>
       try {
         if (localStorage.getItem("hickey-theme") === "dark") {
@@ -21,9 +21,9 @@
 
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="stickers-catalog.js?v=1795785600" defer></script>
-    <script src="auth-client.js?v=1795785600" defer></script>
-    <script src="script.js?v=1795785600" defer></script>
+    <script src="stickers-catalog.js?v=1795789200" defer></script>
+    <script src="auth-client.js?v=1795789200" defer></script>
+    <script src="script.js?v=1795789200" defer></script>
   </head>
   <body>
     <div class="page-glow" aria-hidden="true"></div>
@@ -93,10 +93,7 @@
               <span>Keychains</span><em class="tab-count">14</em>
             </button>
             <button class="collection-tab" type="button" role="tab" aria-selected="false" data-collection-tab="stickers" data-switch-collection="stickers">
-              <span>Stickers</span><em class="tab-count">60</em>
-            </button>
-            <button class="collection-tab" type="button" role="tab" aria-selected="false" data-collection-tab="custom" data-switch-collection="custom">
-              <span>Custom Packs</span><em class="tab-count">5</em><i class="tab-new-dot">NEW</i>
+              <span>Stickers</span><em class="tab-count">65</em><i class="tab-new-dot">NEW</i>
             </button>
             <button class="collection-tab" type="button" role="tab" aria-selected="false" data-collection-tab="all" data-switch-collection="all">
               <span>All Drops</span><em class="tab-count">79</em>
@@ -184,48 +181,40 @@
             <div class="sticker-pack-filters" id="sticker-pack-filters" role="tablist" aria-label="Filter stickers by category"></div>
           </div>
 
-          <div class="sticker-showcase" id="sticker-showcase"></div>
-        </div>
+          <div class="custom-pack-showcase" id="custom-pack-showcase" hidden>
+            <section class="custom-pack-section" id="custom-pack-section" aria-labelledby="custom-pack-title">
+              <div class="custom-pack-head">
+                <div>
+                  <span class="collection-kicker">PICK YOUR FIVE</span>
+                  <h4 id="custom-pack-title">Build your own sticker pack.</h4>
+                  <p>Pick five different stickers, then add them here. <button class="text-link" type="button" data-show-stickers>Browse all stickers →</button></p>
+                </div>
+                <span class="custom-pack-price">₹129 · 5 stickers</span>
+              </div>
+              <div class="custom-pack-slots" id="custom-pack-slots" aria-label="Your selected custom pack designs"></div>
+              <div class="custom-pack-actions">
+                <span class="custom-pack-count" id="custom-pack-count" aria-live="polite">0 of 5 designs chosen</span>
+                <div class="custom-pack-buttons">
+                  <button class="button button-quiet" id="custom-pack-clear" type="button">Clear picks</button>
+                  <button class="button button-dark" id="custom-pack-add" type="button">Add custom pack to basket</button>
+                </div>
+              </div>
+            </section>
 
-        <div class="collection-panel" id="panel-custom" data-collection-panel="custom" hidden>
-          <div class="collection-subhead" id="custom-packs">
-            <div>
-              <span class="collection-kicker">CUSTOM PACKS · FIVE DIFFERENT DESIGNS</span>
-              <h3>Make it yours.</h3>
-            </div>
-            <span class="collection-meta">5 ready-made packs · Build your own · ₹129</span>
+            <section class="featured-pack-section" aria-labelledby="featured-pack-title">
+              <header class="featured-pack-head">
+                <div>
+                  <span class="collection-kicker">MADE BY HICKEY</span>
+                  <h4 id="featured-pack-title">Five stickers, sorted by vibe.</h4>
+                  <p>Ready-to-go packs, each with five different designs picked by us.</p>
+                </div>
+                <span class="featured-pack-count">5 packs · ₹129 each</span>
+              </header>
+              <div class="featured-pack-grid" id="featured-pack-grid"></div>
+            </section>
           </div>
 
-          <section class="custom-pack-section" id="custom-pack-section" aria-labelledby="custom-pack-title">
-            <div class="custom-pack-head">
-              <div>
-                <span class="collection-kicker">PICK YOUR FIVE</span>
-                <h4 id="custom-pack-title">Build your own sticker pack.</h4>
-                <p>Pick five different stickers, then add them here. <button class="text-link" type="button" data-switch-collection="stickers">Browse all stickers →</button></p>
-              </div>
-              <span class="custom-pack-price">₹129 · 5 stickers</span>
-            </div>
-            <div class="custom-pack-slots" id="custom-pack-slots" aria-label="Your selected custom pack designs"></div>
-            <div class="custom-pack-actions">
-              <span class="custom-pack-count" id="custom-pack-count" aria-live="polite">0 of 5 designs chosen</span>
-              <div class="custom-pack-buttons">
-                <button class="button button-quiet" id="custom-pack-clear" type="button">Clear picks</button>
-                <button class="button button-dark" id="custom-pack-add" type="button">Add custom pack to basket</button>
-              </div>
-            </div>
-          </section>
-
-          <section class="featured-pack-section" aria-labelledby="featured-pack-title">
-            <header class="featured-pack-head">
-              <div>
-                <span class="collection-kicker">MADE BY HICKEY</span>
-                <h4 id="featured-pack-title">Five stickers, sorted by vibe.</h4>
-                <p>Ready-to-go packs, each with five different designs picked by us.</p>
-              </div>
-              <span class="featured-pack-count">5 packs · ₹129 each</span>
-            </header>
-            <div class="featured-pack-grid" id="featured-pack-grid"></div>
-          </section>
+          <div class="sticker-showcase" id="sticker-showcase"></div>
         </div>
       </section>
 

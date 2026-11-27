@@ -1642,6 +1642,28 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
 }
 
 /* --- Custom sticker packs: pick-your-five + made-by-Hickey drops --- */
+.sticker-showcase[hidden],
+.custom-pack-showcase[hidden] { display: none !important; }
+.custom-pack-showcase {
+  display: grid;
+  gap: 38px;
+  max-width: 1840px;
+  margin-inline: auto;
+}
+.pack-pill-custom {
+  border-color: rgba(237,36,66,.22);
+  background: linear-gradient(120deg, rgba(237,36,66,.12), rgba(168,85,247,.1));
+  color: var(--red-deep);
+  font-weight: 700;
+}
+.pack-pill-custom span { color: var(--red); }
+.pack-pill-custom.is-active {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(120deg, rgba(237,36,66,.92), rgba(168,85,247,.82));
+}
+.pack-pill-custom.is-active span { color: #fff; }
+:root[data-theme="dark"] .pack-pill-custom { color: #ff8ba0; }
 .button-glass {
   color: var(--ink);
   border-color: rgba(255,255,255,.92);
@@ -1920,6 +1942,7 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
   .custom-pack-slot { min-height: 68px; border-radius: 14px; }
   .custom-pack-slot > span { top: 5px; left: 6px; width: 19px; height: 19px; font-size: 9px; }
   .custom-pack-slot button { top: 5px; right: 5px; width: 22px; height: 22px; font-size: 15px; }
+  .custom-pack-showcase { gap: 22px; }
   .custom-pack-actions { align-items: flex-start; }
   .custom-pack-buttons { width: 100%; }
   .custom-pack-buttons .button { flex: 1; min-height: 46px; padding: 0 12px; font-size: 12px; }
