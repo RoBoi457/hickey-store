@@ -1,5 +1,5 @@
 import { getAuthenticatedUser, sameOriginRequest } from "../_auth.js";
-import { CATALOG as catalog } from "../_catalog.js";
+import { CATALOG as catalog, STICKER_CATALOG, FEATURED_PACK_DESIGNS, CUSTOM_PACK_ID } from "../_catalog.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -44,6 +44,18 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Your basket is empty or has too many line items." }, 400);
   }
 
+  const customPackRequested = body.items.some((item) => item?.id === CUSTOM_PACK_ID && Number(item?.quantity) > 0);
+  let customPackDesigns = [];
+  if (customPackRequested) {
+    const submitted = body.customPackDesigns;
+    const unique = Array.isArray(submitted) ? new Set(submitted) : new Set();
+    if (!Array.isArray(submitted) || submitted.length !== 5 || unique.size !== 5 ||
+        submitted.some((id) => typeof id !== "string" || !STICKER_CATALOG[id])) {
+      return json({ error: "A custom sticker pack needs exactly 5 different designs. Pick 5 unique stickers before checkout." }, 400);
+    }
+    customPackDesigns = submitted.slice();
+  }
+
   const savedItems = [];
   let totalRupees = 0;
   for (const item of body.items) {
@@ -53,7 +65,10 @@ export async function onRequestPost({ request, env }) {
       return json({ error: "One of the items in your basket is invalid." }, 400);
     }
     totalRupees += product.price * quantity;
-    savedItems.push({ id: item.id, name: product.name, quantity, unitPrice: product.price });
+    const savedItem = { id: item.id, name: product.name, quantity, unitPrice: product.price };
+    if (item.id === CUSTOM_PACK_ID) savedItem.designs = customPackDesigns;
+    else if (FEATURED_PACK_DESIGNS[item.id]) savedItem.designs = FEATURED_PACK_DESIGNS[item.id];
+    savedItems.push(savedItem);
   }
 
   const amount = totalRupees * 100;

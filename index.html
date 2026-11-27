@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1795721947">
+    <link rel="stylesheet" href="styles.css?v=1795782400">
     <script>
       try {
         if (localStorage.getItem("hickey-theme") === "dark") {
@@ -21,9 +21,9 @@
 
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="stickers-catalog.js?v=1794468130" defer></script>
-    <script src="auth-client.js?v=1794468130" defer></script>
-    <script src="script.js?v=1795721947" defer></script>
+    <script src="stickers-catalog.js?v=1795782400" defer></script>
+    <script src="auth-client.js?v=1795782400" defer></script>
+    <script src="script.js?v=1795782400" defer></script>
   </head>
   <body>
     <div class="page-glow" aria-hidden="true"></div>
@@ -93,10 +93,10 @@
               <span>Keychains</span><em class="tab-count">14</em>
             </button>
             <button class="collection-tab" type="button" role="tab" aria-selected="false" data-collection-tab="stickers" data-switch-collection="stickers">
-              <span>Stickers</span><em class="tab-count">60</em><i class="tab-new-dot">NEW</i>
+              <span>Stickers</span><em class="tab-count">65</em><i class="tab-new-dot">NEW</i>
             </button>
             <button class="collection-tab" type="button" role="tab" aria-selected="false" data-collection-tab="all" data-switch-collection="all">
-              <span>All Drops</span><em class="tab-count">74</em>
+              <span>All Drops</span><em class="tab-count">79</em>
             </button>
           </div>
         </div>
@@ -175,7 +175,7 @@
               <span class="collection-kicker">DIE-CUT VINYL DROPS</span>
               <h3>Campus Stickers</h3>
             </div>
-            <span class="collection-meta">60 waterproof vinyl stickers · From ₹29</span>
+            <span class="collection-meta">60 waterproof vinyl stickers · 5 custom packs · From ₹29</span>
           </div>
 
           <div class="stickers-toolbar">
@@ -184,6 +184,37 @@
               <span class="sticker-count-label" id="sticker-count-label">60 stickers · 5 categories</span>
             </div>
           </div>
+
+          <section class="custom-pack-section" id="custom-pack-section" aria-labelledby="custom-pack-title">
+            <div class="custom-pack-head">
+              <div>
+                <span class="collection-kicker">CUSTOM PACKS · PICK YOUR FIVE</span>
+                <h4 id="custom-pack-title">Build your own sticker pack.</h4>
+                <p>Choose exactly 5 different designs from the drops below. Tap the + on any sticker to add it to your custom pack.</p>
+              </div>
+              <span class="custom-pack-price">₹129 · 5 stickers</span>
+            </div>
+            <div class="custom-pack-slots" id="custom-pack-slots" aria-label="Your selected custom pack designs"></div>
+            <div class="custom-pack-actions">
+              <span class="custom-pack-count" id="custom-pack-count" aria-live="polite">0 of 5 designs chosen</span>
+              <div class="custom-pack-buttons">
+                <button class="button button-quiet" id="custom-pack-clear" type="button">Clear picks</button>
+                <button class="button button-dark" id="custom-pack-add" type="button">Add custom pack to basket</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="featured-pack-section" aria-labelledby="featured-pack-title">
+            <header class="featured-pack-head">
+              <div>
+                <span class="collection-kicker">CUSTOM PACKS · MADE BY HICKEY</span>
+                <h4 id="featured-pack-title">Five stickers, sorted by vibe.</h4>
+                <p>Not in the mood to choose? Each pack is five different designs picked by us.</p>
+              </div>
+              <span class="featured-pack-count">5 packs · ₹129 each</span>
+            </header>
+            <div class="featured-pack-grid" id="featured-pack-grid"></div>
+          </section>
 
           <div class="sticker-showcase" id="sticker-showcase"></div>
         </div>
@@ -304,6 +335,7 @@
           </div>
           <div class="preview-purchase"><strong id="preview-price"></strong><span>· UPI via Razorpay</span></div>
           <button class="button button-dark preview-add" id="preview-add" type="button">Add to basket <span aria-hidden="true">＋</span></button>
+          <button class="button button-glass preview-custom" id="preview-custom" type="button">Add to your custom sticker pack <span aria-hidden="true">✦</span></button>
           <div class="preview-quantity" id="preview-quantity" aria-label="Product quantity" hidden><button type="button" id="preview-minus" aria-label="Remove one">−</button><span id="preview-quantity-count" aria-live="polite">1</span><button type="button" id="preview-plus" aria-label="Add one">+</button></div>
           <p class="preview-note" id="preview-note">A small keepsake for your keys, bag, or favourite person.</p>
         </div>

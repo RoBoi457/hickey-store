@@ -177,8 +177,98 @@
     return item;
   });
 
+  function createPackDataUrl(pack, designs, options = {}) {
+    const custom = Boolean(options.custom);
+    const accents = ["#ed2442", "#45baf0", "#f59e0b", "#a855f7", "#10b981"];
+    const positions = [
+      [48, 66, -9], [318, 52, 8], [206, 210, -5], [52, 350, 6], [320, 338, -8]
+    ];
+    const fallback = ["YOU", "PICK", "FIVE", "DIFF", "ERENT"];
+    const cards = positions.map(([x, y, rot], index) => {
+      const design = designs[index];
+      const [bg, fg] = PALETTES[index % PALETTES.length];
+      const accent = accents[index % accents.length];
+      const label = design ? design.code : fallback[index];
+      const cx = x + 110;
+      const cy = y + 85;
+      return `<g transform="rotate(${rot} ${cx} ${cy})">` +
+        `<rect x="${x}" y="${y}" width="220" height="170" rx="34" fill="#ffffff" opacity="0.96"/>` +
+        `<rect x="${x + 10}" y="${y + 10}" width="200" height="150" rx="27" fill="${bg}" stroke="${accent}" stroke-width="4"/>` +
+        `<text x="${cx}" y="${y + 61}" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" letter-spacing="2.6" fill="${accent}">✦ HICKEY</text>` +
+        `<text x="${cx}" y="${y + 109}" text-anchor="middle" font-family="Georgia,serif" font-size="${label.length > 6 ? 19 : 24}" font-weight="700" fill="${fg}">${esc(label)}</text>` +
+        `<rect x="${cx - 42}" y="${y + 125}" width="84" height="19" rx="9.5" fill="${accent}" opacity="0.92"/>` +
+        `<text x="${cx}" y="${y + 139}" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="10" font-weight="800" letter-spacing="1.4" fill="#ffffff">0${index + 1} / 05</text>` +
+        `</g>`;
+    }).join("");
+    const footer = custom ? "BUILD YOUR OWN · 5 DIFFERENT DESIGNS" : "5 DIFFERENT DESIGNS · PICKED BY HICKEY";
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+      <defs>
+        <linearGradient id="packbg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f3f7ff"/>
+          <stop offset="55%" stop-color="#ffeef2"/>
+          <stop offset="100%" stop-color="#eaf7ff"/>
+        </linearGradient>
+      </defs>
+      <rect width="600" height="600" rx="60" fill="url(#packbg)"/>
+      <circle cx="70" cy="540" r="110" fill="#45baf0" opacity="0.12"/>
+      <circle cx="540" cy="80" r="130" fill="#ed2442" opacity="0.1"/>
+      ${cards}
+      <rect x="104" y="543" width="392" height="34" rx="17" fill="#121a2b" opacity="0.9"/>
+      <text x="300" y="565" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="800" letter-spacing="2.2" fill="#ffffff">${esc(footer)}</text>
+    </svg>`;
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
+
+  const FEATURED_PACK_ENTRIES = [
+    ["pack-campus", "Campus Starter", "Campus & Hostel", ["stk-01", "stk-03", "stk-04", "stk-07", "stk-10"], "Attendance math, dorm doors, and the 2 AM Maggi run in one set."],
+    ["pack-internet", "Chronically Online", "Internet & Slang", ["stk-13", "stk-16", "stk-19", "stk-22", "stk-24"], "Five phrases for anyone whose group chat is a second home."],
+    ["pack-caffeine", "Caffeine & Chaos", "Caffeine & Survival", ["stk-25", "stk-27", "stk-30", "stk-32", "stk-36"], "For the chai tapri regular who runs on zero sleep and vibes."],
+    ["pack-cats", "Cat Person Energy", "Cats & Chaos", ["stk-37", "stk-38", "stk-41", "stk-47", "stk-48"], "Orange braincell, campus CEO, and all the tiny drama."],
+    ["pack-aesthetic", "Signature Seals", "Aesthetic & Badges", ["stk-49", "stk-50", "stk-53", "stk-57", "stk-60"], "Clean vinyl stamps for the ones who belong out loud."]
+  ];
+
+  const FEATURED_PACKS = FEATURED_PACK_ENTRIES.map(([id, title, pack, stickerIds, description], index) => {
+    const designs = stickerIds.map((stickerId) => STICKERS.find((item) => item.id === stickerId)).filter(Boolean);
+    return {
+      id,
+      title,
+      name: `${title} Custom Pack`,
+      price: 129,
+      pack,
+      description,
+      stickerIds,
+      badge: "5 PACK",
+      category: "sticker-pack",
+      image: createPackDataUrl({ title, pack }, designs),
+      specs: [
+        { label: "Contents", value: "5 different die-cut stickers" },
+        { label: "Material", value: "Waterproof matte vinyl" }
+      ]
+    };
+  });
+
+  const CUSTOM_PACK = {
+    id: "custom-pack",
+    title: "Build Your Own",
+    name: "Build Your Own Custom Sticker Pack",
+    price: 129,
+    pack: "Your Mix",
+    description: "Pick exactly 5 different designs from the sticker drops and we’ll bundle them into one custom pack.",
+    stickerIds: [],
+    badge: "CUSTOM",
+    category: "sticker-pack",
+    image: createPackDataUrl(null, [], { custom: true }),
+    specs: [
+      { label: "Contents", value: "5 different die-cut stickers" },
+      { label: "Material", value: "Waterproof matte vinyl" }
+    ]
+  };
+
   window.HickeyStickers = {
     items: STICKERS,
-    packs: ["All", "Campus & Hostel", "Internet & Slang", "Caffeine & Survival", "Cats & Chaos", "Aesthetic & Badges"]
+    packs: ["All", "Campus & Hostel", "Internet & Slang", "Caffeine & Survival", "Cats & Chaos", "Aesthetic & Badges"],
+    featuredPacks: FEATURED_PACKS,
+    customPack: CUSTOM_PACK,
+    customPackSize: 5
   };
 })();

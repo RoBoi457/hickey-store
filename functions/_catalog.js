@@ -91,7 +91,31 @@ export const STICKER_CATALOG = Object.fromEntries(
   STICKER_ENTRIES.map(([id, name, price]) => [id, { name: `${name} Sticker`, price, category: "sticker" }])
 );
 
+export const FEATURED_PACK_ENTRIES = [
+  ["pack-campus", "Campus Starter Custom Pack", 129, ["stk-01", "stk-03", "stk-04", "stk-07", "stk-10"]],
+  ["pack-internet", "Chronically Online Custom Pack", 129, ["stk-13", "stk-16", "stk-19", "stk-22", "stk-24"]],
+  ["pack-caffeine", "Caffeine & Chaos Custom Pack", 129, ["stk-25", "stk-27", "stk-30", "stk-32", "stk-36"]],
+  ["pack-cats", "Cat Person Energy Custom Pack", 129, ["stk-37", "stk-38", "stk-41", "stk-47", "stk-48"]],
+  ["pack-aesthetic", "Signature Seals Custom Pack", 129, ["stk-49", "stk-50", "stk-53", "stk-57", "stk-60"]]
+];
+
+export const FEATURED_PACK_DESIGNS = Object.fromEntries(
+  FEATURED_PACK_ENTRIES.map(([id, , , designs]) => [id, designs])
+);
+
+export const FEATURED_PACK_CATALOG = Object.fromEntries(
+  FEATURED_PACK_ENTRIES.map(([id, name, price]) => [id, { name, price, category: "sticker-pack" }])
+);
+
+export const CUSTOM_PACK_ID = "custom-pack";
+
+export const CUSTOM_PACK_CATALOG = {
+  [CUSTOM_PACK_ID]: { name: "Build Your Own Custom Sticker Pack", price: 129, category: "sticker-pack" }
+};
+
 export const CATALOG = {
   ...KEYCHAIN_CATALOG,
-  ...STICKER_CATALOG
+  ...STICKER_CATALOG,
+  ...FEATURED_PACK_CATALOG,
+  ...CUSTOM_PACK_CATALOG
 };

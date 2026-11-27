@@ -19,11 +19,21 @@ if (window.HickeyStickers && Array.isArray(window.HickeyStickers.items)) {
   for (const sticker of window.HickeyStickers.items) {
     PRODUCTS[sticker.id] = sticker;
   }
+  for (const pack of (window.HickeyStickers.featuredPacks || [])) {
+    PRODUCTS[pack.id] = pack;
+  }
+  if (window.HickeyStickers.customPack) {
+    PRODUCTS[window.HickeyStickers.customPack.id] = window.HickeyStickers.customPack;
+  }
 }
 
 document.documentElement.classList.add("motion-ready");
 
 const STORAGE_KEY = "hickey-basket-v1";
+const CUSTOM_PACK_STORAGE_KEY = "hickey-custom-pack-v1";
+const CUSTOM_PACK_SIZE = window.HickeyStickers?.customPackSize || 5;
+const CUSTOM_PACK_RULE = "A custom sticker pack needs exactly 5 different designs. Pick 5 unique stickers before checkout.";
+let customPackIds = readCustomPack();
 const rupees = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 const nav = document.getElementById("float-nav");
 const drawer = document.getElementById("basket-drawer");
@@ -106,6 +116,7 @@ function saveBasket() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(basket)); } catch (_) {}
   window.HickeyAuth?.persistCart(basket);
   renderBasket();
+  renderCustomPackBuilder();
   if (productPreviewLayer.classList.contains("is-open")) renderPreviewQuantity();
 }
 
@@ -146,6 +157,13 @@ function renderProductControls() {
     const id = card.dataset.productId;
     const photo = card.querySelector(".product-photo");
     if (!id || !photo) return;
+    if (card.classList.contains("sticker-card")) {
+      const stickerControl = photo.querySelector(".product-quantity");
+      if (stickerControl) stickerControl.hidden = true;
+      const stickerTrigger = photo.querySelector("[data-sticker-add-trigger]");
+      if (stickerTrigger) stickerTrigger.hidden = false;
+      return;
+    }
     let control = photo.querySelector(".product-quantity");
     if (!control) {
       control = document.createElement("div");
@@ -182,7 +200,13 @@ function renderCheckoutCart() {
   if (!target) return;
   target.innerHTML = Object.entries(basket).map(([id, quantity]) => {
     const product = PRODUCTS[id];
-    return '<div class="checkout-summary-item"><img src="' + product.image + '" alt=""><div><strong>' + product.name + '</strong><span>Qty ' + quantity + '</span></div><b>' + rupees.format(product.price * quantity) + '</b></div>';
+    let row = '<div class="checkout-summary-item"><img src="' + product.image + '" alt=""><div><strong>' + product.name + '</strong><span>Qty ' + quantity + '</span></div><b>' + rupees.format(product.price * quantity) + '</b></div>';
+    if (id === "custom-pack") {
+      const message = customPackValidationMessage();
+      row += '<p class="checkout-pack-note' + (message ? ' is-warning' : '') + '">' +
+        (message || ("Ready: " + CUSTOM_PACK_SIZE + " different designs selected.")) + '</p>';
+    }
+    return row;
   }).join("");
 }
 
@@ -191,6 +215,171 @@ function showToast(message) {
   toast.classList.add("is-visible");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2800);
+}
+
+function readCustomPack() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CUSTOM_PACK_STORAGE_KEY) || "[]");
+    if (!Array.isArray(saved)) return [];
+    const seen = new Set();
+    const ids = [];
+    for (const id of saved) {
+      if (typeof id !== "string" || seen.has(id) || PRODUCTS[id]?.category !== "sticker") continue;
+      seen.add(id);
+      ids.push(id);
+      if (ids.length >= CUSTOM_PACK_SIZE) break;
+    }
+    return ids;
+  } catch (_) {
+    return [];
+  }
+}
+
+function saveCustomPack() {
+  try { localStorage.setItem(CUSTOM_PACK_STORAGE_KEY, JSON.stringify(customPackIds)); } catch (_) {}
+  renderCustomPackBuilder();
+  renderPreviewCustomButton();
+}
+
+function customPackValidationMessage() {
+  if (!basket["custom-pack"]) return "";
+  const ids = customPackIds.filter((id) => PRODUCTS[id]?.category === "sticker");
+  if (ids.length !== CUSTOM_PACK_SIZE || new Set(ids).size !== ids.length) return CUSTOM_PACK_RULE;
+  return "";
+}
+
+function guardCustomPackCheckout() {
+  const message = customPackValidationMessage();
+  if (!message) return true;
+  showToast(message);
+  const paymentMessage = document.getElementById("payment-message");
+  if (paymentMessage) paymentMessage.textContent = message;
+  return false;
+}
+
+function renderCustomPackBuilder() {
+  const slots = document.getElementById("custom-pack-slots");
+  if (!slots) return;
+  const ids = customPackIds.slice(0, CUSTOM_PACK_SIZE);
+  slots.innerHTML = Array.from({ length: CUSTOM_PACK_SIZE }, (_, index) => {
+    const id = ids[index];
+    const product = id ? PRODUCTS[id] : null;
+    if (!product) {
+      return '<div class="custom-pack-slot"><span>' + (index + 1) + '</span><em>' + (index === ids.length ? "Your pick" : "Empty") + '</em></div>';
+    }
+    return '<div class="custom-pack-slot is-filled" style="--slot-i:' + index + '">' +
+      '<img src="' + product.image + '" alt="" loading="lazy">' +
+      '<span>' + (index + 1) + '</span>' +
+      '<button type="button" data-remove-custom="' + product.id + '" aria-label="Remove ' + product.title + ' from your custom pack">×</button>' +
+      '</div>';
+  }).join("");
+  const countEl = document.getElementById("custom-pack-count");
+  if (countEl) countEl.textContent = ids.length + " of " + CUSTOM_PACK_SIZE + " designs chosen";
+  const addButton = document.getElementById("custom-pack-add");
+  if (addButton) addButton.textContent = basket["custom-pack"] ? "Custom pack in basket" : "Add custom pack to basket";
+  document.getElementById("custom-pack-section")?.classList.toggle("is-complete", ids.length === CUSTOM_PACK_SIZE);
+  slots.querySelectorAll("[data-remove-custom]").forEach((button) => {
+    button.addEventListener("click", () => toggleCustomPackDesign(button.dataset.removeCustom));
+  });
+}
+
+function renderFeaturedPacks() {
+  const grid = document.getElementById("featured-pack-grid");
+  if (!grid) return;
+  const packs = window.HickeyStickers?.featuredPacks || [];
+  grid.innerHTML = packs.map((pack, index) => (
+    '<article class="product-card featured-pack-card" style="--card-i:' + index + '" data-product-id="' + pack.id + '" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View ' + pack.title + ' custom pack details">' +
+      '<div class="product-photo featured-pack-stage">' +
+        '<span class="badge sticker-badge">' + pack.badge + '</span>' +
+        '<img src="' + pack.image + '" alt="' + pack.title + ' five-sticker pack" loading="lazy">' +
+        '<button class="add-button pack-add-button" data-add="' + pack.id + '" aria-label="Add ' + pack.name + ' to your basket">+</button>' +
+      '</div>' +
+      '<div class="product-info pack-info">' +
+        '<span class="sticker-pack-tag">' + pack.pack + '</span>' +
+        '<h3>' + pack.title + '</h3><p>' + pack.description + '</p>' +
+        '<div class="product-price"><strong>' + rupees.format(pack.price) + '</strong><span>· 5 stickers</span></div>' +
+      '</div>' +
+    '</article>'
+  )).join("");
+  bindProductGridEvents(grid);
+}
+
+function toggleCustomPackDesign(id) {
+  const product = PRODUCTS[id];
+  if (!product || product.category !== "sticker") return;
+  const index = customPackIds.indexOf(id);
+  if (index >= 0) {
+    customPackIds.splice(index, 1);
+    showToast("Removed " + product.title + " from your custom pack.");
+  } else {
+    if (customPackIds.length >= CUSTOM_PACK_SIZE) {
+      showToast(CUSTOM_PACK_RULE);
+      return;
+    }
+    customPackIds.push(id);
+    showToast("Added " + product.title + " to your custom pack (" + customPackIds.length + " of " + CUSTOM_PACK_SIZE + ").");
+  }
+  saveCustomPack();
+}
+
+function addCustomPackToBasket() {
+  const customPack = window.HickeyStickers?.customPack;
+  if (!customPack) return;
+  const message = customPackValidationMessage();
+  if (!basket[customPack.id]) {
+    if (!window.HickeyAuth?.user) {
+      window.HickeyAuth?.request({ type: "add", id: customPack.id });
+      showToast(message || "Sign in to add your custom pack to the basket.");
+      return;
+    }
+    basket[customPack.id] = 1;
+    saveBasket();
+  }
+  showToast(message || "Custom pack with " + CUSTOM_PACK_SIZE + " different designs added to your basket.");
+}
+
+function renderPreviewCustomButton() {
+  const button = document.getElementById("preview-custom");
+  if (!button) return;
+  const product = previewProductId ? PRODUCTS[previewProductId] : null;
+  const isSticker = product?.category === "sticker";
+  button.hidden = !isSticker;
+  if (!isSticker) return;
+  const selected = customPackIds.includes(previewProductId);
+  button.innerHTML = (selected ? "Remove from your custom sticker pack" : "Add to your custom sticker pack") + ' <span aria-hidden="true">✦</span>';
+  button.classList.toggle("is-selected", selected);
+}
+
+function closeStickerAddMenus(exceptTrigger = null) {
+  document.querySelectorAll(".sticker-add-menu.is-open").forEach((menu) => {
+    menu.classList.remove("is-open");
+    menu.setAttribute("aria-hidden", "true");
+    const trigger = menu.parentElement?.querySelector("[data-sticker-add-trigger]");
+    if (trigger && trigger !== exceptTrigger) trigger.setAttribute("aria-expanded", "false");
+  });
+}
+
+function toggleStickerAddMenu(trigger) {
+  const id = trigger.dataset.stickerAddTrigger;
+  const stage = trigger.closest(".product-photo");
+  if (!id || !stage) return;
+  let menu = stage.querySelector(".sticker-add-menu");
+  const wasOpen = Boolean(menu?.classList.contains("is-open"));
+  closeStickerAddMenus();
+  if (wasOpen && menu) return;
+  if (!menu) {
+    menu = document.createElement("div");
+    menu.className = "sticker-add-menu";
+    menu.setAttribute("role", "menu");
+    stage.append(menu);
+  }
+  const selected = customPackIds.includes(id);
+  menu.setAttribute("aria-hidden", "false");
+  menu.innerHTML =
+    '<button type="button" role="menuitem" data-menu-add-cart="' + id + '"><strong>Add to cart</strong><small>Just this sticker</small></button>' +
+    '<button type="button" role="menuitem" data-menu-add-pack="' + id + '" class="' + (selected ? "is-selected" : "") + '"><strong>' + (selected ? "Remove from custom pack" : "Add to custom pack") + '</strong><small>' + (selected ? "Picked for your pack" : customPackIds.length + " of " + CUSTOM_PACK_SIZE + " chosen") + '</small></button>';
+  menu.classList.add("is-open");
+  trigger.setAttribute("aria-expanded", "true");
 }
 
 function openDrawer() {
@@ -212,6 +401,7 @@ function closeDrawer() {
 
 function openCheckout() {
   if (basketCount() === 0) return;
+  if (!guardCustomPackCheckout()) return;
   if (!window.HickeyAuth?.user) {
     closeDrawer();
     window.HickeyAuth?.request({ type: "checkout" });
@@ -279,21 +469,32 @@ function openProductPreview(card) {
   previewProductId = id;
   previewReturnFocus = card;
   const isSticker = product.category === "sticker";
+  const isPack = product.category === "sticker-pack";
   const image = card.querySelector(".product-photo img");
   document.getElementById("preview-image").src = product.image;
   document.getElementById("preview-image").alt = image?.alt || product.name;
   const eyebrowEl = document.getElementById("preview-eyebrow");
-  if (eyebrowEl) eyebrowEl.textContent = isSticker ? ("DIE-CUT VINYL · " + (product.pack || "STICKER").toUpperCase()) : "A LITTLE CAMPUS LEGEND";
-  document.getElementById("preview-title").textContent = isSticker ? (product.title || product.name) : product.name;
+  if (eyebrowEl) {
+    eyebrowEl.textContent = isSticker
+      ? ("DIE-CUT VINYL · " + (product.pack || "STICKER").toUpperCase())
+      : (isPack ? "CUSTOM PACK · " + CUSTOM_PACK_SIZE + " DIFFERENT DESIGNS" : "A LITTLE CAMPUS LEGEND");
+  }
+  document.getElementById("preview-title").textContent = (isSticker || isPack) ? (product.title || product.name) : product.name;
   document.getElementById("preview-description").textContent = product.description || card.querySelector(".product-info p")?.textContent || "";
   const sizeEl = document.getElementById("preview-spec-size");
   const matEl = document.getElementById("preview-spec-material");
   const noteEl = document.getElementById("preview-note");
-  if (sizeEl) sizeEl.textContent = isSticker ? "3 × 3 in (Die-Cut)" : "2.25cm radius";
-  if (matEl) matEl.textContent = isSticker ? (product.badge === "Holo" ? "Holographic Vinyl" : "Waterproof Matte Vinyl") : "Acrylic";
-  if (noteEl) noteEl.textContent = isSticker ? "Peel-and-stick waterproof vinyl for laptops, bottles, notebooks, and dorm doors." : "A small keepsake for your keys, bag, or favourite person.";
+  if (sizeEl) sizeEl.textContent = isSticker ? "3 × 3 in (Die-Cut)" : (isPack ? CUSTOM_PACK_SIZE + " die-cut stickers" : "2.25cm radius");
+  if (matEl) matEl.textContent = isSticker ? (product.badge === "Holo" ? "Holographic Vinyl" : "Waterproof Matte Vinyl") : (isPack ? "Waterproof Matte Vinyl" : "Acrylic");
+  if (noteEl) {
+    noteEl.textContent = isSticker
+      ? "Peel-and-stick waterproof vinyl for laptops, bottles, notebooks, and dorm doors."
+      : (isPack ? "Five different designs, bundled together and ready to peel-and-stick." : "A small keepsake for your keys, bag, or favourite person.");
+  }
   document.getElementById("preview-price").textContent = rupees.format(product.price);
   renderPreviewQuantity();
+  renderPreviewCustomButton();
+  closeStickerAddMenus();
   productPreviewLayer.classList.add("is-open");
   productPreviewLayer.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
@@ -330,8 +531,9 @@ function setBusy(isBusy) {
 async function startRazorpayCheckout(formData) {
   const message = document.getElementById("payment-message");
   message.textContent = "";
+  if (!guardCustomPackCheckout()) return;
   setBusy(true);
-const customerName = formData.customerName || window.HickeyAuth?.user?.name || "";
+  const customerName = formData.customerName || window.HickeyAuth?.user?.name || "";
   const customerEmail = formData.email || window.HickeyAuth?.user?.email || "";
   try {
     const orderResponse = await fetch("/api/create-order", {
@@ -339,7 +541,8 @@ const customerName = formData.customerName || window.HickeyAuth?.user?.name || "
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         items: Object.entries(basket).map(([id, quantity]) => ({ id, quantity })),
-  customerName,      
+        customPackDesigns: basket["custom-pack"] ? customPackIds.slice() : undefined,
+        customerName,
         address: formData.address,
         phone: formData.phone
       })
@@ -410,6 +613,29 @@ const customerName = formData.customerName || window.HickeyAuth?.user?.name || "
 function bindProductGridEvents(gridElement) {
   if (!gridElement) return;
   gridElement.addEventListener("click", (event) => {
+    const menuCart = event.target.closest("[data-menu-add-cart]");
+    if (menuCart) {
+      event.preventDefault();
+      event.stopPropagation();
+      addToBasket(menuCart.dataset.menuAddCart);
+      closeStickerAddMenus();
+      return;
+    }
+    const menuPack = event.target.closest("[data-menu-add-pack]");
+    if (menuPack) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleCustomPackDesign(menuPack.dataset.menuAddPack);
+      closeStickerAddMenus();
+      return;
+    }
+    const stickerTrigger = event.target.closest("[data-sticker-add-trigger]");
+    if (stickerTrigger) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleStickerAddMenu(stickerTrigger);
+      return;
+    }
     const quantityButton = event.target.closest("[data-product-action]");
     if (quantityButton) {
       event.preventDefault();
@@ -441,6 +667,19 @@ function bindProductGridEvents(gridElement) {
 
 bindProductGridEvents(document.getElementById("product-grid"));
 bindProductGridEvents(document.getElementById("sticker-showcase"));
+
+renderFeaturedPacks();
+renderCustomPackBuilder();
+renderPreviewCustomButton();
+document.getElementById("preview-custom").addEventListener("click", () => {
+  if (previewProductId && PRODUCTS[previewProductId]?.category === "sticker") toggleCustomPackDesign(previewProductId);
+});
+document.getElementById("custom-pack-add").addEventListener("click", addCustomPackToBasket);
+document.getElementById("custom-pack-clear").addEventListener("click", () => {
+  customPackIds = [];
+  saveCustomPack();
+  showToast("Custom pack picks cleared.");
+});
 
 // --- Collection Switcher & 60-Sticker Categorized Showcase (Randomized + High-FPS Motion) ---
 const STICKER_PACK_META = {
@@ -554,7 +793,7 @@ function renderStickerCardMarkup(item, index) {
   return '<article class="product-card sticker-card" style="--card-i:' + staggerIndex + '" data-product-id="' + item.id + '" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View ' + item.title + ' sticker details">' +
     '<div class="product-photo sticker-stage">' + badgeHtml +
     '<img src="' + item.image + '" alt="' + item.title + ' die-cut vinyl sticker" loading="lazy">' +
-    '<button class="add-button" data-add="' + item.id + '" aria-label="Add ' + item.name + ' to your basket">+</button></div>' +
+    '<button class="add-button sticker-add-trigger" data-sticker-add-trigger="' + item.id + '" aria-haspopup="menu" aria-expanded="false" aria-label="Choose how to add ' + item.name + '">+</button></div>' +
     '<div class="product-info sticker-info"><span class="sticker-pack-tag">' + item.pack + '</span><h3>' + item.title + '</h3><p>' + item.description + '</p><div class="product-price"><strong>' + rupees.format(item.price) + '</strong></div></div>' +
     '</article>';
 }
@@ -630,6 +869,7 @@ function renderStickers(options = {}) {
 }
 
 document.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-sticker-add-trigger]") && !event.target.closest(".sticker-add-menu")) closeStickerAddMenus();
   const switcher = event.target.closest("[data-switch-collection]");
   if (switcher) {
     const next = switcher.dataset.switchCollection;
@@ -799,6 +1039,7 @@ contactForm.addEventListener("submit", async (event) => {
 checkoutForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!checkoutForm.reportValidity()) return;
+  if (!guardCustomPackCheckout()) return;
   const formData = Object.fromEntries(new FormData(checkoutForm).entries());
   await startRazorpayCheckout(formData);
 });
@@ -812,6 +1053,10 @@ checkoutLayer.addEventListener("click", (event) => {
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    if (document.querySelector(".sticker-add-menu.is-open")) {
+      closeStickerAddMenus();
+      return;
+    }
     if (contactLayer.classList.contains("is-open")) closeContact();
     else if (productPreviewLayer.classList.contains("is-open")) closeProductPreview();
     else {
