@@ -433,7 +433,7 @@ function chooseSlotCategory(pack) {
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-selected", String(isActive));
   });
-  positionPackIndicator(true);
+  positionPackIndicator(false);
   renderStickers({ direction: "right" });
   updatePackSlotHint();
   requestAnimationFrame(() => {
@@ -1036,7 +1036,7 @@ document.addEventListener("click", (event) => {
       btn.classList.toggle("is-active", isAct);
       btn.setAttribute("aria-selected", String(isAct));
     });
-    positionPackIndicator(true);
+    positionPackIndicator(false);
     renderStickers({ direction });
     const scrollTarget = nextPack === CUSTOM_PACK_FILTER
       ? document.getElementById("custom-pack-showcase")
@@ -1053,7 +1053,7 @@ document.addEventListener("click", (event) => {
     btn.classList.toggle("is-active", isActive);
     btn.setAttribute("aria-selected", String(isActive));
   });
-  positionPackIndicator(true);
+  positionPackIndicator(false);
   renderStickers({ direction: "left" });
   document.querySelector("#sticker-showcase .sticker-category-group")
     ?.scrollIntoView({ behavior: "smooth", block: "start" });

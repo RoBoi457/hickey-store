@@ -1319,8 +1319,8 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
   border-radius: 999px;
   background: var(--ink);
   box-shadow: 0 8px 22px rgba(18,26,43,.2);
-  transition: transform .42s cubic-bezier(.22, 1, .36, 1), width .42s cubic-bezier(.22, 1, .36, 1), height .42s cubic-bezier(.22, 1, .36, 1);
-  will-change: transform, width;
+  transition: none !important;
+  will-change: auto;
   pointer-events: none;
 }
 .pack-pill {
