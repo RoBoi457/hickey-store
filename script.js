@@ -41,6 +41,7 @@ const scrim = document.getElementById("scrim");
 const checkoutLayer = document.getElementById("checkout-layer");
 const productPreviewLayer = document.getElementById("product-preview-layer");
 const contactLayer = document.getElementById("contact-layer");
+const slotCategoryLayer = document.getElementById("slot-category-layer");
 const checkoutForm = document.getElementById("checkout-form");
 const contactForm = document.getElementById("contact-form");
 const toast = document.getElementById("toast");
@@ -51,6 +52,8 @@ let previewProductId = null;
 let previewReturnFocus = null;
 let contactType = "suggestion";
 let contactReturnFocus = null;
+let pendingSlotIndex = null;
+let slotCategoryReturnFocus = null;
 
 const contactCopy = {
   suggestion: {
@@ -217,33 +220,41 @@ function showToast(message) {
   toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2800);
 }
 
+function emptyCustomPack() {
+  return Array(CUSTOM_PACK_SIZE).fill(null);
+}
+
 function readCustomPack() {
+  const slots = emptyCustomPack();
   try {
     const saved = JSON.parse(localStorage.getItem(CUSTOM_PACK_STORAGE_KEY) || "[]");
-    if (!Array.isArray(saved)) return [];
+    if (!Array.isArray(saved)) return slots;
     const seen = new Set();
-    const ids = [];
+    let slot = 0;
     for (const id of saved) {
       if (typeof id !== "string" || seen.has(id) || PRODUCTS[id]?.category !== "sticker") continue;
       seen.add(id);
-      ids.push(id);
-      if (ids.length >= CUSTOM_PACK_SIZE) break;
+      slots[slot] = id;
+      slot += 1;
+      if (slot >= CUSTOM_PACK_SIZE) break;
     }
-    return ids;
-  } catch (_) {
-    return [];
-  }
+  } catch (_) {}
+  return slots;
+}
+
+function customPackDesigns() {
+  return customPackIds.filter(Boolean);
 }
 
 function saveCustomPack() {
-  try { localStorage.setItem(CUSTOM_PACK_STORAGE_KEY, JSON.stringify(customPackIds)); } catch (_) {}
+  try { localStorage.setItem(CUSTOM_PACK_STORAGE_KEY, JSON.stringify(customPackDesigns())); } catch (_) {}
   renderCustomPackBuilder();
   renderPreviewCustomButton();
 }
 
 function customPackValidationMessage() {
   if (!basket["custom-pack"]) return "";
-  const ids = customPackIds.filter((id) => PRODUCTS[id]?.category === "sticker");
+  const ids = customPackDesigns();
   if (ids.length !== CUSTOM_PACK_SIZE || new Set(ids).size !== ids.length) return CUSTOM_PACK_RULE;
   return "";
 }
@@ -260,12 +271,15 @@ function guardCustomPackCheckout() {
 function renderCustomPackBuilder() {
   const slots = document.getElementById("custom-pack-slots");
   if (!slots) return;
-  const ids = customPackIds.slice(0, CUSTOM_PACK_SIZE);
   slots.innerHTML = Array.from({ length: CUSTOM_PACK_SIZE }, (_, index) => {
-    const id = ids[index];
+    const id = customPackIds[index];
     const product = id ? PRODUCTS[id] : null;
     if (!product) {
-      return '<div class="custom-pack-slot"><span>' + (index + 1) + '</span><em>' + (index === ids.length ? "Your pick" : "Empty") + '</em></div>';
+      return '<div class="custom-pack-slot is-empty' + (pendingSlotIndex === index ? ' is-targeted' : '') + '" style="--slot-i:' + index + '">' +
+        '<span>' + (index + 1) + '</span>' +
+        '<button type="button" class="slot-add" data-slot-add="' + index + '" aria-label="Choose a sticker design for slot ' + (index + 1) + '">+</button>' +
+        '<em>Empty</em>' +
+        '</div>';
     }
     return '<div class="custom-pack-slot is-filled" style="--slot-i:' + index + '">' +
       '<img src="' + product.image + '" alt="" loading="lazy">' +
@@ -274,13 +288,17 @@ function renderCustomPackBuilder() {
       '</div>';
   }).join("");
   const countEl = document.getElementById("custom-pack-count");
-  if (countEl) countEl.textContent = ids.length + " of " + CUSTOM_PACK_SIZE + " designs chosen";
+  if (countEl) countEl.textContent = customPackDesigns().length + " of " + CUSTOM_PACK_SIZE + " designs chosen";
   const addButton = document.getElementById("custom-pack-add");
   if (addButton) addButton.textContent = basket["custom-pack"] ? "Custom pack in basket" : "Add custom pack to basket";
-  document.getElementById("custom-pack-section")?.classList.toggle("is-complete", ids.length === CUSTOM_PACK_SIZE);
+  document.getElementById("custom-pack-section")?.classList.toggle("is-complete", customPackDesigns().length === CUSTOM_PACK_SIZE);
   slots.querySelectorAll("[data-remove-custom]").forEach((button) => {
-    button.addEventListener("click", () => toggleCustomPackDesign(button.dataset.removeCustom));
+    button.addEventListener("click", () => removeCustomPackDesign(button.dataset.removeCustom));
   });
+  slots.querySelectorAll("[data-slot-add]").forEach((button) => {
+    button.addEventListener("click", () => openSlotCategoryPicker(Number(button.dataset.slotAdd)));
+  });
+  updatePackSlotHint();
 }
 
 function renderFeaturedPacks() {
@@ -304,22 +322,125 @@ function renderFeaturedPacks() {
   bindProductGridEvents(grid);
 }
 
-function toggleCustomPackDesign(id) {
+function removeCustomPackDesign(id) {
+  const index = customPackIds.indexOf(id);
+  if (index < 0) return;
+  customPackIds[index] = null;
+  if (pendingSlotIndex === index) pendingSlotIndex = null;
+  showToast("Removed " + (PRODUCTS[id]?.title || "that sticker") + " from your custom pack.");
+  updatePackSlotHint();
+  saveCustomPack();
+}
+
+function addCustomPackDesign(id, preferredSlot = pendingSlotIndex) {
   const product = PRODUCTS[id];
   if (!product || product.category !== "sticker") return;
-  const index = customPackIds.indexOf(id);
-  if (index >= 0) {
-    customPackIds.splice(index, 1);
-    showToast("Removed " + product.title + " from your custom pack.");
-  } else {
-    if (customPackIds.length >= CUSTOM_PACK_SIZE) {
-      showToast(CUSTOM_PACK_RULE);
-      return;
-    }
-    customPackIds.push(id);
-    showToast("Added " + product.title + " to your custom pack (" + customPackIds.length + " of " + CUSTOM_PACK_SIZE + ").");
+  const existingIndex = customPackIds.indexOf(id);
+  if (existingIndex >= 0 && (preferredSlot === null || preferredSlot === undefined || preferredSlot === existingIndex)) {
+    removeCustomPackDesign(id);
+    return;
   }
+  const target = Number.isInteger(preferredSlot) ? preferredSlot : customPackIds.indexOf(null);
+  if (target < 0 || target >= CUSTOM_PACK_SIZE) {
+    showToast(CUSTOM_PACK_RULE);
+    return;
+  }
+  if (customPackIds[target] && customPackIds[target] !== id) {
+    customPackIds[target] = null;
+  }
+  if (existingIndex >= 0) customPackIds[existingIndex] = null;
+  customPackIds[target] = id;
+  if (pendingSlotIndex === target) pendingSlotIndex = null;
+  showToast(existingIndex >= 0
+    ? "Moved " + product.title + " to slot " + (target + 1) + "."
+    : "Added " + product.title + " to your custom pack (" + customPackDesigns().length + " of " + CUSTOM_PACK_SIZE + ").");
+  updatePackSlotHint();
   saveCustomPack();
+}
+
+function toggleCustomPackDesign(id, preferredSlot = pendingSlotIndex) {
+  const index = customPackIds.indexOf(id);
+  if (index >= 0 && (preferredSlot === null || preferredSlot === undefined || preferredSlot === index)) {
+    removeCustomPackDesign(id);
+    return;
+  }
+  addCustomPackDesign(id, preferredSlot);
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+}
+
+function updatePackSlotHint() {
+  const hint = document.getElementById("pack-slot-hint");
+  const text = document.getElementById("pack-slot-hint-text");
+  if (!hint || !text) return;
+  hint.hidden = pendingSlotIndex === null;
+  if (pendingSlotIndex !== null) {
+    text.textContent = "Picking a sticker for slot " + (pendingSlotIndex + 1) + ". Choose a set below, then tap a sticker’s + to fill it.";
+  }
+}
+
+function renderSlotCategoryPicker() {
+  const grid = document.getElementById("slot-category-grid");
+  const intro = document.getElementById("slot-category-intro");
+  if (!grid) return;
+  if (intro) intro.textContent = "Slot " + (pendingSlotIndex + 1) + " is waiting. Pick a set to see its designs, then tap a sticker’s + to add it there.";
+  const allItems = window.HickeyStickers?.items || [];
+  const packs = shuffledPackOrder.length ? shuffledPackOrder : Object.keys(STICKER_PACK_META);
+  grid.innerHTML = packs.map((pack) => {
+    const previews = allItems.filter((item) => item.pack === pack).slice(0, 4);
+    const thumbs = previews.map((item) => '<img src="' + item.image + '" alt="" loading="lazy">').join("");
+    const count = shuffledByPack.get(pack)?.length || previews.length;
+    return '<button class="slot-category-option" type="button" data-slot-category="' + escapeHtml(pack) + '">' +
+      '<span class="slot-category-thumbs">' + thumbs + '</span>' +
+      '<span class="slot-category-copy"><strong>' + escapeHtml(pack) + '</strong><small>' + count + ' sticker' + (count === 1 ? "" : "s") + '</small></span>' +
+      '</button>';
+  }).join("");
+  grid.querySelectorAll("[data-slot-category]").forEach((button) => {
+    button.addEventListener("click", () => chooseSlotCategory(button.dataset.slotCategory));
+  });
+}
+
+function openSlotCategoryPicker(index) {
+  if (!Number.isInteger(index) || index < 0 || index >= CUSTOM_PACK_SIZE) return;
+  pendingSlotIndex = index;
+  slotCategoryReturnFocus = document.activeElement;
+  renderSlotCategoryPicker();
+  updatePackSlotHint();
+  renderCustomPackBuilder();
+  slotCategoryLayer.classList.add("is-open");
+  slotCategoryLayer.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  setTimeout(() => document.getElementById("close-slot-category")?.focus(), 80);
+}
+
+function closeSlotCategoryPicker(restoreFocus = true) {
+  slotCategoryLayer.classList.remove("is-open");
+  slotCategoryLayer.setAttribute("aria-hidden", "true");
+  if (!checkoutLayer.classList.contains("is-open") && !drawer.classList.contains("is-open") && !productPreviewLayer.classList.contains("is-open") && !contactLayer.classList.contains("is-open")) {
+    document.body.classList.remove("modal-open");
+  }
+  if (restoreFocus && slotCategoryReturnFocus && typeof slotCategoryReturnFocus.focus === "function") slotCategoryReturnFocus.focus();
+  slotCategoryReturnFocus = null;
+}
+
+function chooseSlotCategory(pack) {
+  closeSlotCategoryPicker(false);
+  activeStickerPack = pack;
+  document.querySelectorAll("#sticker-pack-filters .pack-pill").forEach((button) => {
+    const isActive = button.dataset.pack === pack;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+  positionPackIndicator(true);
+  renderStickers({ direction: "right" });
+  updatePackSlotHint();
+  requestAnimationFrame(() => {
+    const group = Array.from(document.querySelectorAll("#sticker-showcase .sticker-category-group"))
+      .find((section) => section.dataset.categoryGroup === pack);
+    group?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 function addCustomPackToBasket() {
@@ -377,7 +498,7 @@ function toggleStickerAddMenu(trigger) {
   menu.setAttribute("aria-hidden", "false");
   menu.innerHTML =
     '<button type="button" role="menuitem" data-menu-add-cart="' + id + '"><strong>Add to cart</strong><small>Just this sticker</small></button>' +
-    '<button type="button" role="menuitem" data-menu-add-pack="' + id + '" class="' + (selected ? "is-selected" : "") + '"><strong>' + (selected ? "Remove from custom pack" : "Add to custom pack") + '</strong><small>' + (selected ? "Picked for your pack" : customPackIds.length + " of " + CUSTOM_PACK_SIZE + " chosen") + '</small></button>';
+    '<button type="button" role="menuitem" data-menu-add-pack="' + id + '" class="' + (selected ? "is-selected" : "") + '"><strong>' + (selected ? "Remove from custom pack" : "Add to custom pack") + '</strong><small>' + (selected ? "Picked for your pack" : customPackDesigns().length + " of " + CUSTOM_PACK_SIZE + " chosen") + '</small></button>';
   menu.classList.add("is-open");
   trigger.setAttribute("aria-expanded", "true");
 }
@@ -541,7 +662,7 @@ async function startRazorpayCheckout(formData) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         items: Object.entries(basket).map(([id, quantity]) => ({ id, quantity })),
-        customPackDesigns: basket["custom-pack"] ? customPackIds.slice() : undefined,
+        customPackDesigns: basket["custom-pack"] ? customPackDesigns() : undefined,
         customerName,
         address: formData.address,
         phone: formData.phone
@@ -676,9 +797,20 @@ document.getElementById("preview-custom").addEventListener("click", () => {
 });
 document.getElementById("custom-pack-add").addEventListener("click", addCustomPackToBasket);
 document.getElementById("custom-pack-clear").addEventListener("click", () => {
-  customPackIds = [];
+  customPackIds = emptyCustomPack();
+  pendingSlotIndex = null;
+  updatePackSlotHint();
   saveCustomPack();
   showToast("Custom pack picks cleared.");
+});
+document.getElementById("close-slot-category").addEventListener("click", () => closeSlotCategoryPicker());
+slotCategoryLayer.addEventListener("click", (event) => {
+  if (event.target === slotCategoryLayer) closeSlotCategoryPicker();
+});
+document.getElementById("pack-slot-hint-cancel").addEventListener("click", () => {
+  pendingSlotIndex = null;
+  updatePackSlotHint();
+  renderCustomPackBuilder();
 });
 
 // --- Collection Switcher & 60-Sticker Categorized Showcase (Randomized + High-FPS Motion) ---
@@ -1110,6 +1242,10 @@ checkoutLayer.addEventListener("click", (event) => {
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    if (slotCategoryLayer.classList.contains("is-open")) {
+      closeSlotCategoryPicker();
+      return;
+    }
     if (document.querySelector(".sticker-add-menu.is-open")) {
       closeStickerAddMenus();
       return;
