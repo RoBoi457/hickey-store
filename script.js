@@ -852,7 +852,7 @@ function randomizeStickerOrder() {
 
 function positionPackIndicator(animate = true) {
   const wrap = document.getElementById("sticker-pack-filters");
-  if (!wrap) return;
+  if (!wrap || wrap.offsetParent === null) return;
   let indicator = wrap.querySelector(".pack-pill-indicator");
   const activeBtn = wrap.querySelector(".pack-pill.is-active");
   if (!activeBtn) return;
@@ -901,7 +901,7 @@ function setActiveCollection(nextCollection, options = {}) {
       renderStickerPackFilters();
     }
     renderStickers({ direction: "up" });
-    requestAnimationFrame(() => positionPackIndicator(false));
+    positionPackIndicator(false);
   }
   if (options.scroll) {
     document.getElementById("treasury")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -919,7 +919,7 @@ function renderStickerPackFilters() {
     const pillClass = pack === CUSTOM_PACK_FILTER ? " pack-pill-custom" : "";
     return '<button class="pack-pill' + pillClass + (isActive ? ' is-active' : '') + '" type="button" role="tab" data-pack="' + pack + '" aria-selected="' + isActive + '">' + pack + ' <span>' + count + '</span></button>';
   }).join("");
-  requestAnimationFrame(() => positionPackIndicator(false));
+  positionPackIndicator(false);
 }
 
 function renderStickerCardMarkup(item, index) {
@@ -1078,7 +1078,7 @@ function applyHashRoute() {
       btn.setAttribute("aria-selected", String(isActive));
     });
     renderStickers({ direction: "up" });
-    requestAnimationFrame(() => positionPackIndicator(false));
+    positionPackIndicator(false);
   }
   if (collection || wantsCustomPacks) {
     document.getElementById("treasury")?.scrollIntoView({ behavior: "smooth", block: "start" });
