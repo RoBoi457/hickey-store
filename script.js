@@ -747,13 +747,15 @@ function getOrderedFilterPacks() {
 }
 
 function setActiveCollection(nextCollection, options = {}) {
-  const valid = ["keychains", "stickers", "all"];
+  const valid = ["keychains", "stickers", "custom", "all"];
   const previous = activeCollection;
   activeCollection = valid.includes(nextCollection) ? nextCollection : "keychains";
   const keychainsPanel = document.getElementById("panel-keychains");
   const stickersPanel = document.getElementById("panel-stickers");
-  if (keychainsPanel) keychainsPanel.hidden = activeCollection === "stickers";
-  if (stickersPanel) stickersPanel.hidden = activeCollection === "keychains";
+  const customPanel = document.getElementById("panel-custom");
+  if (keychainsPanel) keychainsPanel.hidden = activeCollection !== "keychains" && activeCollection !== "all";
+  if (stickersPanel) stickersPanel.hidden = activeCollection !== "stickers" && activeCollection !== "all";
+  if (customPanel) customPanel.hidden = activeCollection !== "custom" && activeCollection !== "all";
 
   document.querySelectorAll("[data-collection-tab]").forEach((tab) => {
     const isActive = tab.dataset.collectionTab === activeCollection;
@@ -870,12 +872,22 @@ function renderStickers(options = {}) {
 
 document.addEventListener("click", (event) => {
   if (!event.target.closest("[data-sticker-add-trigger]") && !event.target.closest(".sticker-add-menu")) closeStickerAddMenus();
+  const anchor = event.target.closest('a[href^="#"]');
+  if (anchor && !anchor.closest("[data-switch-collection]")) {
+    const id = anchor.getAttribute("href").slice(1);
+    const target = id ? document.getElementById(id) : null;
+    if (target) {
+      event.preventDefault();
+      if (location.hash !== "#" + id) history.pushState(null, "", "#" + id);
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+  }
   const switcher = event.target.closest("[data-switch-collection]");
   if (switcher) {
     const next = switcher.dataset.switchCollection;
-    const isAnchor = switcher.tagName === "A";
-    if (isAnchor) event.preventDefault();
-    setActiveCollection(next, { scroll: isAnchor });
+    if (switcher.tagName === "A") event.preventDefault();
+    setActiveCollection(next, { scroll: true });
     return;
   }
   const packBtn = event.target.closest("[data-pack]");
@@ -895,6 +907,8 @@ document.addEventListener("click", (event) => {
     });
     positionPackIndicator(true);
     renderStickers({ direction });
+    document.querySelector("#sticker-showcase .sticker-category-group")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 });
 
@@ -902,8 +916,26 @@ window.addEventListener("resize", () => positionPackIndicator(false), { passive:
 
 randomizeStickerOrder();
 renderStickerPackFilters();
-if (window.location.hash === "#stickers") setActiveCollection("stickers");
-else setActiveCollection("keychains");
+
+function collectionFromHash() {
+  const hash = window.location.hash.replace(/^#/, "");
+  const map = {
+    keychains: "keychains",
+    stickers: "stickers",
+    custom: "custom",
+    "custom-packs": "custom"
+  };
+  return map[hash] || null;
+}
+const hashedCollection = collectionFromHash();
+setActiveCollection(hashedCollection || "keychains", { scroll: Boolean(hashedCollection) });
+window.addEventListener("hashchange", () => {
+  const next = collectionFromHash();
+  if (next) setActiveCollection(next, { scroll: true });
+  const hashId = location.hash.slice(1);
+  const target = hashId ? document.getElementById(hashId) : null;
+  if (target && !next) target.scrollIntoView({ behavior: "smooth", block: "start" });
+});
 document.querySelectorAll(".product-card").forEach((card) => {
   card.tabIndex = 0;
   card.setAttribute("role", "button");

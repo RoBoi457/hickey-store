@@ -1937,3 +1937,76 @@ html.motion-ready .faq-item.snap-tile.is-snapped {
   .custom-pack-slots { grid-template-columns: repeat(5, minmax(52px, 1fr)); }
   .custom-pack-buttons { flex-direction: column; }
 }
+
+/* --- Separate custom-packs tab + mobile-first navigation tweaks --- */
+.text-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  color: var(--red);
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.text-link:hover { color: var(--ink); }
+:root[data-theme="dark"] .text-link { color: #ff7b91; }
+
+@media (max-width: 760px) {
+  .collection-bar-wrap {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-right: -18px;
+    padding-right: 18px;
+  }
+  .collection-bar-wrap::-webkit-scrollbar { display: none; }
+  .collection-bar { width: max-content; min-width: 100%; justify-content: flex-start; }
+  .collection-tab { flex: 0 0 auto; min-width: 116px; }
+
+  .custom-pack-head { align-items: flex-start; }
+  .custom-pack-head p { margin-top: 6px; }
+  .custom-pack-slots {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .custom-pack-slots::-webkit-scrollbar { display: none; }
+  .custom-pack-slot { flex: 0 0 76px; min-height: 76px; scroll-snap-align: start; }
+
+  .featured-pack-grid {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .featured-pack-grid::-webkit-scrollbar { display: none; }
+  .featured-pack-card { flex: 0 0 min(78vw, 250px); scroll-snap-align: start; }
+
+  .sticker-card .sticker-add-trigger { right: 8px; bottom: 8px; width: 42px; height: 42px; }
+  .sticker-add-menu {
+    right: 6px;
+    bottom: 52px;
+    width: calc(100% - 12px);
+    max-width: 210px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 5px;
+  }
+  .sticker-add-menu button { min-height: 48px; align-content: center; padding: 6px 8px; }
+  .sticker-add-menu button strong { font-size: 12px; }
+  .sticker-add-menu button small { font-size: 10px; line-height: 1.2; }
+}
+@media (max-width: 380px) {
+  .collection-tab { min-width: 108px; }
+  .custom-pack-slot { flex-basis: 68px; min-height: 68px; }
+  .featured-pack-card { flex-basis: min(84vw, 230px); }
+}
